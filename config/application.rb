@@ -27,7 +27,7 @@ module Myapp
     config.assets.paths << config.root.join('node_modules')
     config.assets.paths << config.root.join('node_modules/admin-lte/plugins/iCheck')
     # lib 以下もロードパスに追加
-    config.assets.prefix = "#{ENV['ACCESS_PASS']}/assets"
+    # config.assets.prefix = "#{ENV['ACCESS_PASS']}/assets"
     config.autoload_paths += Dir["#{config.root}/lib/**/"]
   end
 end

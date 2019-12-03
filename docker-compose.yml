@@ -32,11 +32,7 @@ services:
       DB_PASSWORD: 'password'
       DB_NAME: 'chat'
       REPAIR_CASE_PATH: 'repair_case'
-      ACCESS_PASS: ''
-      ELASTIC_SEARCH: 'elasticsearch'
       REDISCLOUD_URL: 'redis://localhost:6379'
-      IS_CLOUD: '0' #0:本地环境，1:云环境
-      WEB_CONCURRENCY: 3
 
     links:
       - db

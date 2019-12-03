@@ -6,7 +6,7 @@ Rails.application.routes.draw do
   # end
   # root to: "rooms#show"
   # mount ActionCable.server => "/cable"
-
+  root 'chat#index'
   # get '/', to: redirect(ENV['ACCESS_PASS'] + '/' + ENV['REPAIR_CASE_PATH'])
   namespace :chat do
     get '/', action: 'index'
