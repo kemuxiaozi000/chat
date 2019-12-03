@@ -1,0 +1,9 @@
+{
+  "name": "web",
+  "private": true,
+  "dependencies": {
+    "admin-lte": "^3.0.0-alpha.2",
+    "font-awesome": "4.7.0",
+    "gasparesganga-jquery-loading-overlay": "2.1.6"
+  }
+}

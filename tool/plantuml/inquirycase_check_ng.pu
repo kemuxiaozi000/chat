@@ -1,0 +1,31 @@
+@startuml
+title 问询状态的自动checkNG
+hide footbox
+
+participant 用户 as user
+participant 自动check as check
+participant 管理者 as admin
+participant 专家 as special
+
+user -> check: 问询处理
+note left: 用户问询
+
+== 内容确认中 ==
+
+check --> check: 文本check处理
+check -> user: 文本checkNG
+
+== 问询退回 ==
+
+user --> user: 确认＆编辑
+rectangle 问询内容修正{
+  (payment)
+}
+
+user -> check: 问询処理
+note left: 再次问询
+
+== 内容确认中 ==
+
+
+@enduml

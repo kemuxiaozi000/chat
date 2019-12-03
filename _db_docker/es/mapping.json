@@ -1,0 +1,73 @@
+{
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "repair_case_id": {
+      "type": "keyword"
+    },
+    "title": {
+      "type": "text",
+      "analyzer": "cn_analyzer"
+    },
+    "brand": {
+      "type": "keyword"
+    },
+    "car_type": {
+      "type": "keyword"
+    },
+    "model_year": {
+      "type": "integer"
+    },
+    "model_year_month": {
+      "type": "integer"
+    },
+    "mileage": {
+      "type": "integer"
+    },
+    "frequency": {
+      "type": "keyword"
+    },
+    "component": {
+      "type": "keyword"
+    },
+    "symptoms": {
+      "type": "keyword"
+    },
+    "symptoms_detail": {
+      "type": "keyword"
+    },
+    "other_symptoms": {
+      "type": "text",
+      "analyzer": "cn_analyzer"
+    },
+    "malfunction_code": {
+      "type": "text",
+      "analyzer": "pcode_analyzer"
+    },
+    "procedure": {
+      "type": "text",
+      "analyzer": "cn_analyzer"
+    },
+    "estimated_fault_location": {
+      "type": "text",
+      "analyzer": "cn_analyzer"
+    },
+    "supplementary": {
+      "type": "text",
+      "analyzer": "cn_analyzer"
+    },
+    "poster_type": {
+      "type": "keyword"
+    },
+    "user_confirmation": {
+      "type": "integer"
+    },
+    "expert_confirmation": {
+      "type": "integer"
+    },
+    "post_date": {
+      "type": "keyword"
+    }
+  }
+}

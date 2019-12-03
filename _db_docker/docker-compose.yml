@@ -1,0 +1,78 @@
+version: "3"
+services:
+  mysql:
+    build: ./mysql
+    ports:
+      - 3306:3306
+    container_name: mysql
+    command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci --skip-character-set-client-handshake
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_DATABASE: lupin
+      MYSQL_ROOT_PASSWORD: password
+
+  elasticsearch01:
+    build:
+      context: ./es
+      args:
+        USER_NAME: esuser
+    container_name: elasticsearch01
+    image: elasticsearch
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9201:9200"
+    volumes:
+      - ./data/es01:/usr/share/elasticsearch/data
+
+  elasticsearch02:
+    build:
+      context: ./es
+      args:
+        USER_NAME: esuser
+    container_name: elasticsearch02
+    image: elasticsearch
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9202:9200"
+    volumes:
+      - ./data/es02:/usr/share/elasticsearch/data
+
+  elasticsearch03:
+    build:
+      context: ./es
+      args:
+        USER_NAME: esuser
+    container_name: elasticsearch03
+    image: elasticsearch
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9203:9200"
+    volumes:
+      - ./data/es03:/usr/share/elasticsearch/data
+
+  kibana:
+    build: ./kibana
+    container_name: kibana
+    links:
+      - elasticsearch02:elasticsearch
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch01
+      - elasticsearch02
+      - elasticsearch03
+
+volumes:
+  es_data:
+    driver: local

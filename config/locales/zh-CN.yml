@@ -1,0 +1,875 @@
+---
+zh-CN:
+  view:
+    prepare_checking_vehicle_condition: 车辆状态确认
+    harness_connection_caution_statement: "【注意】请确保VCI与车辆连接"
+    checking_vehicle_condition_statment: 请检查并确保车辆处于以下状态
+    steering_keep_go_straight: 方向盘回直
+    wheel_chocks: 轮胎锁止
+    P_range: P档
+    throttle_OFF: 油门关闭
+    engine_warmup: 发动机暖机
+    IG_ON: IG ON
+    AC_OFF: 空调 OFF
+    electric_load_OFF: 车灯音响等电动系统 OFF
+    check: 确认
+    start_checking_vehicle_condition_title: 车辆信息确认
+    please_check_the_vehicle_information_and_press_the_start_button: 以下信息确认后，请按诊断开始按钮，如有错误请修改。
+    vehicle_type: 车型
+    corolla: 卡罗拉
+    vin_code: VIN码
+    model_year: 年份
+    correction: 修改
+    start: 诊断开始
+    mechanic: 保养员
+    overseas_passenger: 海外（乘用）
+    small_size: 小型
+    medium_size: 中型
+    large_size: 大型
+    temperature: 气温
+    vehicle_information: 车辆信息
+    implementation_information: 作业条件
+    drive_system: 驱动方式
+    required_item: 必须输入项目
+    instruction_title: 车辆健康诊断
+    step_ready: "<br>请在倒计时变为0秒后踩下刹车踏板<br>并启动车辆引擎。"
+    step_1: 车辆怠速状态检测中。<br><br>请耐心等待。
+    step_1_end: "<br>车辆怠速状态检测结束。"
+    step_2: 请将转速调整到2000rpm<br>正式检测将在5秒后开始<br>请保持2000rpm直到检测结束
+    step_3: 检测进行中<br><br>请在倒计时变为0秒时<br>松开油门
+    step_4: 2000rpm条件检测结束<br><br>请松开油门稍等片刻
+    step_5: 下面是油门全开条件检测<br>马上就要开始倒计时<br>请在倒计时变为0秒时<br><span class='text-danger'>猛踩油门到底</span><br>使发动机转速升到4000rpm以后<br>快速松开油门
+    step_6: 检测进行中<br><br>猛踩油门到底<br>使发动机转速升到4000rpm以后<br>快速松开油门
+    step_7: 健康诊断已完成，感谢您的配合<br>请关闭发动机<br>诊断结果请参照车辆健康诊断报告
+    cound_down: 倒计时
+    engine_RPM: 发动机转速
+    diag_login_title: 云诊车
+    sign_in: 用户登录
+    phone_number: 用户名/已验证手机号
+    phone_number_label: 用户名/手机号
+    password: 密码
+    password_label: 密码
+    remember_me: 留存登录信息
+    in_case_of_forgetting_password: 忘记密码
+    register_a_new_membership: 新用户注册
+    registration_ok: 提交
+    new_member_registration: 新用户注册
+    full_name_label: 名字
+    placeholder_full_name: 例：电装 光士
+    placeholder_phone_number: 例：12345678901
+    sex_label: 性别
+    male: 男
+    female: 女
+    nickname_label: 昵称
+    placeholder_nickname: 例：电电
+    birthday_label: 生日
+    placeholder_birthday: 例：20181113
+    address_label: 所在地
+    shanghai: 上海
+    Beijing: 北京
+    garage_label: 店名
+    placeholder_garage: 例：DENSO北京
+    year_of_experience_label: 工龄
+    placeholder_year_of_experience: 例：10
+    qualification_label: 认定资格
+    placeholder_qualification: 例：2级汽车修理工
+    specialty_label: 修理擅长
+    placeholder_specialty: 例：发动机
+    rank_label: 会员等级
+    password_to_confirm_label: 密码确认
+    current_password_label: 当前密码
+    security_code_label: 验证码
+    send_SMS_button: 发送验证码
+    SMS_waiting_message: 秒后再次重发
+    agree_to_terms: 同意使用规则
+    agree_to_privacy_policy: 同意隐私保护规则
+    register_title: 登录
+    required: "（必须）"
+    select_all: 全部
+    user_information: 用户信息
+    user_info_edit: 用户信息编辑
+    update_title: 更新
+    edit: 编辑
+    public: 公开
+    private: 不公开
+    verified: 已确认
+    bind: 已绑定
+    term: 会员期限
+    point: 积分
+    this_year: 当前有效积分
+    total: 累计积分
+    balance: 可提现金额
+    cumulative_total: 累计获取红包总金额
+    search_history: 事例检索记录
+    browsing_history: 事例投稿记录
+    inquiry_history: 事例问询记录
+    date: 日期
+    condition: 条件
+    search_history_1: 品牌：丰田，车型：卡罗拉，主要症状：启动不良・不能
+    search_history_2: 品牌：丰田，车型：卡罗拉，主要症状：熄火
+    views: 阅览量
+    browsing_history_1: 发动机无法启动
+    browsing_history_2: 电气系统无法启动
+    inquiry_date: 咨询日期
+    update_date: 更新日期
+    news: 新消息
+    exist: 有
+    none: 没有
+    rank: 会员等级
+    gold: 专家
+    tip: 红包
+    phone_number_profilem: 用户名（手机号）
+    qualification: 国家修理技师2级
+    specialty: 日系车
+    diagnosis_date: 施行日期
+    report_no: 报告号码
+    diagnosis_history: 健康诊断记录
+    editing_infomsg: 目前编辑机能暂未开放
+    confirm_delete_user: 如果删除它，则无法登录。好吗？
+    confirmation_title: 确认
+    send_confirmation: 是否确认发布新帖？
+    send_confirmation_for_registration: 请确认提交信息准确无误。是否提交？
+    ok: 发布
+    cancel: 取消
+    report_feature: 检查无法看到的车辆内部系统的健康状态
+    report_tilte: 车辆健康诊断报告
+    engine_type: 汽油发动机
+    company: DENSO Corporation
+    branch: 刈谷店
+    address: 刈谷市昭和町1-1
+    phone_label: TEL
+    fax_label: FAX
+    staff_label: 检测员
+    staff: 赵一
+    inspection_day_label: 诊断日期
+    customer_name_label: 客户姓名
+    customer_name: 一休
+    registration_no_label: 注册号码
+    car_type_label: 车辆品牌
+    initial_registration_label: 初次注册
+    mileage: 行驶里程
+    previous_inspection_day_label: 上次诊断日期
+    previous_mileage_label: 上次行驶里程
+    overall_diagnosis_title: 系统故障码检查
+    overall_diagnosis_description: 诊断汽车的电子控制设备，可以查出无法看到的内部系统故障
+    diagnosis_result_ok: 没有发现异常。
+    label_system: 系統
+    power_train_label: "①动力传动系"
+    chassis_label: "②底盘"
+    body_label: "③车身"
+    network_label: "④网络"
+    title_comprehensive_result: 最终结果
+    good_condition_icon: OK
+    engine_diagnosis_title: 发动机状态动态检查
+    engine_diagnosis_outline: 通过模拟启动，怠速，踩油门等常用驾驶条件，检查发动机的健康状况。
+    engine_diagnosis_outline_suggest_comparison: 可以与上次诊断结果（数值）相比较进行确认。
+    refer_to_the_following_malfunction_diagnosis_detail: 请参考「系统故障码检查详细信息」。
+    engine_state_check_detail: 发动机状态动态检查详细信息
+    engine_control_diagnosis: "■发动机控制诊断结果"
+    engine_control_sensor_diagnosis: "■发动机控制传感器诊断结果"
+    refer_to_the_following_engine_diagnosis_detail: 请参考「发动机状态动态检查详细信息」。
+    disclaimer: "【免责声明】本次诊断的结果为参考信息，本公司不对汽车及其零部件的相关性能作出任何保证。对于因本诊断结果导致的损失，本公司不承担任何责任。"
+    title_diagnosis_result: 诊 断 结 果
+    etc: 等
+    diagnostic_result_title: 诊断结果确认
+    client_information_title: 车辆信息
+    system_number: 系统数量
+    error_code_number: 故障码数量
+    mark_warning_description: 勾选的项目将会在诊断报告中以黄色高亮背景显示,提醒用户注意.
+    malfunction_diagnosis_detail: 系统故障码检查详细信息
+    inspection_needed: 要检查
+    good_condition_system: 检查结果良好的系统
+    report_good_condition: 良好
+    notice_error_code_detection: 检测出了故障码：
+    engine: 发动机
+    electronic_stability_control: 防侧滑系统等
+    antilock_brake_system: ABS
+    communication_between_embeded_computers: 车载ECU之间的通信状况
+    cruise_control: 巡航控制
+    light_doorlock_powerseat: 车灯，车门锁，电动座椅
+    abs-vsc-trc: ABS-VSC-TRC(CAN)
+    electric_power_steering: 电动助力转向
+    except_sil_nhw11_sys_with_brush: "(SIL NHW11系列以外　带刷型）"
+    sil_racktype: "(SIL机架型）"
+    airbag: 气囊(SIL2)
+    rear_right_seat_door: RR席侧门
+    electric_power_back_door: 电动后门
+    driver_seat_motor: D席电机
+    passenger_seat_motor: P席电机
+    rear_left_seat_motor: RL席电机
+    rear_right_seat_motor: RR席电机
+    electric_power_window_switch: 电动车窗按键
+    slide_roof: 滑动天窗
+    speedometer: 仪表盘
+    afs: AFS
+    reference: 参考
+    navigation_system: 导航系统
+    detected_error_code: 检测出故障码
+    system: 系统名
+    error_code: 故障码
+    error_code_state: 故障码状态
+    present: 现在
+    past: 过去
+    pending: 待定
+    mainbody: 车身
+    good_condition: 良好状态
+    detected_nothing_special: 诊断结果中没有发现汽车存在异常情况。
+    detected_problem: 发现异常
+    detected_problem_on_body: 车身系统发现异常征兆，
+    recommend_inspection: 建议进行检修。
+    refer_to_details: 详情如下
+    immobilizer_and_ecu_communication_error: 发动机电子防盗系统：ECU通信异常
+    id_codebox_and_engine_communication_error: ID代码盒-->发动机之间通信异常
+    ac_can: A/C (CAN)
+    ac_air_conditioner: A/C（空调）
+    navigator_side_sun_load_sensor_output_abnormal: "（副驾驶座椅）日照传感器（室内输出为正常）"
+    driver_side_sun_load_sensor_output_abnormal: "（驾驶座椅）日照传感器（室内输出为正常）"
+    inspection_condition: 状态
+    item: 项目
+    inspect_condition: 检测条件
+    previous_time: 上次
+    this_time: 本次
+    reference_value: 参考値
+    engine_start: 启动
+    idle_rpm: 怠速转速
+    air_fuel_ratio_bank1: 空燃比气缸列1
+    coolant: 冷却水
+    battery_charging_level: 充电
+    throttle_sensor_bank1: 节气门传感器气缸列1
+    manifold_absolute_pressure_sensor: 进气管压力传感器
+    aero_flow_meter_bank1: 空气流量计气缸列1
+    air_fuel_ratio_sensor_bank1_sensor1: A/F传感器气缸列1传感器1
+    oxygen_sensor_bank1_sensor1: 氧传感器气缸列1传感器1
+    control_state: 控制状态
+    correction_value: 修正值
+    learned_value: 学习值
+    idle: 怠速
+    neutral: "（空挡）"
+    inspecting: 进行中
+    not_greater: 以下
+    lean: 稀
+    rich: 浓
+    stamp_on_accel_pedal: 油门全开
+    release_accel_pedal: 油门全关
+    times: 倍
+    greater: 以上
+    search_case: 修理事例检索
+    inquiry_case_title: 修理事例问询
+    poster: 作者
+    brand: 品牌
+    brand_toyota: 丰田
+    brand_nissan: 日产
+    brand_honda: 本田
+    brand_mazda: 马自达
+    brand_suzuki: 铃木
+    brand_daihatsu: 大发
+    brand_mitsubishi: 三菱
+    brand_subaru: 斯巴鲁
+    brand_other: 其他
+    car_type: 车名
+    car_type_corolla: 卡罗拉
+    car_type_prius_c: Prius c
+    car_type_prius: 普瑞斯
+    car_type_sienta: Sienta
+    car_type_vellfire: Vellfire
+    car_type_x-trail: 奇骏
+    car_type_note: Note
+    car_type_elgrand: 君爵
+    car_type_leaf: 聆风
+    car_type_march: March
+    car_type_fairlady_z: Z系列
+    car_type_stepwgn: Stepwgn
+    car_type_insight: 洞察者
+    car_type_odyssey: 奥德赛
+    car_type_cx-5: CX-5
+    car_type_bongo: Bongo
+    car_type_cx-8: CX-8
+    car_type_axela: 马自达3
+    car_type_flair_wagon: Flair Wagon
+    car_type_mx-5: MX-5
+    car_type_spacia: Spacia
+    car_type_wagon_r: Wagon R
+    car_type_hustler: Hustler
+    car_type_jimny: Jimny
+    car_type_solio: Solio
+    car_type_every: Every
+    car_type_swift: Swift
+    car_type_alto: Alto
+    car_type_tanto: Tanto
+    car_type_move: Move
+    car_type_outlander: 欧蓝德
+    car_type_outlander_phev: 欧蓝德ＰＨＥＶ
+    car_type_pajero: 帕杰罗
+    car_type_xv: XV
+    car_type_levorg: Levorg
+    car_type_impreza: 翼豹
+    car_type_sambar: Sambar
+    car_type_brz: BRZ
+    car_type_stella: Stella
+    car_type_justy: Justy
+    car_type_legacy_outback: 傲虎
+    car_type_other: 其他
+    frequency: 故障频率
+    always: 每天
+    sometimes: 偶尔
+    only_once: 过去只有1或2次
+    parts: 推断故障评价
+    parts_label: 系统类别
+    gasoline_engine: 发动机
+    battery: 电池・充电
+    transmission: 变速箱
+    chassis: 底盘
+    car_body: 车身
+    AC: 空调
+    media: 通信・音响设备
+    other: 其他
+    symptoms: 主要症状
+    startup_problem: 启动不良・无法启动
+    idling_problem: 怠速不稳
+    engine_stop: 熄火
+    acceleration_problem: 加速不良
+    overheat: 过热
+    allophone: 有异响
+    engine_check_lamp: 发动机自检灯常亮
+    symptoms_detail: 故障详细描述
+    not_cranking: 发动机曲轴不转
+    not_initial_explosion: 没有点火迹象
+    not_complete_explosion: 点火正常没有正常燃烧
+    long_startup_time: 启动时间过长
+    other_symptoms: 其他症状
+    malfunction_code: 故障码
+    detailed_information: 详细描述
+    supplementary_picture: 参考照片
+    supplementary_picture_setting: 照片上传
+    send_lucky_money: 红包打赏
+    send: 提出
+    send_post: 提交
+    send_complete: 内容已发布
+    close: 关闭
+    post_case_title: 修理事例投稿
+    post_case_recommend: "（本次投稿成功可获得1000积分和5元奖励）"
+    title: 标题
+    repair_procedure: 诊断修理步骤
+    contents: 内容
+    picture: 照片
+    picture_setting: 照片上传
+    picture_select: 从文件夹选择
+    shooting: 拍照
+    setting: 设置
+    delete: 删除
+    post: 投稿
+    post_complete: 内容已发布
+    procedure: 修理手順步骤
+    procedure_header: 步骤
+    malfunction_code_1: 故障码1
+    malfunction_code_2: 故障码2
+    introduction: 注解
+    enter_search_condition: 输入检索条件
+    free_word: 其他检索关键字
+    search: 检索
+    component: 系统类别
+    repair_case_list: 修理事例一览
+    repair_case_list_1: 丰田_卡罗拉_2010_怠速不良
+    repair_case_list_2: 丰田_卡罗拉_2010_打不着火
+    repair_case_list_3: 丰田_卡罗拉_2014_怠速不良
+    repair_case_list_4: 丰田_卡罗拉_2010_怠速不良，打不着火
+    repair_case_list_5: 丰田_卡罗拉_2016_怠速不良
+    classification_denso: 电装公示
+    classification_launch_tech: 元征资源
+    classification_user: 用户投稿
+    search_results: 检索结果
+    case: 件
+    classification: 类别
+    posted_date: 投稿日
+    user_confirmation: 用户反馈
+    expert_confirmation: 专家认证
+    detail: 详细信息
+    repair_case_detail: 修理事例阅览
+    case_serch_detail_title: 丰田_卡罗拉_2010_打不着火
+    case_serch_detail_poster: 电装
+    frequency_parameter: 每天
+    parts_parameter: 抑制器开关·空档启动开关
+    symptoms_parameter: 启动不良・无法启动
+    detailed_information_parameter: 发动机曲轴不转
+    other_symptoms_parameter: 无
+    malfunction_code_P0130: 氧传感器系统B1S1
+    malfunction_code_B2312: 驾驶席主控开关 固定ON
+    malfunction_code_B2313: 未记录窗口位置·窗口滑动特性
+    repair_procedure_1: 空气传感器附近附着碳颗粒，使传感器部件老化。由于上述原因，进气量不稳定，造成怠速不稳定。
+    repair_procedure_2: 推定由于碳颗粒附着造成怠速不稳，加速不良。
+    confirm_result_1: 修理诊断步骤是否能解决故障？
+    confirm_result_2: 实际故障部位（零件）是否与事例推断一致？
+    estimated_fault_location: 推断故障部位（零件）
+    air_sensor: 空气传感器
+    extra_photo: 参考照片
+    extra_info_1: 由于异物（碳颗粒等）附着在传感器部位，引起传感器散热。因此，误检出进气量值过高。
+    extra_info_2: 由于进气量值过高，对空气流量计进行了检查。
+    extra_info_3: "（参考）修理实况"
+    users_review: 用户评论
+    confirm_fixation: 用户反馈
+    expert_valuation: 专家评价
+    new_valuation: 最新点评
+    essence_area: 精华区
+    general_area: 自由投稿
+    procedure_review_1: 发动机故障。因冷却水泄漏造成发动机过热。
+    procedure_review_2: 由电池故障导致。更换电池。
+    passwordresetpage: 密码重设画面
+    passwordreset: 重设新密码
+    passwordresetconfirmation: 确认新密码
+    passwordresettransmission: 确定
+    passwordreset_error01: 两次输入密码不一致，请重新输入
+    passwordreset_error02: 密码长度必须大于8个字符，请重新输入
+    passwordreset_error03: 验证码不正确，请重新输入
+    passwordreset_error04: 手机号不正确，请重新输入
+    passwordreset_send_sms: 已向输入的手机号码，发送确认码
+    phone_number_or_pw_wrong: 手机号码不存在或者密码错误
+    product_01: 空调
+    product_02: 汽油（发动）机
+    product_03: 底盘
+    product_04: 柴油机
+    product_05: 变速器（AT／CVT）
+    product_06: 混合动力
+    product_07: 电池・充电
+    product_08: 车体
+    product_09: 信息・ＡＶ机器
+    product_10: 其他
+    symptom_0101: 有风不能制冷
+    symptom_0102: 有风不能制热
+    symptom_0103: 同一温度设定下，左右出风的温度不同
+    symptom_0104: 风量不正
+    symptom_0105: 出风口不能切换
+    symptom_0106: 外循环和内循环相互不能切换
+    symptom_0107: 发生异响
+    symptom_0108: 结霜，结露
+    symptom_0109: 其他
+    symptom_0201: 启动不良・无法启动
+    symptom_0202: 怠速不稳
+    symptom_0203: 发动机熄火
+    symptom_0204: 加速无力
+    symptom_0205: 过热
+    symptom_0206: 发生异响
+    symptom_0207: 检查引擎灯亮（没有症状）
+    symptom_0208: 其他
+    symptom_0301: ABS作動不良
+    symptom_0302: 牵引控制不良
+    symptom_0303: 车辆稳定（防止侧滑）控制失灵
+    symptom_0304: 电动力变压器(EPS)启动不良
+    symptom_0305: 悬架操作不良
+    symptom_0306: 步行灯亮（没有症状）
+    symptom_0307: 其他
+    symptom_0401: 启动不良
+    symptom_0402: 怠速不稳
+    symptom_0403: 发动机熄火
+    symptom_0404: 加速不良
+    symptom_0405: 过热
+    symptom_0406: 有异响
+    symptom_0407: 白烟多
+    symptom_0408: 黑烟多
+    symptom_0409: 检查引擎灯（没有症状）
+    symptom_0410: 其他
+    symptom_0501: 不能前进
+    symptom_0502: 不能后退
+    symptom_0503: 不能变速
+    symptom_0504: 变速冲击大
+    symptom_0505: 变速时机不良
+    symptom_0506: 加速不好，引擎转速上升
+    symptom_0507: 有异响
+    symptom_0508: 其他
+    symptom_0601: 可行驶指示灯不能点亮
+    symptom_0602: 不能前进
+    symptom_0603: 电动汽车不能前进
+    symptom_0604: 加速不良
+    symptom_0605: 引擎不能停止
+    symptom_0606: 有异响
+    symptom_0607: 警告灯、指示灯不能亮灭（没有症状）
+    symptom_0608: 不能充电/不能充电停止(只有PHV)
+    symptom_0609: 其他
+    symptom_0701: 电池用完
+    symptom_0702: 充电步灯亮起
+    symptom_0703: 其他
+    symptom_0801: 门锁故障
+    symptom_0802: 车窗故障
+    symptom_0803: 车门故障
+    symptom_0804: 雨刮器故障
+    symptom_0805: 仪表故障
+    symptom_0806: 安全系统故障
+    symptom_0807: 照明操作不良（外装）
+    symptom_0808: 照明操作不良（内装）
+    symptom_0809: 安全气囊故障
+    symptom_0810: 清楚声纳故障
+    symptom_0811: 其他
+    symptom_0901: 导航故障
+    symptom_0902: 音响故障
+    symptom_0903: 显示器故障
+    symptom_0904: 周边监视装置显示屏故障
+    symptom_0905: 其他
+    symptom_1001: 其他(自由描述)
+    details_010101: 有风不能制冷
+    details_010201: 有风不能制热
+    details_010301: 同一温度设定下，左右出风的温度不同
+    details_010401: 不出风
+    details_010402: 风量大小不能调节
+    details_010501: 出风口不能切换
+    details_010601: 外循环和内循环相互不能切换
+    details_010701: 发生异响
+    details_010801: 结霜，结露
+    details_010901: 不能正常开关
+    details_010902: 感觉不到故障，但是空调面板的灯忽亮忽灭
+    details_010903: 风扇一直转动
+    details_010904: 车内漏水
+    details_010905: 其他(自由描述)
+    details_020101: 发动机曲轴不转
+    details_020102: 没有点火迹象
+    details_020103: 点火正常没有正常燃烧
+    details_020104: 启动时间过长
+    details_020105: 其他(自由描述)
+    details_020201: 怠速转速过高
+    details_020202: 怠速转速过低
+    details_020203: 怠速转速不稳定
+    details_020204: 其他(自由描述)
+    details_020301: 发动机熄火
+    details_020401: 加速缓慢
+    details_020402: 输出不足
+    details_020403: 其他(自由描述)
+    details_020501: 过热
+    details_020601: 破裂音
+    details_020602: 其他(自由描述)
+    details_020701: 检查引擎灯亮
+    details_020801: 行驶中摇晃
+    details_020802: 行驶缓慢
+    details_020803: 其他(自由描述)
+    details_030101: 刹车时ABS不启动（轮胎继续锁定）
+    details_030102: 其他(自由描述)
+    details_030201: 加速时无法启动牵引控制(保持车轮旋转)
+    details_030202: 其他(自由描述)
+    details_030301: 转弯时车辆稳定控制不启动（持续侧滑）
+    details_030302: 其他(自由描述)
+    details_030401: 转向操纵沉重/不动
+    details_030402: 转向操作轻
+    details_030403: 转向装置振动
+    details_030404: 中立点错了
+    details_030405: 左右切角不同
+    details_030406: 有异音
+    details_030407: 其他(自由描述)
+    details_030501: 不能调整车高
+    details_030502: 不能调整衰减力
+    details_030503: 有异音
+    details_030504: 其他(自由描述)
+    details_030601: ABS步行灯亮
+    details_030602: 牵引力控制系统灯点亮
+    details_030603: 车辆稳定（防止横滑）控制系统灯点亮
+    details_030604: 电动变压器(EPS)摆动灯点亮
+    details_030605: 灯点亮
+    details_030606: 其他(自由描述)
+    details_030701: 刹车失灵
+    details_030702: 刹车不灵
+    details_030703: 有异音
+    details_030704: 其它(自由描述)
+    details_040101: 不晃动
+    details_040102: 没有点火
+    details_040103: 有点火，但没有燃烧
+    details_040104: 启动时间长
+    details_040105: 其它(自由描述)
+    details_040201: 怠速转速高
+    details_040202: 空闲旋转数低
+    details_040203: 怠速转速不稳定
+    details_040204: 其它(自由描述)
+    details_040301: 发动机熄火
+    details_040401: 行驶缓慢
+    details_040402: 动力不足
+    details_040403: 其它(自由描述)
+    details_040501: 过热
+    details_040601: 爆震声
+    details_040602: 破裂音
+    details_040603: 其它(自由描述)
+    details_040701: 白烟多
+    details_040801: 黑烟多
+    details_040901: 检查引擎灯
+    details_041001: 行驶中晃动
+    details_041002: 行进时熄火
+    details_041003: 其它(自由描述)
+    details_050101: 不能前进
+    details_050201: 不能后退
+    details_050301: 不能变速
+    details_050401: 变速冲击大
+    details_050501: 变速时机不良
+    details_050601: 加速不好，引擎转速上升
+    details_050701: 有异响
+    details_050801: 其它(自由描述)
+    details_060101: IG/电源无法接通
+    details_060102: 可行驶指示灯不亮
+    details_060103: 其它(自由描述)
+    details_060201: 可行驶指示灯灯亮了但不能行驶
+    details_060202: 其它(自由描述)
+    details_060301: 不能行驶
+    details_060401: 行驶缓慢
+    details_060402: 动力不足
+    details_060403: 其它(自由描述)
+    details_060501: 引擎不能停止
+    details_060502: 行驶中引擎不熄火
+    details_060503: 其它(自由描述)
+    details_060601: 有异响
+    details_060701: 混合系统警告灯亮灭
+    details_060702: 主步行点灯
+    details_060703: HV电池警告灯亮起
+    details_060704: 补机电池警告灯亮起
+    details_060705: 动力限制显示灯点亮
+    details_060706: 其它(自由描述)
+    details_060801: 没有开始充电
+    details_060802: 中途停止充电
+    details_060803: 充电不停止
+    details_060804: 其它(自由描述)
+    details_060901: 发动机不启动
+    details_060902: 耗油量小
+    details_060903: 其它(自由描述)
+    details_070101: 电池用完
+    details_070201: 充电步灯亮起
+    details_070301: 其它（自由描述）
+    details_080101: 不能锁
+    details_080102: 不能开锁
+    details_080103: 不能锁，也不能开锁
+    details_080104: 车门无响应
+    details_080105: 其他(自由描述)
+    details_080201: 关不上
+    details_080202: 打不开
+    details_080203: 其他(自由描述)
+    details_080301: 关不上
+    details_080302: 打不开
+    details_080303: 其他(自由描述)
+    details_080401: 不动
+    details_080402: 无法调整速度
+    details_080403: 其他(自由描述)
+    details_080501: 车速表故障
+    details_080502: 转速表故障
+    details_080503: 燃油表故障
+    details_080504: 水温表故障
+    details_080505: 指示灯故障
+    details_080506: 报警灯故障
+    details_080507: 仪表盘显示器故障
+    details_080508: 亮度太暗·太亮
+    details_080509: 不能调整音响
+    details_080510: 其他(自由描述)
+    details_080601: 安全指示符闪烁
+    details_080602: 设置自动警告无法解除
+    details_080603: 警报失灵
+    details_080604: 自动警报器随意启动
+    details_080605: 其它（自由描述）
+    details_080701: 头灯工作不良
+    details_080702: 转向信号灯不良
+    details_080703: 尾灯工作不良
+    details_080704: 停止灯工作不良
+    details_080705: 其它（自由描述）
+    details_080801: 房间灯工作不良
+    details_080802: 门控灯工作不良
+    details_080803: 其它（自由描述）
+    details_080901: SRS气囊步行灯的点灯
+    details_080902: 其它（自由描述）
+    details_081001: 临近障碍物也不受警告
+    details_081002: 无障碍物受到警告
+    details_081003: 其他(自由描述)
+    details_081101: 其他(自由描述)
+    details_090101: 不显示地图
+    details_090102: 定位不精确
+    details_090103: 其他(自由描述)
+    details_090201: 没有声音
+    details_090202: 音质差
+    details_090203: 音量无法调节
+    details_090204: 其他(自由描述)
+    details_090301: 屏幕不显示
+    details_090302: 图像质量差
+    details_090303: 其他(自由描述)
+    details_090401: 屏幕不显示
+    details_090402: 图像质量差
+    details_090403: 其他(自由描述)
+    details_090501: ETC故障
+    details_090502: 免提电话故障
+    details_090503: 其他(自由描述)
+    details_100101: 其他(自由描述)
+    data_zero_message: 没有找到您要查询的结果！
+    null_error: 不能为空！
+    input_available: 选择其他后方可输入
+    search_initialize: 条件重置
+    preview: 预览
+    year: 年
+    ex_page: 上一页
+    next_page: 下一页
+    return_page: 返回上一页
+  activerecord:
+    errors:
+      messages:
+        record_invalid: "验证失败: %{errors}"
+        restrict_dependent_destroy:
+          has_one: 由于 %{record} 需要此记录，所以无法移除记录
+          has_many: 由于 %{record} 需要此记录，所以无法移除记录
+  date:
+    abbr_day_names:
+    - 周日
+    - 周一
+    - 周二
+    - 周三
+    - 周四
+    - 周五
+    - 周六
+    abbr_month_names:
+    -
+    - 1月
+    - 2月
+    - 3月
+    - 4月
+    - 5月
+    - 6月
+    - 7月
+    - 8月
+    - 9月
+    - 10月
+    - 11月
+    - 12月
+    day_names:
+    - 星期日
+    - 星期一
+    - 星期二
+    - 星期三
+    - 星期四
+    - 星期五
+    - 星期六
+    formats:
+      default: "%Y-%m-%d"
+      long: "%Y年%m月%d日"
+      short: "%m月%d日"
+    month_names:
+    -
+    - 一月
+    - 二月
+    - 三月
+    - 四月
+    - 五月
+    - 六月
+    - 七月
+    - 八月
+    - 九月
+    - 十月
+    - 十一月
+    - 十二月
+    order:
+    - :year
+    - :month
+    - :day
+  datetime:
+    distance_in_words:
+      about_x_hours: 大约 %{count} 小时
+      about_x_months: 大约 %{count} 个月
+      about_x_years: 大约 %{count} 年
+      almost_x_years: 接近 %{count} 年
+      half_a_minute: 半分钟
+      less_than_x_minutes: 不到 %{count} 分钟
+      less_than_x_seconds: 不到 %{count} 秒
+      over_x_years: "%{count} 年多"
+      x_days: "%{count} 天"
+      x_minutes: "%{count} 分钟"
+      x_months: "%{count} 个月"
+      x_years: "%{count} 年"
+      x_seconds: "%{count} 秒"
+    prompts:
+      day: 日
+      hour: 时
+      minute: 分
+      month: 月
+      second: 秒
+      year: 年
+  errors:
+    format: "%{attribute}%{message}"
+    messages:
+      accepted: 必须是可被接受的
+      blank: 不能为空字符
+      present: 必须是空白
+      confirmation: 与确认值不匹配
+      empty: 不能留空
+      equal_to: 必须等于 %{count}
+      even: 必须为双数
+      exclusion: 是保留关键字
+      greater_than: 必须大于 %{count}
+      greater_than_or_equal_to: 必须大于或等于 %{count}
+      inclusion: 不包含于列表中
+      invalid: 是无效的
+      less_than: 必须小于 %{count}
+      less_than_or_equal_to: 必须小于或等于 %{count}
+      model_invalid: "验证失败: %{errors}"
+      not_a_number: 不是数字
+      not_an_integer: 必须是整数
+      odd: 必须为单数
+      required: 必须存在
+      taken: 已经被使用
+      too_long: 过长（最长为 %{count} 个字符）
+      too_short: 过短（最短为 %{count} 个字符）
+      wrong_length: 长度非法（必须为 %{count} 个字符）
+      other_than: 长度非法（不可为 %{count} 个字符
+    template:
+      body: 如下字段出现错误：
+      header: 有 %{count} 个错误发生导致“%{model}”无法被保存。
+  helpers:
+    select:
+      prompt: 请选择
+    submit:
+      create: 新增%{model}
+      submit: 储存%{model}
+      update: 更新%{model}
+  number:
+    currency:
+      format:
+        delimiter: ","
+        format: "%u %n"
+        precision: 2
+        separator: "."
+        significant: false
+        strip_insignificant_zeros: false
+        unit: CN¥
+    format:
+      delimiter: ","
+      precision: 3
+      separator: "."
+      significant: false
+      strip_insignificant_zeros: false
+    human:
+      decimal_units:
+        format: "%n %u"
+        units:
+          billion: 十亿
+          million: 百万
+          quadrillion: 千兆
+          thousand: 千
+          trillion: 兆
+          unit: ''
+      format:
+        delimiter: ''
+        precision: 1
+        significant: false
+        strip_insignificant_zeros: false
+      storage_units:
+        format: "%n %u"
+        units:
+          byte: 字节
+          gb: GB
+          kb: KB
+          mb: MB
+          tb: TB
+          pb: PB
+          eb: EB
+    percentage:
+      format:
+        delimiter: ''
+        format: "%n%"
+    precision:
+      format:
+        delimiter: ''
+  support:
+    array:
+      last_word_connector: " 以及 "
+      two_words_connector: " 和 "
+      words_connector: "、"
+  time:
+    am: 上午
+    formats:
+      default: "%Y年%m月%d日 %A %H:%M:%S %Z"
+      long: "%Y年%m月%d日 %H:%M"
+      short: "%m月%d日 %H:%M"
+    pm: 下午

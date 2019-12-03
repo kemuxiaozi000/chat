@@ -1,0 +1,2 @@
+class UserCareer < ApplicationRecord
+end

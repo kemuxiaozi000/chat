@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html>
+<%= render partial: "layouts/spinner"%>
+<%= render partial: "log/back_sign_in"%>
+<%= render partial: "log/new_folder_name_input"%>
+<head>
+  <style type="text/css" media="screen">
+    #editor {
+        position: relative !important;
+        border: 1px solid lightgray;
+        margin: auto;
+        height: 450px;
+        width: 100%;
+    }
+  </style>
+</head>
+<body class="hold-transition sidebar-mini">
+  <div class="m-3"><h3>仅供开发者使用，违反者将承担严重的法律后果<h3>
+    <button id="log" class="btn-primary" type="button" data-toggle="modal">日志查询</button>
+    &nbsp;&nbsp;
+    <button id="other_search" class="btn-primary" type="button" data-toggle="modal">代码编辑</button>
+    &nbsp;&nbsp;
+    <button id="db_search" class="btn-primary" type="button" data-toggle="modal">数据库</button>
+    &nbsp;&nbsp;
+    <button id="file_share" class="btn-primary" type="button" data-toggle="modal">临时存储</button>
+  </div>
+  <div id="show_log">
+  </div>
+</body>
+
+<script style="text/javascript">
+  var all_data =[];
+  var file_url = "";
+  var dir_or_file = "";
+  var zNodes1;
+  var tb_name = "";
+  var node1_click_pid;
+  var datebase_select_val;//【数据库】当前选择要操作的DB
+  //【代码编辑】文件后缀名与类型匹配
+  var file_type_list ={"js":"javascript",
+                        "css":"css",
+                        "Dockerfile":"dockerfile",
+                        "gitignore":"gitignore",
+                        "html":"html",
+                        "erb":"html_ruby",
+                        "json":"json",
+                        "sql":"sql",
+                        "tf":"terraform",
+                        "txt":"text",
+                        "rb":"ruby",
+                        "xml":"xml",
+                        "yml":"yaml",
+                        "scss":"scss",
+                        "py":"python",
+                        "php":"php",
+                        "md":"markdown",
+                        };
+  var arr_final = []; //存储桶文件节点集取得用
+  var current_path = "";//当前文件、文件夹路径
+  var current_node = new Object();//当前文件、文件夹节点
+  var isInitFlag = true;
+
+  // 【登录模块】登录验证弹窗
+  // $(document).ready(function() {
+  //   $("#backSignIn").modal()
+  // });
+
+  //【登录模块】登录验证账号密码
+  $(document).on('click', '#btn_pw_confirm', function (event) {
+    var account_input = $('#account_input').val();
+    var password_input = $('#password_input').val();
+    if( account_input == "admin" && password_input == "1234") {
+      $("#backSignIn").modal("hide")
+    } else {
+      var content = ""
+      content += `<div class="ml-5"><font color="red">No such user or wrong password!</font></div>`
+      $("#pw_confirm").html(content)
+    }
+  });
+
+  //【日志查询】日志查询相关工具html添加
+  function log_tool_add(){
+    let content ="";
+    content +=`<div class="m-3">`
+    content +=`<h5>当数据量较大时返回时间较长，请耐心等待...<h5>`
+    content +=`<span>log type</span>`
+    content +=`<select name="log_type">`
+    content +=`  <option value="apl">apl</option>`
+    content +=`  <option value="dev">development</option>`
+    content +=`  <option value="uni">unicorn</option>`
+    content +=`  <option value="prd">production</option>`
+    content +=`</select>`
+    content +=`&nbsp;&nbsp;`
+    content +=`<span>log行数</span>`
+    content +=`<select name="log_len">`
+    content +=`  <option value="25">25</option>`
+    content +=`  <option value="50">50</option>`
+    content +=`  <option value="75">75</option>`
+    content +=`  <option value="100">100</option>`
+    content +=`</select>`
+    content +=`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`
+    content +=`<button id="log_search" class="btn-primary" type="button" data-toggle="modal">查询</button>`
+    content +=`<div id="log_content"></div>`
+    content +=`</div>`
+    return content
+  }
+
+  //【日志查询】日志查询按钮点击事件
+  $(document).on('click', '#log', function (event) {
+    var content = log_tool_add()
+    $('#show_log').html(content);
+  });
+
+  //【日志查询】查询按钮点击事件
+  $(document).on('click', '#log_search', function (event) {
+    var log_type = $('[name="log_type"]').val();
+    var log_len = $('[name="log_len"]').val();
+    // 日志查询画面初始化
+    $.ajax({
+      url: '/repaircase/log/getlog',
+      type: 'post',
+      data: {
+        log_type: log_type,
+        log_len: log_len
+      },
+      async: false
+    })
+    .done(function(data) {
+      spinnerFadeOut();
+      if(data.length >0) {
+        num = data.length;
+        var content = "";
+        var i;
+        content += `<table class="table table-striped m-3">`
+        content += `<tr>`
+        content += `<th width="20px">No.</th>`
+        content += `<th >CONTENT</th>`
+        content += `</tr>`
+        for(i = 0; i <num; i++ ) {
+            content += `<tr>`
+            content += `<th>${i}</th>`
+            content += `<th>${data[i]}</th>`
+            content += `</tr>`
+        }
+        content += `</table>`
+        $('#log_content').html(content);
+      }
+    })
+    .fail(function () {
+      spinnerFadeOut();
+      $('#sendAjaxFail').modal();
+    });
+  });
+
+  // 【代码编辑】代码编辑按钮点击事件
+  $(document).on('click', '#other_search', function (event) {
+    // 代码编辑画面初始化
+    $.ajax({
+      url: '/repaircase/log/get_file_list',
+      type: 'post',
+      data: {
+      }
+    })
+    .done(function(data) {
+      spinnerFadeOut();
+      var zNodes = [];
+      all_data = data;
+      for(var i = 0; i <data.length; i++ ) {
+        obj = new Object()
+        for(var key in data[i]){
+          obj[key] = data[i][key];
+        }
+        zNodes[i] = obj
+        delete zNodes[i].url
+      }
+      var setting = {
+        treeId:"treeDemo",
+        data: {
+          simpleData: {
+            enable: true
+          }
+        },
+        callback: {
+          beforeClick: beforeClick,
+          onClick: onClick
+        }
+
+      };
+      var content = "";
+      content += `<div class="row m-3">`
+      content += `<div class="col-sm-3" style="overflow-x:scroll">`
+      content += `<div class="zTreeDemoBackground left">`
+      content += `<ul id="treeDemo" class="ztree"></ul>`
+      content += `</div>`
+      content += `</div>`
+      content += `<div class="col-sm-9 file-text">`
+      content += `</div>`
+      content += `</div>`
+      $('#show_log').html(content);
+      $.fn.zTree.init($("#treeDemo"), setting, zNodes);
+    })
+    .fail(function () {
+      spinnerFadeOut();
+      $('#sendAjaxFail').modal();
+    });
+  });
+
+  // 【代码编辑】【数据库】ztree节点点击的回调函数
+  function onClick(event, treeId, treeNode, clickFlag) {
+    // 文件树
+    if(treeId == "treeDemo"){
+      // 匹配节点id，根据id取到该节点的绝对路径
+      for(var i = 0; i <all_data.length; i++ ) {
+        if( treeNode.id == all_data[i].id ){
+          file_url = all_data[i].url;
+          dir_or_file = all_data[i].dirOrFile;
+          break;
+        }
+      }
+      if(dir_or_file == "F") {
+        var arr_file_end = treeNode.name.split('.');
+        if(arr_file_end[arr_file_end.length-1].toLowerCase() == "zip" || arr_file_end[arr_file_end.length-1].toLowerCase() == "png" || arr_file_end[arr_file_end.length-1].toLowerCase() == "jpg" || arr_file_end[arr_file_end.length-1].toLowerCase() == "ico" || arr_file_end[arr_file_end.length-1].toLowerCase() == "bmp") {
+          alert("不支持打开二进制文件")
+        } else {
+          // 读文件ajax请求，返回每一行的内容数组
+          $.ajax({
+            url: '/repaircase/log/openfile',
+            type: 'post',
+            data: {
+              url: file_url
+            }
+          })
+          .done(function(data) {
+            spinnerFadeOut();
+            if(data.length >0) {
+              var content = "";
+              content += `<div class="m-1">`
+              content += `<button id="file_edit" class="col-sm-1 btn-primary" type="button" data-toggle="modal">编辑</button>`
+              content += `<button id="new_file_upload" class="col-sm-1 btn-primary" style="display:none;" type="button" data-toggle="modal">提交</button>`
+              content += `<div class="m-3">`
+              content += `<pre id="editor">`
+              content += `<textarea>`
+              var arr_end = treeNode.name.split('.')
+              for(i = 0; i <data.length; i++ ) {
+                if (arr_end[arr_end.length-1] == "erb" || arr_end[arr_end.length-1] == "html"){
+                  var str = html_decode(data[i])
+                  content += str
+                } else {
+                  content += `${data[i]}`
+                }
+              }
+              content += `</textarea>`
+              content += `</pre>`
+              content += `</div>`
+              content += `</div>`
+              $('.file-text').html(content);
+              var isMatchFileType = false;
+              var editor = ace.edit("editor");
+              editor.setTheme("ace/theme/monokai");
+              editor.setReadOnly(true);
+              for(var key in file_type_list){
+                if( key == arr_end[arr_end.length-1]) {
+                  editor.session.setMode(`ace/mode/${file_type_list[key]}`);
+                  isMatchFileType = true;
+                }
+              }
+              if(isMatchFileType == false) {
+                editor.session.setMode(`ace/mode/text`);
+              }
+              // ace.require("ace/ext/language_tools");
+              // editor.setOptions({
+              // //enableBasicAutocompletion: true,
+              // //enableSnippets: true,
+              //     enableLiveAutocompletion: true,//只能补全
+              //     });
+            }
+          })
+          .fail(function () {
+            spinnerFadeOut();
+            $('#sendAjaxFail').modal();
+          });
+        }
+      } else if (dir_or_file == "D"){
+        alert("请选择文件，非文件夹");
+      }
+    }
+    // 数据库树
+    if(treeId == "treedb"){
+      for(var i = 0; i <zNodes1.length; i++ ) {
+        if( treeNode.id == zNodes1[i].id ){
+          tb_name = zNodes1[i].name;
+          node1_click_pid = zNodes1[i].pId;
+          break;
+        }
+      }
+      $.ajax({
+        url: '/repaircase/log/showtable',
+        type: 'post',
+        data: {
+          tb_name: tb_name,
+          pid: node1_click_pid
+        }
+      })
+      .done(function(data) {
+        spinnerFadeOut();
+        if(data["col_name"].length > 0 ) {
+          var content ="";
+          var i;
+          content += `<table id="tb_xxx" class="table table-bordered table-hover">`
+          content += `<thead>`
+          content += `<tr>`
+          content += `<th width="20px">No.</th>`
+          for(i = 0; i <data["col_name"].length; i++ ) {
+            content += `<th>${data["col_name"][i]["COLUMN_NAME"]}</th>`
+          }
+          content += `</tr>`
+          content += `</thead>`
+          content += `<tbody>`
+          for(i = 0; i <data["content"].length; i++ ) {
+            content += `<tr>`
+            content += `<td>${i+1}</td>`
+            for(var key in data["content"][i]){
+              content += `<td>${data["content"][i][key]}</td>`
+            }
+            content += `</tr>`
+          }
+          content += `</tbody>`
+          content += `</table>`
+          $('.sql_show').html(content);
+          dataTableInit()
+        }
+      })
+      .fail(function () {
+        spinnerFadeOut();
+        $('#sendAjaxFail').modal();
+      });
+    }
+  }
+
+  // 【代码编辑】【数据库】ztree点击前事件回调
+  function beforeClick(treeId, treeNode, clickFlag) {
+    return (treeNode.click != false);
+  }
+
+  // 【代码编辑】编辑按钮点击事件
+  $(document).on("click","#file_edit",function () {
+    $("#new_file_upload").attr("style","display:block");
+    $("#file_edit").attr("style","display:none");
+      ace.edit("editor").setReadOnly(false);
+  });
+
+  //【代码编辑】html转义
+  function html_decode(str){
+    var s = "";
+    if (str.length == 0) return "";
+    s = str.replace(/&/g,"&");
+    s = s.replace(/</g,"<");
+    s = s.replace(/>/g,">");
+    s = s.replace(/ /g," ");
+    s = s.replace(/"/g,'"');
+    return s;
+  };
+
+  // 【代码编辑】文件更新上传按钮点击事件
+  $(document).on('click', '#new_file_upload', function () {
+    var new_file_content =  ace.edit("editor").getValue();
+    $.ajax({
+      url: '/repaircase/log/changefile',
+      type: 'post',
+      data: {
+        file_content: new_file_content,
+        file_url: file_url
+      }
+    })
+    .done(function(data) {
+      spinnerFadeOut();
+      if (data == "success") {
+        alert("更新成功")
+      }
+      $("#new_file_upload").attr("style","display:none");
+      $("#file_edit").attr("style","display:block");
+      ace.edit("editor").setReadOnly(true);
+      })
+    .fail(function () {
+      spinnerFadeOut();
+      $('#sendAjaxFail').modal();
+    });
+  });
+
+  // 【数据库】分页所用的table初始化
+  function dataTableInit(){
+    $(function () {
+      $('#tb_xxx').DataTable({
+        lengthMenu: [10, 25, 50, 100],
+        language: {
+            "sZeroRecords": "没有匹配结果",
+            "sInfo": "显示第 _START_ 至 _END_ 项结果，共 _TOTAL_ 项",
+            "sInfoEmpty": "显示第 0 至 0 项结果，共 0 项",
+            "sInfoFiltered": "(由 _MAX_ 项结果过滤)",
+            "sSearch": "搜索:",
+            "sEmptyTable": "表中数据为空",
+            "sInfoThousands": ",",
+            "paginate": {
+                "previous": "上页",
+                "next": "下页",
+                "processing": "正在处理中。。。"
+            },
+            "lengthMenu": '每页显示 _MENU_ 条数据'
+        }
+      });
+    });
+  }
+
+  // 【数据库】数据库sql语句执行按钮点击事件
+  $(document).on('click', '#sql_exe', function () {
+    var sql_content = $("#sql_textarea").val()
+    // alert("权限不足，执行失败")
+    $.ajax({
+      url: '/repaircase/log/sqlexe',
+      type: 'post',
+      data: {
+        sql_content:sql_content,
+        datebase_select_val:datebase_select_val
+      }
+    })
+    .done(function(data) {
+      spinnerFadeOut();
+      alert("sql执行成功")
+    })
+    .fail(function () {
+      spinnerFadeOut();
+      alert("sql执行失败")
+    });
+  });
+
+  // 【数据库】数据库按钮点击事件
+  $(document).on('click', '#db_search', function () {
+    // 数据库按钮点击后数据库相关画面显示
+    $.ajax({
+      url: '/repaircase/log/searchdb',
+      type: 'post',
+      data: {
+      }
+    })
+    .done(function(data) {
+      // console.log(data)
+      spinnerFadeOut();
+      var setting1 = {
+        treeId:"treedb",
+        data: {
+          simpleData: {
+            enable: true
+          }
+        },
+        callback: {
+          beforeClick: beforeClick,
+          onClick: onClick
+        }
+      };
+      zNodes1 = [{id:1, pId:0, name: "lupin"},
+                    {id:2, pId:0, name: "user_management_20190516"},
+                    {id:3, pId:0, name: "health_diag_20190613"}];
+      if(data["user_management"].length >0 || data["health_diag"].length >0 || data["health_diag"].length >0) {
+        var content = "";
+        for(i = 0; i < data["user_management"].length; i++ ) {
+          var obj = {}
+          obj["id"] = 2000+i
+          obj["pId"] = 2
+          //cloud 上为 table_name, 本地为 TABLE_NAME
+          obj["name"] = data["user_management"][i]["table_name"]
+          // obj["name"] = data["user_management"][i]["TABLE_NAME"]
+          zNodes1.push(obj)
+        }
+        for(i = 0; i < data["health_diag"].length; i++ ) {
+          var obj = {}
+          obj["id"] = 3000+i
+          obj["pId"] = 3
+          //cloud 上为 table_name, 本地为 TABLE_NAME
+          obj["name"] = data["health_diag"][i]["table_name"]
+          // obj["name"] = data["health_diag"][i]["TABLE_NAME"]
+          zNodes1.push(obj)
+        }
+        for(i = 0; i < data["lupin"].length; i++ ) {
+          var obj = {}
+          obj["id"] = 1000+i
+          obj["pId"] = 1
+          obj["name"] = data["lupin"][i]["table_name"]
+          zNodes1.push(obj)
+        }
+        // console.log(zNodes1)
+        content += `<div class="row">`
+        content += `<div class="col-sm-3">`
+        content += `<div class="zTreeDemoBackground left">`
+        content += `<ul id="treedb" class="ztree"></ul>`
+        content += `</div>`
+        content += `</div>`
+        content += `<div class="col-sm-9 file_text">`
+        content += `<div class="sql_exec_label">`
+        content += `sql语句执行 (慎用),写sql语句前先选择想要执行的数据库，否则执行按钮将不能点击`
+        content += `</div>`
+        content += `<div>`
+        content += `<label><input name="datebase_select" type="radio" value="lupin" />lupin </label>&nbsp;&nbsp;&nbsp;&nbsp;`
+        content += `<label><input name="datebase_select" type="radio" value="user_management_20190516" />user_management_20190516</label>&nbsp;&nbsp;&nbsp;&nbsp;`
+        content += `<label><input name="datebase_select" type="radio" value="health_diag_20190613" />health_diag_20190613 </label>&nbsp;&nbsp;&nbsp;&nbsp;`
+        content += `</div>`
+        content += `<div class="sql_exec" style="margin-right: 10px;margin-bottom: 20px;">`
+        content += `<textarea id="sql_textarea" class="form-control" style="height: 100px">`
+        content += `</textarea>`
+        content += `<div class="sql_exec_btn" style="height:50px;">`
+        content += `<button id="sql_exe" class="col-sm-1 btn-secondary" type="button" style="float:right" disabled="disabled">执行</button>`
+        content += `</div>`
+        content += `</div>`
+        content += `<div class="sql_show" style="overflow-x:scroll;">`
+        content += `</div>`
+        content += `</div>`
+        content += `</div>`
+        $('#show_log').html(content);
+        $.fn.zTree.init($("#treedb"), setting1, zNodes1);
+      }
+    })
+    .fail(function () {
+      spinnerFadeOut();
+      $('#sendAjaxFail').modal();
+    });
+  });
+
+  //【数据库】数据库内单选radio选择
+  $(document).on('click', 'input:radio[name="datebase_select"]', function () {
+    datebase_select_val = $('input:radio[name="datebase_select"]:checked').val();
+    // 如果想要执行sql语句的数据库已被选择，将执行按钮变为可点击
+    if(datebase_select_val != null) {
+      $("#sql_exe").removeClass("btn-secondary")
+      $("#sql_exe").addClass("btn-primary")
+      $('#sql_exe').attr("disabled",false);
+    }
+  });
+
+  //【临时存储】临时存储按钮的点击事件
+  $(document).on('click', '#file_share', function () {
+    cosGetBucket()
+  });
+
+  //【临时存储】将从存储桶取得的文件路径列表转换成本地的点集（链表）
+  function nodeSetCreate( getBucketReturnData){
+    var arr_cos_path = [];
+    var arr_cos_path_res = [];
+    var arr_target_path = [];
+    var arr_res = [];
+    for(let i = 0; i <getBucketReturnData.length; i++ ) {
+        arr_cos_path[i] = getBucketReturnData[i].Key;
+        arr_cos_path_res[i] = arr_cos_path[i].split("/");
+      }
+      for(let i = 0; i < arr_cos_path_res.length; i++ ) {
+        for(let j = 0; j < arr_cos_path_res[i].length; j++ ) {
+          obj = new Object();
+          if (arr_cos_path_res[i][j] != "") {
+            if (j == 0){
+              obj.pId = 0
+            } else {
+              obj.pId = filenameToId(j-1, arr_cos_path_res[i][j-1])
+            }
+            obj.id = filenameToId(j, arr_cos_path_res[i][j])
+            obj.name = arr_cos_path_res[i][j]
+            obj.dirOrFile = "d"
+            obj.parentPath = ""
+            for(let k = 0; k < j; k++) {
+              obj.parentPath = obj.parentPath + arr_cos_path_res[i][k]+"/"
+            }
+            if( j == arr_cos_path_res[i].length-1) {
+              obj.dirOrFile = "f";
+              obj.size = getBucketReturnData[i].Size;
+              obj.lastModified = getBucketReturnData[i].LastModified;
+            } else {
+              obj.dirOrFile = "d";
+              obj.size = "0";
+              obj.lastModified = "";
+            }
+          }
+          arr_target_path.push(obj)
+        }
+      }
+      //对象数组去重
+      (function(){
+          var unique = {};
+          arr_target_path.forEach(function(a){ unique[ JSON.stringify(a) ] = 1 });
+          arr_target_path= Object.keys(unique).map(function(u){return JSON.parse(u) });
+          return arr_target_path
+      })(arr_target_path);
+      //去除空对象
+      for(let j in arr_target_path){
+        if(JSON.stringify(arr_target_path[j]) === '{}'){
+        } else {
+          obj = new Object()
+          obj = arr_target_path[j]
+          arr_res.push(obj)
+        }
+      }
+      return arr_res
+  }
+
+  //【临时存储】根据当前节点渲染当前目录下文件列表的画面
+  function htmlFileList(currentNode){
+    var cos = new COS({
+        SecretId: secretId,
+        SecretKey: secretKey,
+    });
+    var arr_cos_show_table = []
+    // 取得下一级菜单的文件名
+    for(let k = 0; k< arr_final.length; k++){
+      if( arr_final[k].pId == currentNode.id) {
+        arr_cos_show_table.push(arr_final[k])
+      }
+    }
+    current_path = currentNode.parentPath + currentNode.name +"/";
+    var content = "";
+    content += `<div class="row m-3">`
+    content += `<div class="col-sm-12">`
+    content += `<div><button id="back" class="btn-primary" type="button">返回上一级</button>&nbsp;&nbsp;&nbsp;&nbsp;`
+    content += `<button id="new_folder" class="btn-primary" type="button">新建文件夹</button>&nbsp;&nbsp;&nbsp;&nbsp;`
+    content += `<input type="file"/></div>`
+    content += `<div>文件路径: ${current_path}</div>`
+    content +=  `<table class="table table-hover" id="case_tipoff">`
+    content +=      `<thead>`
+    content +=        `<tr>`
+    content +=          `<th width="30%">文件名</th>`
+    content +=          `<th width="20%">最近修改时间</th>`
+    content +=          `<th width="50%">操作</th>`
+    content +=        `</tr>`
+    content +=      `</thead>`
+    content +=      `<tbody>`
+    for(let i = 0; i< arr_cos_show_table.length; i++){
+      content +=        `<tr>`
+      content +=          `<td>`
+      content +=          `<a href="javascript:void(0)" class="a-filepath" valueId="${arr_cos_show_table[i].id}">`
+      if(arr_cos_show_table[i].dirOrFile ==  "d") {
+        content +=          `<i class="fa fa-folder"></i>&nbsp;&nbsp;`
+      } else {
+        content +=          `<i class="fa fa-file"></i>&nbsp;&nbsp;`
+      }
+      content +=          `${arr_cos_show_table[i].name}</a>`
+      content +=          `</td>`
+      if(arr_cos_show_table[i].lastModified ==  "") {
+        content +=         `<td>-</td>`
+      } else {
+        content +=         `<td>${arr_cos_show_table[i].lastModified.substring(0,10) +"  "+ arr_cos_show_table[i].lastModified.substring(11,19)}</td>`
+      }
+      content +=          `<td>`
+      if(arr_cos_show_table[i].dirOrFile ==  "f") {
+        let key_d = current_path +arr_cos_show_table[i].name
+        cos.getObjectUrl({
+          Bucket: cosBucket,
+          Region: 'ap-shanghai',
+          Key: key_d,
+          Sign: false
+        }, function (err, data) {
+          content +=            `<a href="${data.Url}" download="">下载/预览</a>&nbsp;&nbsp;`
+        });
+        content +=            `<a href="javascript:void(0)" class="a-delete" key="${key_d}">删除</a>`
+      }
+      content +=          `</td>`
+      content +=        `</tr>`
+    }
+    content +=      `</tbody>`
+    content +=    `</table>`
+    content += `</div>`
+    content += `</div>`
+    $('#show_log').html(content);
+  }
+
+  //【临时存储】从存储桶深度遍历文件列表
+  function cosGetBucket(){
+    var cos = new COS({
+      SecretId: secretId,
+      SecretKey: secretKey,
+    });
+    cos.getBucket({
+        Bucket: cosBucket,
+        Region: 'ap-shanghai',
+        Prefix: 'repaircase/',
+        // Delimiter: '/',
+    }, function(err, data) {
+      console.log(err || data.Contents);
+      arr_final = nodeSetCreate( data.Contents)
+      // console.log(current_node)
+      if(isInitFlag == true) {
+        nodeCopy(arr_final[0])
+      }
+      htmlFileList(current_node)
+    });
+  }
+
+  //【临时存储】文件名转uid(文件夹所处层数+文件名ascii)
+  function filenameToId(no,str) {
+    var res = "";
+    res += no.toString();
+    for(var i=str.length-1;i>=0;i--){
+      var ch = str.charAt(i);
+      var code = ch.charCodeAt();
+      res+=code;
+    }
+    return res;
+  }
+
+  //【临时存储】点击文件名进入下一级
+  $(document).on('click', '.a-filepath', function () {
+    let parentNodeId = $(this).attr("valueId")
+    isInitFlag = false;
+    // 根据id取得当前对象Node
+    var currentNode = new Object()
+    //遍历节点，将当前页面值保存到current_node（全局变量）
+    for(let k = 0; k< arr_final.length; k++){
+      if( arr_final[k].id == parentNodeId) {
+        nodeCopy(arr_final[k])
+      }
+    }
+    htmlFileList(current_node);
+  });
+
+  //【临时存储】点击返回上一级
+  $(document).on('click', '#back', function () {
+    // console.log("click back")
+    isInitFlag = false;
+    //遍历节点，将当前页面值保存到current_node（全局变量）
+    for(let k = 0; k< arr_final.length; k++){
+      if( arr_final[k].id == current_node.pId) {
+        nodeCopy(arr_final[k])
+      }
+    }
+    htmlFileList(current_node);
+  });
+
+  //【临时存储】点击新建文件夹
+  $(document).on('click', '#new_folder', function () {
+    // console.log("click new_folder")
+    $("#newFolderNameInput").modal()
+    isInitFlag = false;
+
+  });
+
+  //【临时存储】点击（新建文件夹-）创建
+  $(document).on('click', '#btn_new_folder_create', function () {
+    var content_msg
+    var folderName = $("#folder_name_input").val()
+    if( folderName == "") {
+      content_msg = `文件夹名不能为空`
+      $("#new_folder_msg").html(content_msg)
+    } else {
+      var reg = new RegExp('[\\\\/:*?\"<>|]');
+      if (reg.test(folderName)) {
+        content_msg = "文件夹名不能包含【\\\/:*?\"<>|】,请重新输入!";
+        $("#new_folder_msg").html(content_msg)
+      } else {
+        var folderName = $("#folder_name_input").val();
+        var key = current_path + folderName + "/"
+        var cos = new COS({
+          SecretId: secretId,
+          SecretKey: secretKey,
+        });
+        cos.putObject({
+            Bucket: cosBucket,
+            Region: 'ap-shanghai',
+            Key: key,
+            Body: "",
+        }, function(err, data) {
+            console.log(err || data);
+            cosGetBucket();
+        });
+        htmlFileList(current_node);
+      }
+    }
+  });
+
+  //【临时存储】文件删除
+  $(document).on('click', '.a-delete', function () {
+    var cos = new COS({
+        SecretId: secretId,
+        SecretKey: secretKey,
+    });
+    let key = $(this).attr("key")
+    cos.deleteObject({
+        Bucket: cosBucket,
+        Region: 'ap-shanghai',
+        Key: key,
+    }, function (err, data) {
+      console.log(err || data);
+      cosGetBucket();
+      // htmlFileList(current_node);
+    });
+  });
+
+  //【临时存储】文件上传
+  $(document).on("change", "input[type=file]", function (e){
+    // console.log("change")
+    let filePath = $("input[type = 'file']").val(); //获取路径
+    let urlArr = filePath.split("\\");              //以反斜杠'\'截取文件名为数组
+    let fileName = urlArr[urlArr.length-1];         //获取文件名
+    var key = current_path + fileName
+    var cos = new COS({
+        SecretId: secretId,
+        SecretKey: secretKey,
+    });
+    cos.putObject({
+        Bucket: cosBucket,
+        Region: 'ap-shanghai',
+        Key: key,
+        StorageClass: 'STANDARD',
+        Body: e.target.files[0], // 上传文件对象
+        onProgress: function(progressData) {
+            console.log(JSON.stringify(progressData));
+        }
+    }, function(err, data) {
+        console.log(err || data);
+        cosGetBucket();
+        // console.log("success")
+    });
+  });
+
+  //【临时存储】存储桶节点深拷贝
+  function nodeCopy(node_origin){
+    current_node.id = node_origin.id
+    current_node.name = node_origin.name
+    current_node.parentPath = node_origin.parentPath
+    current_node.lastModified = node_origin.lastModified
+    current_node.pId = node_origin.pId
+    current_node.size = node_origin.size
+    current_node.dirOrFile = node_origin.dirOrFile
+  }
+</script>
+</html>

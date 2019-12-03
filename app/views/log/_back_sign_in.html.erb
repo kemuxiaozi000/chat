@@ -1,0 +1,27 @@
+<div class="modal fade" id="backSignIn" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" data-backdrop="static">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modal-label"><%= I18n.t('view.confirmation_title') %></h5>
+      </div>
+      <div class="modal-body">
+        <div class="form-group has-feedback">
+          <input id="account_input" class="form-control" placeholder="Account">
+          <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+        </div>
+        <div class="form-group has-feedback">
+          <input  id="password_input" class="form-control" placeholder="Password">
+          <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+        </div>
+      </div>
+      <div id="pw_confirm">
+
+      </div>
+      <div class="modal-footer">
+        <button id="btn_pw_confirm" type="button" class="btn text-primary">
+          登录
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

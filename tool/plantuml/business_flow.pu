@@ -1,0 +1,57 @@
+@startuml
+title 业务流程
+hide footbox
+
+participant 用户 as user
+participant 自动check as check
+participant 专家 as special
+participant 管理者 as admin
+participant 发布 as release
+
+user -> check: 投稿处理
+note left: 用户投稿
+
+== 内容确认中 ==
+
+check --> check: 文本check处理
+check --> user: 文本checkNG
+check --> special: 文本checkOK
+
+== 专家处理 ==
+
+special --> special: 专家确认＆编辑
+special --> admin: 专家承认
+special --> admin: 专家驳回
+
+== 管理者处理 ==
+
+admin --> release:管理者确认
+admin --> user:管理者驳回
+
+== 投稿退回 ==
+
+user --> user: 确认＆编辑
+user --> check: 投稿处理
+
+== 内容再确认 ==
+
+note over user, release
+
+  内容确认中与专家和管理者处理的循环
+
+end note
+
+== 用户事例再编辑 ==
+
+release --> user: 用户自发布事例撤下再编辑
+user --> check: 再投稿
+
+== 内容再确认 ==
+
+note over user, release
+
+  内容确认中与专家和管理者处理的循环
+
+end note
+
+@enduml

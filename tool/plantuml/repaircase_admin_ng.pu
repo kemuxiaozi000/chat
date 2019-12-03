@@ -1,0 +1,36 @@
+@startuml
+title 事例状态的管理者最终确认NG
+hide footbox
+
+participant 用户 as user
+participant 自动check as check
+participant 管理者 as admin
+participant 专家 as special
+
+user -> check: 投稿处理
+note left: 用户投稿
+
+== 内容确认中 ==
+
+check --> check: 文本check处理
+check --> special: 文本check完了
+
+== 专家承认等待中 ==
+
+special --> special: 确认内容
+special -> admin: 承认内容
+admin --> admin: 最终确认
+admin -> user: 返回处理
+
+== 投稿退回 ==
+
+user --> user: 确认＆编辑
+note left: 投稿内容修正
+
+user -> check: 投稿处理
+note left: 再投稿
+
+== 内容确认中 ==
+
+
+@enduml

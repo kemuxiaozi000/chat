@@ -1,0 +1,31 @@
+# AWS general settings
+access_key = "<ACCESS_KEY>"
+secret_key = "<SECRET_KEY>"
+account_id = "<AWS_ACCOUNT_ID>"
+ec2_key_name = "dn-dev"
+
+# Infra stack settings
+region = "ap-northeast-1"
+az1 = "ap-northeast-1a"
+az2 = "ap-northeast-1c"
+db_cluster_instance_count = 1
+db_username = "admin"
+db_password = "PasswordMustBeFrom8To41Characters!"
+db_instance_type = "db.t2.small"
+environment = "<ENVIRONMENT>"
+
+review_web_instance_type = "<REVIEW_WEB_INSTANCE_TYPE>"
+staging_web_instance_type = "<STAGING_WEB_INSTANCE_TYPE>"
+
+# Application settings
+app_name = "<APP_NAME>"
+rails_env = "development"
+repair_case_path = "<REPAIR_CASE_PATH>"
+diagnosis_path = "<DIAGNOSIS_PATH>"
+
+# Certificate Arn
+loadbalancer_certificate_arn_review = "<LOADBALANCER_CERTIFICATE_ARN_REVIEW>"
+loadbalancer_certificate_arn_staging = "<LOADBALANCER_CERTIFICATE_ARN_STAGING>"
+
+secret_key_base = "<SECRET_KEY_BASE>"
+

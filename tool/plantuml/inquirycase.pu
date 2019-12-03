@@ -1,0 +1,51 @@
+@startuml
+title 问询状态的通常逻辑
+hide footbox
+
+participant 用户 as user
+participant 自动check as check
+participant 管理者 as admin
+participant 专家 as special
+
+user -> check: 问询处理
+note left: 用户问询
+
+== 内容确认中 ==
+
+check --> check: 文本check处理
+check --> special: 文本check完了
+
+== 专家回答中 ==
+
+group 循环至专家组长承认
+  special --> special: 专家组内确认内容＆回复
+  special --> special: 组长确认内容
+end
+
+special -> user: 最终承认(组长)
+
+== 有回答 ==
+
+user --> user: 问询表示
+note left: 确认回答
+
+user -> check: 问询处理
+note left: 追加问询
+
+== 内容确认中 ==
+
+note over user, special
+
+  问询和回答的循环
+
+end note
+
+user --> user: 问询的表示
+note left: 确认回答
+
+user --> user: 终了处理
+note left : 问询终了
+
+== 问询终了 ==
+
+@enduml

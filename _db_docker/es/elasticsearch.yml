@@ -1,0 +1,13 @@
+#http.host: 0.0.0.0
+network.host: 0.0.0.0
+
+bootstrap.memory_lock: true
+
+# Cluster settings
+cluster.name: repaircase-cluster
+discovery.zen.ping.unicast.hosts: ['elasticsearch01', 'elasticsearch02', 'elasticsearch03']
+
+# minimum_master_nodes need to be explicitly set when bound on a public IP
+# set to 1 to allow single node clusters
+# Details: https://github.com/elastic/elasticsearch/pull/17288
+discovery.zen.minimum_master_nodes: 2

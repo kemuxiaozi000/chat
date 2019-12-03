@@ -1,0 +1,63 @@
+@startuml
+title 専門家の画面一覧
+hide footbox
+
+participant 登录 as login
+participant 专家首页 as mng_home
+participant 事例任务一览 as reparcase_list
+participant 事例履历一览 as repaircase_history_list
+participant 修理事例详细 as repaircase_detail
+participant 事例履历详细 as repaircase_history
+participant 通知一览 as notice_list
+participant 个人信息 as my_profile
+participant 用户信息编辑 as user_info_edit
+participant 修理事例检索 as repaircase_search
+
+login -> mng_home: 登录专家用户
+note left: 用户登录
+
+== 专家首页事例处理 ==
+
+mng_home --> repaircase_detail: 点击事例任务列表中待处理的事例
+repaircase_detail --> repaircase_detail: 选择事例的处理状态
+repaircase_detail --> mng_home: 事例处理完成
+
+== 事例任务一览事例处理 ==
+
+mng_home --> reparcase_list: 点击'More'link
+reparcase_list --> repaircase_detail: 点击事例任务一览中待处理的事例
+repaircase_detail --> repaircase_detail: 选择事例的处理状态
+repaircase_detail --> mng_home: 事例处理完成
+
+== 管理首页查看事例履历 ==
+
+mng_home --> repaircase_history: 点击事例履历列表中的事例
+
+== 事例履历一览查看事例履历 ==
+
+mng_home --> repaircase_history_list: 点击'More'link
+repaircase_history_list --> repaircase_history: 点击事例履历一览列表中的事例
+
+== 查看通知一览 ==
+
+mng_home -> notice_list: 点击画面左上的🔔按钮
+
+== 个人信息画面操作 ==
+
+mng_home --> my_profile: 点击左menu'个人信息'或画面左上的用户按钮
+my_profile --> user_info_edit: 点击编辑按钮
+user_info_edit --> user_info_edit: 修改用户信息
+user_info_edit --> my_profile: 提交修改
+my_profile --> mng_home: 点击specialist system按钮
+
+
+== 查看事例检索 ==
+
+mng_home --> repaircase_search: 点击画面'>>返回首页'link
+
+== 退出登录 ==
+
+mng_home --> login: 点击登出按钮
+note left: 退出登录用户
+
+@enduml

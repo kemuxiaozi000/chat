@@ -1,0 +1,819 @@
+<html>
+
+<head>
+  <title>
+    Chat
+  </title>
+  <style type="text/css">
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+      background-color: #fff;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      border-radius:5px;
+      -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, .2);
+      background-color: rgba(0, 0, 0, .1)
+    }
+
+    ::-webkit-scrollbar-track {/*滚动条里面轨道*/
+      -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+      border-radius: 0;
+      background: rgba(0,0,0,0.1);
+    }
+
+    .main-content {
+      display: flex;
+      flex-direction: row;
+      height: 100%;
+      width: 100%;
+      margin:30px;
+      /* border-radius:5px; */
+    }
+
+    .left-side {
+      display: flex;
+      /* min-height: 100vh; */
+      flex-direction: column;
+      margin-left: 100px;
+      /* width: 62px; */
+      width: 280px;
+      height: 668px;
+      background-color: rgb(228, 182, 182);
+    }
+
+    .left-header {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      min-height: 76px;
+      width: 280px;
+    }
+
+    .left-header-inner {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      margin-left: 18px;
+      height: 30px;
+      width: 244px;
+    }
+
+    .left-header-photo {
+      margin: 2px;
+      height: 40px;
+      width: 40px;
+      color: blue;
+    }
+
+    .left-header-name {
+      /* margin: 2px; */
+      height: 32px;
+      width: 156px;
+      margin-left: 5px;
+    }
+
+    .left-header-function {
+      margin: 2px;
+      height: 30px;
+      width: 30px;
+    }
+
+    .search-all {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      min-height: 50px;
+      width: 280px;
+    }
+
+    .search-all-inner {
+      margin-left: 18px;
+      height: 48px;
+      width: 244px;
+    }
+
+    .item-bar {
+      height: 100%;
+      width: 280px;
+    }
+
+    .icon-bar {
+      position:relative;
+      flex: 1;
+      /* height: 700px; */
+      width: 244px;
+      margin-left: 16px;
+      margin-bottom: 6px;
+    }
+
+    .tab-item {
+      position: relative;
+      align-items: center;
+      height: 100%;
+      width: 93px;
+    }
+
+    .tab-item-center {
+      position: absolute;
+      margin-top: 10px;
+      margin-left: 28px;
+      height: 22px;
+      width: 22px;
+    }
+
+    .tab-item-center-with-border {
+      position: absolute;
+      margin-top: 10px;
+      height: 22px;
+      width: 22px;
+      border-left: 1px solid #242c27;
+
+    }
+
+    .left-content {
+      height: 600px;
+      width: 280px;
+    }
+
+    .left-single-content {
+      position: relative;
+      align-items: center;
+      height: 32px;
+      width: 280px;
+      /* border-bottom: 1px solid #bda8a8; */
+    }
+
+    .left-single-content-inner {
+      position: absolute;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      height: 32px;
+      width: 244px;
+      /* margin-top: 12px;
+      margin-left: 6px; */
+    }
+
+    .left-content-photo {
+      height: 40px;
+      width: 40px;
+    }
+
+    .head-portrait {
+      height: 40px;
+      width: 40px;
+      border-radius: 2px
+    }
+
+    .left-content-mid {
+      flex-direction: column;
+      align-items: center;
+      height: 40px;
+      width: 156px;
+      margin-left: 6px;
+    }
+
+    .left-content-mid-name {
+      height: 20px;
+      width: 156px;
+      font-size: 12px
+    }
+
+    .left-content-mid-latest {
+      height: 20px;
+      width: 156px;
+      font-size: 12px
+    }
+
+    .left-content-right {
+      flex-direction: column;
+      align-items: center;
+      height: 40px;
+      width: 30px;
+    }
+
+    .left-content-right-time {
+      height: 20px;
+      width: 30px;
+      font-size: 12px
+    }
+
+    .left-content-right-stat {
+      height: 20px;
+      width: 30px;
+      font-size: 12px
+    }
+
+
+    .people-list{
+      height: 700px;
+    }
+
+    .person-list-in-line{
+      /* position:relative; */
+      display: flex;
+      flex-direction: row;
+    }
+
+    .person-list-in-line:hover{
+      /* position:relative; */
+      background: #ecf5ff;
+    }
+
+    .person-list-person-name{
+      /* position:absolute; */
+      margin-left: 8px;
+      margin-top: 8px;
+      font-size:14px;
+      /* align-items: center; */
+    }
+
+    .right-side {
+      display: flex;
+      /* min-height: 100vh; */
+      height: 668px;
+      flex-direction: column;
+      /* margin-right: 100px; */
+      /* width: 62px; */
+      min-width: 600px;
+      background-color: rgb(200, 200, 200);
+    }
+
+    .right-side-top {
+      height: 60px;
+      width: 600px;
+      /* align-items:center;
+      justify-content:center; */
+      border-bottom: 1px solid #bda8a8;
+    }
+
+    .el-dropdown-link {
+      display:flex;
+      cursor: pointer;
+      color: #409EFF;
+      height: 60px;
+      width: 600px;
+      align-items:center;
+      justify-content:center;
+      background-color:#ecf5ff;
+    }
+
+    /* .dropdown-menu {
+      width: 600px;
+    } */
+
+    .person-list-in-row{
+      display: flex;
+      flex-wrap: wrap;
+      flex-direction: row;
+      align-items: center;
+      justify-content:flex-start;
+      align-content: flex-start;
+    }
+
+    .person-list-in-column{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content:center;
+      margin: 17px;
+      /* height: 50px;
+      width: 40px; */
+    }
+
+    .el-icon-arrow-down {
+      font-size: 12px;
+    }
+
+    .right-side-mid {
+      width: 600px;
+      height: 360px;
+      padding:5px;
+      border-bottom: 1px solid #bda8a8;
+    }
+
+    .right-side-mid-inner {
+      width: 100%;
+      height: 100%;
+      padding:5px;
+      border-bottom: 1px solid #bda8a8;
+    }
+
+    .right-side-bottom {
+      display:flex;
+      flex-direction:column;
+      flex-flow: row wrap;
+      width: 600px;
+      max-height: 100%;
+    }
+
+    .right-side-bottom-toolbar {
+      align-self: flex-start;
+      display:flex;
+      flex-direction:row;
+      align-items: center;
+      justify-content:flex-start;
+      align-content: flex-start;
+      background-color: #ecf5ff;
+      width: 600px;
+      height: 40px;
+    }
+    .ico-toolbar {
+      margin:12px;
+    }
+
+    .right-side-bottom-input {
+      width: 600px;
+      height: 140px;
+      padding:5px;
+    }
+
+    .right-side-bottom-input-inner{
+      width: 100%;
+      height: 100%;
+    }
+
+    .right-side-bottom-send {
+      width: 600px;
+      /* align-self: bottom; */
+      display:flex;
+      flex-direction:row;
+      align-items: center;
+      justify-content:  flex-end;
+      padding:5px;
+    }
+
+    .img-size-50{
+      border:1px dashed #CDCDCD;
+      border-radius:4px;
+      height:50px;
+      width:50px;
+    }
+    .tooltip-item{
+      margin: 4px;
+    }
+
+    .chat-direct-chat-img {
+      border-radius: 5px;
+      float: left;
+      width: 40px;
+      height: 40px;
+    }
+
+    .right .chat-direct-chat-img {
+      float: right;
+    }
+
+    .chat-direct-chat-text {
+      border-radius: 0.3rem;
+      position: relative;
+      padding: 5px 10px;
+      background: #d2d6de;
+      border: 1px solid #d2d6de;
+      margin: 5px 0 0 50px;
+      color: #444;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app" v-cloak>
+    <div class="main-content">
+      <!--左边栏 START-->
+      <div class="left-side">
+        <div class="left-header" v-if="tableDataSelfInfo.length>0" v-loading="loadingSelfInfo" element-loading-text="loading...">
+          <div v-for="(item, index) in tableDataSelfInfo" :key="index" class="left-header-inner">
+            <div class="left-header-photo">
+              <el-avatar shape="square" :size="40" :src="item.photo"></el-avatar>
+            </div>
+            <div class="left-header-name">
+              {{item.nickname}}
+            </div>
+            <div class="left-header-function">
+              <i class="fa fa-bars fa-lg"></i>
+            </div>
+          </div>
+        </div>
+        <div class="search-all">
+          <div class="search-all-inner">
+              <el-input
+                placeholder="请输入内容"
+                prefix-icon="el-icon-search"
+                v-model="input2">
+              </el-input>
+          </div>
+        </div>
+        <!--左击击 变色-->
+        <div class="icon-bar">
+          <template>
+            <el-tabs v-model="activeName" @tab-click="handleClick">
+              <!--聊天框-->
+              <!--每个聊天的展开-->
+              <!--右击 置顶 (修改群名) 关闭聊天-->
+              <el-tab-pane style="overflow-y:auto;overflow-x:hidden;height:550px">
+                <span slot="label"><i class="fa fa-comments" style="font-size:22px; margin:14px;"></i></span>
+                <div v-if="tableData.length>0" v-loading="loading" element-loading-text="loading...">
+                  <div v-for="(item, index) in tableData" :key="index">
+                    <div class="left-single-content">
+                      <div class="left-single-content-inner">
+                        <div class="left-content-photo">
+                          <el-avatar shape="square" :size="40" :src="avatarUrl"></el-avatar>
+                          <!--<img src="" class="head-portrait" alt=""> -->
+                        </div>
+                        <div class="left-content-mid">
+                          <div class="left-content-mid-name">
+                            {{item.name}}
+                          </div>
+                          <div class="left-content-mid-latest">
+                            [{{item.msg_num}}条]{{item.latest_msg_brief}}
+                          </div>
+                        </div>
+                        <div class="left-content-right">
+                          <div class="left-content-right-time">
+                            {{item.latest_msg_time}}
+                          </div>
+                          <div class="left-content-right-stat" v-if="item.is_block==true">
+                            <i class="fa fa-bell-slash"></i>
+                          </div>
+                          <div class="left-content-right-stat" v-else>
+                            <i class="fa fa-bell-slash"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <el-divider></el-divider>
+                  </div>
+                </div>
+              </el-tab-pane>
+              <!--通讯录框-->
+              <el-tab-pane style="overflow-y:auto;overflow-x:hidden;height:450px">
+                <span slot="label"><i class="fa fa-user" style="font-size:22px; margin:14px;"></i></span>
+                <div v-if="tableDataPeople.length>0" v-loading="loadingPeople" element-loading-text="loading...">
+                  <div v-for="item in tableDataPeople">
+                    <div class="left-people-single-content">
+                      <div class="left-people-abc-index">
+                          {{item.index}}
+                      </div>
+                      <div v-for="person in item.personList" class="person-list-in-line" @click="selectChatTarget(person.uid,person.name)">
+                        <div>
+                          <el-avatar shape="square" :size="40" :src="person.photo"></el-avatar>
+                        </div>
+                        <div class="person-list-person-name">
+                          {{person.name}}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </el-tab-pane>
+              <el-tab-pane>
+                <span slot="label"><i class="fa fa-gamepad" style="font-size:22px; margin:14px;"></i></span>
+                table3
+              </el-tab-pane>
+            </el-tabs>
+          </template>
+        </div>
+      </div>
+      <!--左边栏 END-->
+      <!--右边栏 START-->
+      <div class="right-side">
+        <div class="right-side-top">
+          <el-dropdown placement="bottom-start" trigger="click" @click.native="loadTableDataMemberInfo" >
+            <span class="el-dropdown-link">
+              {{targetNotedName}}<i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
+            <!--<el-divider style="margin-top: 0px;margin-bottom: 0px;"></el-divider> -->
+            <el-dropdown-menu slot="dropdown" style="width:600px">
+              <div class="person-list-in-row">
+                <div class="person-list-in-column">
+                  <%= image_tag(image_path("icon_add.png"), :class => 'img-size-50') %>
+                  <!-- <el-avatar shape="square" :size="40" :src=""></el-avatar> %>-->
+                  <el-button type="text" disabled size="mini" style="color:#9eacb6;">添加</el-button>
+                </div>
+                <div v-for="person in groupList" class="person-list-in-column">
+                  <el-avatar shape="square" :size="50" :src="person.photo"></el-avatar>
+                  <!--<el-tooltip class="tooltip-item" effect="dark" content="{person.name}}" placement="bottom-start"> -->
+                  <el-button type="text" size="mini" style="color:#9eacb6; max-width: 60px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">{{person.user_note_name}}</el-button>
+                  <!--</el-tooltip> -->
+                </div>
+              </div>
+              <!-- <el-dropdown-item>黄金糕</el-dropdown-item>
+              <el-dropdown-item>狮子头</el-dropdown-item>
+              <el-dropdown-item>螺蛳粉</el-dropdown-item>
+              <el-dropdown-item disabled>双皮奶</el-dropdown-item>
+              <el-dropdown-item divided>蚵仔煎</el-dropdown-item> -->
+            </el-dropdown-menu>
+          </el-dropdown>
+        </p>
+        <div class="right-side-mid">
+          <div class="right-side-mid-inner">
+          <div v-if="chatRecordTableData.length>0">
+          <div v-for="chatRec in chatRecordTableData">
+            <div v-if="chatRec.dir == 'left'" class="direct-chat-msg">
+              <div class="direct-chat-info clearfix">
+                <span class="direct-chat-name float-left">{{chatRec.notedName}}</span>
+                <span class="direct-chat-timestamp float-right" style="margin-right:242px">{{chatRec.time}}</span>
+              </div>
+              <!-- /.direct-chat-info -->
+              <!-- <el-avatar shape="square" :size="40" :src="https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg"></el-avatar> -->
+              <img class="chat-direct-chat-img" src="https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg" alt="message user image">
+              <!-- /.direct-chat-img -->
+              <div class="chat-direct-chat-text" v-bind:style="chatRec.contentLen">
+                {{chatRec.content}}
+              </div>
+              <!-- /.direct-chat-text -->
+            </div>
+            <div v-else-if="chatRec.dir == 'right'" class="direct-chat-msg right">
+              <div class="direct-chat-info clearfix">
+                <span class="direct-chat-name float-right">Me</span>
+                <span class="direct-chat-timestamp float-left" style="margin-left:230px">{{chatRec.time}}</span>
+              </div>
+              <!-- /.direct-chat-info -->
+              <img class="chat-direct-chat-img" src="https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg" alt="message user image">
+              <!-- /.direct-chat-img -->
+              <div class="direct-chat-text" v-bind:style="chatRec.contentLen">
+                {{chatRec.content}}
+              </div>
+              <!-- /.direct-chat-text -->
+            </div>
+          </div>
+          </div>
+          </div>
+        </div>
+        <div class="right-side-bottom">
+          <div class="right-side-bottom-toolbar">
+            <el-button-group>
+              <el-button type="primary" plain icon="fa fa-smile fa-lg" style="border-color:#ecf5ff"></el-button>
+              <el-button type="primary" plain icon="fa fa-cut fa-lg" style="border-color:#ecf5ff"></el-button>
+              <el-button type="primary" plain icon="fa fa-folder fa-lg" style="border-color:#ecf5ff"></el-button>
+            </el-button-group>
+          </div>
+          <div class="right-side-bottom-input">
+            <textarea v-model="sayText" class="right-side-bottom-input-inner"></textarea>
+          </div>
+          <div class="right-side-bottom-send">
+            <span style="color:#E9E9EB">按下Ctrl+Enter换行&nbsp&nbsp&nbsp</span>
+            <!-- <el-button onclick="publishMessage()">发送</el-button> -->
+            <el-button @click.native="sendMsg">发送</el-button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+<!-- <script type="text/javascript" src="https://cdn-hangzhou.goeasy.io/goeasy.js"></script> -->
+<script type="text/javascript">
+  // var goeasy = new GoEasy({
+  //   appkey: 'BC-242425a937724e418b4f51105a138e3b'
+  // });
+
+  // goeasy.subscribe({
+  //   channel: 'demo',
+  //   onMessage: function (message) {
+  //     //收到消息的第一行，打出日志，以这个时间作为检查的标准
+  //     alert('收到：' + message.content);
+  //     $(".right-side-mid-inner").val(message.content);
+  //   }
+  // });
+
+  // function publishMessage() {
+  //   var publishMessage = $(".right-side-bottom-input-inner").val();
+  //   goeasy.publish({
+  //     channel: 'demo',
+  //     message: publishMessage,
+  //     onFailed: function (error) {
+  //       alert(error.code + " : " + error.content);
+  //     },
+  //     onSuccess: function () {
+  //       document.getElementById("content").value = '';
+  //     }
+  //   });
+  // }
+
+  $(document).ready(function () {
+    $(".tab-item").on("click", function () {
+      $(".tab-item").find("i").removeClass("turn-item-color-red")
+      $(this).find("i").addClass("turn-item-color-red")
+    })
+  })
+
+  var app = new Vue({
+    el: "#app",
+    data:{
+      dropDownClickStatus:false,
+      selfId:"USR_test01",
+      currentChatUid:"USR_test02",
+      tableDataSelfInfo:"",
+      loadingSelfInfo: false,
+      loadingShowMsg: false,
+      loadingAddressBook: false,
+      input2:"",
+      chatRecordTableData: [
+        {"dir":"left","notedName":"粑粑","time":"2019/10/25 08:49","content":"hahaha","contentLen":"margin-right: 460px;"},
+        {"dir":"left","notedName":"粑粑","time":"2019/10/26 09:12","content":"晚上来吗","contentLen":"margin-right: 444px;"},
+        {"dir":"right","notedName":"Me","time":"2019/10/26 12:39","content":"可以","contentLen":"margin-left: 476px;"},
+        {"dir":"left","notedName":"粑粑","time":"2019/10/27 22:33","content":"昨天又放鸽子","contentLen":"margin-right: 412px;"}
+      ],
+      targetNotedName: "未选择聊天",
+      sayText:"",
+      activeName: 'second',
+      avatarUrl: 'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
+      loading: false,
+      loadingPeople: false,
+      tableData:[{ name: "好友", msg_num: "4", latest_msg_brief: "王铭铭-换尿布...", latest_msg_time: "22:20",is_block: true },
+      { name: "Dota小分队", msg_num: "2", latest_msg_brief: "今晚干...", latest_msg_time: "08:10" ,is_block: true },
+      { name: "电装", msg_num: "5", latest_msg_brief: "今天加班吗...", latest_msg_time: "21:20" ,is_block: true }
+      ],
+      tableDataPeople:"",
+      groupList:"",
+
+    },
+
+    created: function () {
+      this.loadTableDataSelfInfo()
+      var _this = this;
+      // setInterval(
+      //   function(){
+      //     if(_this.currentChatUid != ""){
+      //       _this.showMsg()
+      //     }
+      //   },10*1000
+      // )
+    },
+
+    // mounted
+    methods: {
+      selectChatTarget:function (target_id, target_name) {
+        console.log("selectChatTarget "+target_name)
+        this.targetNotedName =target_name
+      },
+
+      handleClick(tab, event) {
+        if(tab._uid == "11") {
+          this.loadTableDataAddressBook();
+        }
+        // console.log(tab, event);
+      },
+
+      // 加载个人信息
+      loadTableDataSelfInfo: function () {
+        this.loadingSelfInfo = true;
+        var _this = this;
+        $.ajax({
+          url: '/chat/self_info',
+          type: 'post',
+          data: {
+            user_id: this.selfId
+          },
+          success: function (res) {
+            _this.loadingSelfInfo = false
+            if (res.count !== 0) {
+              _this.tableDataSelfInfo = res
+            } else {
+              _this.tableDataSelfInfo = []
+            }
+          },
+          error: function (err) {
+            _this.loadingSelfInfo = false
+            _this.tableData = []
+          }
+        })
+      },
+
+      // 加载tab2的所有好友
+      loadTableDataAddressBook: function () {
+        console.log("loadTableDataAddressBook")
+        this.loadingAddressBook = true;
+        var _this = this;
+        $.ajax({
+          url: '/chat/address_book',
+          type: 'post',
+          data: {
+            user_id: this.selfId
+          },
+          success: function (res) {
+            _this.loadingAddressBook = false
+            var result = [];
+            var index_arr = [];
+            for(var i = 97; i <=122; i++){
+              let obj = {}
+              var personInfoArr = []
+              obj["index"] = String.fromCharCode(i)
+              obj["personList"] = personInfoArr
+              result.push(obj)
+            }
+            // console.log(result[25]["index"])
+            res.forEach(function (val) {
+              if(index_tmp = getPinYinByName(val.name).substring(0,1)){
+                result.forEach(function (tmp) {
+                  if (tmp["index"] == index_tmp){
+                    let obj_tmp = {}
+                    obj_tmp["uid"] = val.uid
+                    obj_tmp["name"] = val.name
+                    obj_tmp["photo"] = val.photo
+                    tmp["personList"].push(obj_tmp)
+                  }
+                });
+              }
+            });
+            for(var j = 0; j < result.length;){
+              if(result[j].personList == "" ){
+                result.splice($.inArray(result[j],result),1);
+              } else {
+                j++;
+              }
+            }
+            _this.loadingAddressBook = false
+            if (res.count !== 0) {
+              _this.tableDataPeople = result
+            } else {
+              _this.tableDataPeople = []
+            }
+          },
+          error: function (err) {
+            _this.loadingAddressBook = false
+            _this.tableData = []
+          }
+        })
+      },
+
+      loadTableDataMemberInfo: function () {
+        console.log();
+        this.loadingMemberInfo = true;
+        this.dropDownClickStatus = !(this.dropDownClickStatus);
+        var _this = this;
+        if(this.dropDownClickStatus){
+          $.ajax({
+            url: '/chat/member_info_brief',
+            type: 'post',
+            data: {
+              user_id: this.selfId,
+              u_id: this.currentChatUid,
+            },
+            success: function (res) {
+              _this.loadingMemberInfo = false
+              if (res.count !== 0) {
+                _this.groupList = res
+              } else {
+                _this.groupList = []
+              }
+            },
+            error: function (err) {
+              _this.loadingMemberInfo = false
+              _this.groupList = []
+            }
+          })
+        }
+      },
+
+      sendMsg: function() {
+        console.log("click")
+        var _this = this.sayText;
+        $.ajax({
+          url: '/chat/send_msg',
+          type: 'post',
+          data: {
+            user_id: this.selfId,
+            target_id: this.currentChatUid,
+            text: this.sayText
+          },
+          success: function () {
+          },
+          error: function () {
+          }
+        })
+      },
+
+      showMsg: function() {
+        console.log("show")
+        this.loadingShowMsg = true;
+        var _this = this;
+        $.ajax({
+          url: '/chat/show_msg',
+          type: 'post',
+          data: {
+            user_id: this.selfId,
+            target_id: this.currentChatUid
+          },
+          success: function (res) {
+            console.log(res)
+            _this.loadingShowMsg = false
+            if (res) {
+              _this.chatRecordTableData = res
+            } else {
+              _this.chatRecordTableData = []
+            }
+          },
+          error: function (err) {
+            _this.loadingShowMsg = false
+            _this.chatRecordTableData = []
+          }
+        })
+      },
+    }
+  })
+</script>
+
+</html>

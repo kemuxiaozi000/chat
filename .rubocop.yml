@@ -1,0 +1,342 @@
+##
+##
+## おじゃるチームの設定
+##
+##
+
+# ASCII外のコメントを許可
+AsciiComments:
+  Enabled: false
+
+# Rails向けのCopsを実行
+Rails:
+  Enabled: true
+
+# 改行コードはLF
+Layout/EndOfLine:
+  EnforcedStyle: lf
+
+# 除外するファイル
+AllCops:
+  TargetRubyVersion: 2.3
+  Exclude:
+    - 'gemfile'
+    - 'Rakefile'
+    - 'log/**/*'
+    - 'node_modules/**/*'
+    - 'public/**/*'
+    - 'tmp/**/*'
+    - 'vendor/**/*'
+    - 'db/schema.rb'
+    - 'db/migrate/*'
+    - 'bin/*'
+    # デモ用データファイル
+    - 'app/services/temp_data_service.rb'
+
+
+
+##################### Style ##################################
+
+# トップレベルドキュメント
+# classやmoduleのトップレベルのドキュメントをチェック
+Style/Documentation:
+  Enabled: false
+
+# freeze付き文字列へのコメント
+# frozen_string_literal コメントをファイルの先頭に追加する
+# Ruby 2.3 から# frozen_string_literal: trueというマジックコメントを使用すると、
+# 文字列リテラルがデフォルトでfreezeされるようになった。
+# このfrozen_string_literalをtrueに設定すると、文字列が不変になる。
+# 不変のほうが文字列が勝手に書き換わることがなく、テストしやすくなる。
+# しかし、不変にすると、文字列を書き換えるコードがエラーになる。
+# SupportedStylesのデフォルト値はwhen_neededで、Rubyのバージョンが2.3.0+の場合は
+# frozen_string_literalのマジックコメントを書くことを要求される。
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+##################### Metrics ##################################
+
+# ブロックの長さをチェック
+# Max: 25 はデフォルト
+Metrics/BlockLength:
+  Max: 25
+  Exclude:
+    - "spec/**/*"
+    - "config/routes.rb"
+
+##################### Naming ##################################
+# 番号付き変数のスタイルをチェック
+# EnforcedStyle: snake_case
+# # bad
+# variable1 = 1
+# # good
+# variable_1 = 1
+# EnforcedStyle: normalcase (default)
+# # bad
+# variable_1 = 1
+# # good
+# variable1 = 1
+# EnforcedStyle: non_integer
+# # bad
+# variable1 = 1
+# variable_1 = 1
+# # good
+# variableone = 1
+# variable_one = 1
+
+Naming/VariableNumber:
+  EnforcedStyle: snake_case
+  Exclude:
+    - 'spec/**/*'
+
+##
+##
+## EVAN7 チーム特有の設定
+##
+##
+
+# ハッシュリテラルの整列方法
+# EnforcedColonStyle: key (default)
+# # bad
+# {
+#   foo: bar,
+#    ba: baz
+# }
+# {
+#   foo: bar,
+#   ba:  baz
+# }
+# # good
+# {
+#   foo: bar,
+#   ba: baz
+# }
+Layout/AlignHash:
+  EnforcedColonStyle: key
+  Exclude:
+    - 'spec/**/*'
+
+# 空行をあけるときは、１行だけあける
+Layout/EmptyLines:
+  Enabled: true
+
+# ブロック周りの空行をチェック
+Layout/EmptyLinesAroundBlockBody:
+  Enabled: true
+
+# class周りの空行をチェック
+Layout/EmptyLinesAroundClassBody:
+  Enabled: true
+
+# メソッド周りの空行をチェック
+Layout/EmptyLinesAroundMethodBody:
+  Enabled: true
+
+# コメントの`#`より左にスペースがあるかチェック
+Layout/LeadingCommentSpace:
+  Enabled: false
+
+# コロンのあとのスペースがあるかチェック
+Layout/SpaceAfterColon:
+  Exclude:
+    - 'spec/**/*'
+    - 'db/seeds.rb'
+
+# カンマのあとのスペースがあるかチェック
+Layout/SpaceAfterComma:
+  Exclude:
+    - 'spec/**/*'
+    - 'db/seeds.rb'
+
+# 演算子の周りにスペースがあるかチェック
+Layout/SpaceAroundOperators:
+  Exclude:
+    - 'spec/**/*'
+    - 'db/seeds.rb'
+
+# ブロック呼び出しに利用するブレース開始直後、ブレース終了直前、空ブレースの間に
+# 半角スペースを必要とするかどうかを設定・チェック
+Layout/SpaceInsideBlockBraces:
+  Enabled: true
+
+# ファイルの末尾の行に余分な空白があるかチェックをする。
+Layout/TrailingBlankLines:
+  Enabled: true
+
+# 未使用の引数をチェック
+Lint/UnusedBlockArgument:
+  Exclude:
+    - 'config/*'
+    - 'spec/**/*'
+    - 'db/seeds.rb'
+
+# Assignment : 変数への代入
+# Branch : メソッド呼び出し
+# Condition : 条件文
+# 上記3項目の合計ポイントが基準値を超えるか
+# Max: 15はデフォルト
+Metrics/AbcSize:
+  Max: 30
+  Exclude:
+    - "db/migrate/*.rb"
+    - 'spec/**/*'
+    - 'config/*'
+
+# クラスの行の長さをチェック
+# Max: 100はデフォルト
+Metrics/ClassLength:
+  Max: 100
+  Exclude:
+    - 'config/*'
+    - 'spec/**/*'
+    - 'db/seeds.rb'
+
+# Rubyの循環的複雑度をチェック
+# if, while, until, for, rescue, when, and, orがあれば循環的複雑度を1加算
+# Max: 6はデフォルト
+Metrics/CyclomaticComplexity:
+  Max: 6
+
+# 1行あたりの桁数
+Metrics/LineLength:
+  Max: 160
+  Exclude:
+    - "db/migrate/*.rb"
+    - "spec/**/*"
+    - 'config/*'
+    - 'db/seeds.rb'
+
+# メソッドの行数
+# Max: 10がデフォルト
+Metrics/MethodLength:
+  Max: 20
+  Exclude:
+    - "db/migrate/*.rb"
+    - 'spec/**/*'
+    - 'config/*'
+
+# snake caseになっていないメソッドをチェック
+Naming/MethodName:
+  Exclude:
+    - 'spec/**/*'
+
+# snake caseになっていないメソッドパラメータをチェック
+Naming/UncommunicativeMethodParamName:
+  Exclude:
+    - 'spec/**/*'
+
+# snake caseになっていない変数名をチェック
+Naming/VariableName:
+  Exclude:
+    - 'spec/**/*'
+
+# Active Recordのエイリアスを無効にする
+# update_attributesの代わりにupdate!を使う
+Rails/ActiveRecordAliases:
+  Enabled: true
+
+# 標準出力への出力をチェック
+Rails/Output:
+  Enabled: true
+  Exclude:
+    - "config/unicorn.rb"
+
+# RailsではTimeWithZoneクラスを使うべき
+Rails/TimeZone:
+  Enabled: true
+
+# 子クラスの表記の仕方についてチェック
+# EnforcedStyle: nested (default) スタイル
+# class Foo
+#   class Bar
+#   end
+# end
+# EnforcedStyle: compact スタイル
+# class Foo::Bar
+# end
+Style/ClassAndModuleChildren:
+  Exclude:
+    # devise由来のコードのスタイルが違うのは許容
+#delete    - "app/controllers/users/*"
+
+# if式のボディで単一の代入をするのであれば、if式の値を代入できる
+# if User.new.user_search(params[:phone_number]).present? && params[:send_security_ok].to_s == '1234'
+#   data[:data] = 'OK'
+# else
+#   data[:data] = 'NG'
+# end
+# ↓
+# data[:data] = if User.new.user_search(params[:phone_number]).present? && params[:send_security_ok].to_s == '1234'
+#                 'OK'
+#               else
+#                 'NG'
+#               end
+Style/ConditionalAssignment:
+  Enabled: true
+
+# each と for なら、each を使う
+Style/For:
+  EnforcedStyle: each
+
+# ガード句にできるところで条件文を使っていないかチェック
+Style/GuardClause:
+  Enabled: true
+
+# ハッシュのスタイルの指定
+# EnforcedStyle: ruby19 (default)
+# # bad
+# {:a => 2}
+# {b: 1, :c => 2}
+# # good
+# {a: 2, b: 1}
+# {:c => 2, 'd' => 2} # acceptable since 'd' isn't a symbol
+# {d: 1, 'e' => 2} # technically not forbidden
+Style/HashSyntax:
+  EnforcedStyle: ruby19
+
+# if/unlessを後置きにする
+# （例）
+# if params[:locale].present?
+#   params[:locale].to_sym.presence_in(I18n.available_locales) || I18n.default_locale
+# end
+# ↓
+# params[:locale].to_sym.presence_in(I18n.available_locales) || I18n.default_locale if params[:locale].present?
+Style/IfUnlessModifier:
+  Enabled: true
+
+# nilのチェックは.nil?メソッドを使う
+# # bad
+# if x == nil
+# end
+# # good
+# if x.nil?
+# end
+Style/NilComparison:
+  Enabled: true
+
+# 0との比較のために専用メソッド（.zero?, .negative?, .positive?）を使う
+Style/NumericPredicate:
+  Enabled: true
+
+# デフォルトでシングルクォーテーションを使う
+# 式展開や特殊文字を使う場合はダブルクォーテーションを使える
+Style/StringLiterals:
+  Enabled: true
+
+# 配列と文字列の長さが0かどうかの確認で.empty?メソッドを使う
+# # bad
+# [1, 2, 3].length == 0
+# 0 == "foobar".length
+# array.length < 1
+# {a: 1, b: 2}.length != 0
+# string.length > 0
+# hash.size > 0
+# # good
+# [1, 2, 3].empty?
+# "foobar".empty?
+# array.empty?
+# !{a: 1, b: 2}.empty?
+# !string.empty?
+# !hash.empty?
+Style/ZeroLengthPredicate:
+  Enabled: true

@@ -1,0 +1,16 @@
+default: &default
+  host: 'elasticsearch'
+  port: '9200'
+
+test:
+  <<: *default
+  log: true
+
+development:
+  <<: *default
+  log: true
+
+production:
+  # host: 'https://search-lupines-6xu4kgj7l3plejumrpo5oj6s34.ap-northeast-1.es.amazonaws.com'
+  <<: *default
+  log: true

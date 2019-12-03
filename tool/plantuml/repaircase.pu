@@ -1,0 +1,34 @@
+@startuml
+title 事例状态的通常逻辑
+hide footbox
+
+participant 用户 as user
+participant 自动check as check
+participant 管理者 as admin
+participant 专家 as special
+
+user -> check: 投稿处理
+note left: 用户投稿
+
+== 内容确认中 ==
+
+check --> check: 文本check处理
+check --> user: 文本确认NG时，返回给用户提示文本含有需要修改的问题
+check --> special: 文本确认NG时，自动转给对应的专家
+
+== 专家承认等待中 ==
+
+special --> special: 确认内容
+special -> admin: 承认内容
+
+== 开示承认等待中 ==
+
+admin --> admin: 投稿内容和专家确认结果的承认
+admin -> user: 开示处理
+
+== 开始中(可以检索) ==
+
+user --> user: 检索处理
+note left: 事例检索
+
+@enduml

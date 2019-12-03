@@ -1,0 +1,42 @@
+@startuml
+
+title 管理者画面一覧
+hide footbox
+
+participant 登录 as login
+participant 管理者首页 as mng_home
+participant DB管理 as DB_administration
+
+participant 今日投稿一览 as repaircase_post_today
+participant 今日待发布一览 as repaircase_publish_today
+participant 今日待驳回一览 as repaircase_return_today
+
+participant 事例详细 as repaircase_detail
+
+login -> mng_home: 登录管理员用户
+note left: 用户登录
+
+== 管理者首页功能 ==
+
+mng_home --> repaircase_post_today: 点击今日投稿一览more
+mng_home --> repaircase_publish_today: 点击今日待发布一览more
+mng_home --> repaircase_return_today: 点击今日待驳回一览more
+mng_home --> repaircase_detail: 点击首页中显示的任意事例
+repaircase_detail --> mng_home: 发布或驳回事例
+
+== DB管理页面 ==
+
+DB_administration --> repaircase_detail: 点击查看数据管理中任意事例
+repaircase_detail -->DB_administration : 点击返回
+
+== 事例详细页面 ==
+
+repaircase_detail --> mng_home: 点击并确认发布或者驳回
+
+
+== 退出登录 ==
+
+mng_home -> login: 点击登出按钮
+note left: 退出登录用户
+
+@enduml

@@ -1,0 +1,34 @@
+@startuml
+title 修理事例投稿の流れ
+hide footbox
+
+participant ユーザー as user
+participant 自動チェック処理 as check
+participant 管理者 as admin
+participant 専門家 as special
+
+user -> check: 投稿処理
+note left: ユーザー自由投稿
+
+== 投稿の自動チェックステップ ==
+
+check --> check: 敏感キーワードの自動チェック
+check --> user: チェックNGの場合、ユーザーに返してNG提示
+check --> special: チェックOKの場合、ブランドより専門家に振当て
+
+== 専門家確認ステップ ==
+
+special --> special: 投稿内容確認
+special -> admin: 確認結果(開示可、開示不可)
+
+== 開示承認ステップ ==
+
+admin --> admin: 投稿内容と専門家確認結果を承認
+admin -> user: 開示処理
+
+== 開示後運用ステップ(検索可能) ==
+
+user --> user: 検索処理
+note left: 事例検索
+
+@enduml

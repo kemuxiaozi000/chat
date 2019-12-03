@@ -1,0 +1,45 @@
+common: &common
+  # failure_code_item_range:
+  #   - '1'
+  #   - '5'
+  # repair_procedures_item_range:
+  #   - '2'
+  #   - '10'
+  # photos_item_range:
+  #   - '5'
+  #   - '10'
+  # model_year_range:
+  #   - '1950'
+  #   - '2020'
+  # mileage_unit: 'km'
+  # point_unit: 'pt'
+  # balance_unit: '元'
+  # page_number: '10'
+  # inquily_history_id_sys: '%Y%m%d00001'
+  # repair_case_img_path: 'rc_img'
+  # Inquiry_img_path: 'inquiry_img'
+  # local_connect: true
+  # repaircase_uuid_format: 'RC%s'
+  person_uuid_format: 'USR%s'
+  person_chat_rec_uuid_format: 'USR_CHAT_%s'
+  group_uuid_format: 'GRP%s'
+  group_chat_rec_uuid_format: 'GRP_CHAT_%s'
+  repairreview_uuid_format: 'RR%s'
+#delete  user_uuid_format: 'USER%s'
+  inquirycase_uuid_format: 'IQ%s'
+  account_uuid_format: 'UA%s'
+  specialistgroup_uuid_format: 'SG%s'
+#delete  case_image_bucket_name: 'lupin-image-upload-demo'
+
+# Test環境の設定を記載
+test:
+  <<: *common
+  local_connect: true
+
+# 開発環境の設定を記載
+development:
+  <<: *common
+
+# 本番環境の設定を記載
+production:
+  <<: *common

@@ -1,0 +1,9 @@
+en:
+  view:
+    data_upload_dialog: Send data to DENSO. Is it OK?
+    agree: Agree
+    disagree: DisAgree
+    instruction_1: Please depress the accelerator and keep the engine speed at 2000 rpm.
+    instruction_2: Please depress the accelerator to the maximum.
+    instruction_end: Acquisition complete
+    instruction_next: Please wait for a little while.

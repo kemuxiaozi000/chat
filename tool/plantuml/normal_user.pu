@@ -1,0 +1,40 @@
+@startuml
+title 一般用户的画面一览
+hide footbox
+
+participant 登录画面 as login
+participant 个人页面 as information
+participant 检索画面 as search
+participant 投稿画面 as post
+participant 阅览画面 as read
+participant 通知画面 as notice
+
+login -> information: 登录成功
+note left: 用户登录
+
+== 事例检索 ==
+
+information --> search: 点击检索
+search --> search: 事例检索
+
+
+== 事例投稿 ==
+
+search --> post: 点击投稿
+post --> post: 撰写投稿
+post --> search: 投稿发布
+
+== 事例阅览 ==
+
+search --> read: 查看事例详细
+
+== 用户通知 ==
+
+information --> notice: 查看事例通知
+
+== ==
+
+notice -> login: 点击登出
+note left: 用户登出
+
+@enduml

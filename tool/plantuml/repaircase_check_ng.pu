@@ -1,0 +1,29 @@
+@startuml
+title 事例状态的自动checkNG
+hide footbox
+
+participant 用户 as user
+participant 自动check as check
+participant 管理者 as admin
+participant 专家 as special
+
+user -> check: 投稿处理
+note left: 用户投稿
+
+== 内容确认中 ==
+
+check --> check: 文本check处理
+check -> user: 文本checkNG
+
+== 投稿退回 ==
+
+user --> user: 确认＆编辑
+note left: 投稿内容修正
+
+user -> check: 投稿处理
+note left: 再投稿
+
+== 内容确认中 ==
+
+
+@enduml

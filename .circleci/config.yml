@@ -1,0 +1,108 @@
+version: 2
+jobs:
+  build:
+
+    docker:
+      - image: ruby:2.5.1
+        ports:
+          - "3000:3000"
+        environment:
+          - TZ: Asia/Shanghai
+          - DB_HOST: '127.0.0.1'
+          - DB_PORT: '3306'
+          - DB_USER: 'root'
+          - DB_PASSWORD: 'password'
+          - DB_NAME: 'lupin'
+          - RAILS_ENV: 'test'
+          - RACK_ENV: 'test'
+          - REPAIR_CASE_PATH: 'repair_case'
+#          - DIAGNOSIS_PATH: 'diagnosis'
+          - CODECLIMATE_REPO_TOKEN: 6403d78a76452561c152f7e77dfcce7525435a5c67fff609af68105a81365b15
+      - image: circleci/mysql:5.7
+        environment:
+          - TZ: Asia/Shanghai
+          - MYSQL_DATABASE: lupin
+          - MYSQL_ROOT_PASSWORD: password
+        ports:
+          - 3306:3306
+
+    working_directory: ~/lupin
+    steps:
+      - checkout
+
+      # ライブラリの追加
+      - run:
+          name: Install libraries
+          command: |
+            curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
+            apt-get update && \
+            apt-get install -y  --no-install-recommends \
+            nodejs build-essential apt-transport-https && \
+            rm -rf /var/lib/apt/lists/*
+
+      - run:
+          name: Install yarn
+          command: npm install -g yarn
+
+      - run:
+          name: Install bundle
+          command: bundle install -j 4 --path vendor/bundle
+
+      - run:
+          name: yarn install
+          command: yarn install
+
+      - save_cache:
+          paths:
+            - ./vendor/bundle
+          key: v1-dependencies-{{ checksum "Gemfile.lock" }}
+
+      - run:
+          name: Init DB
+          command: |
+            bundle exec rake db:drop
+            bundle exec rake db:create
+            bundle exec rake db:migrate
+            bundle exec rake db:seed
+
+      - run:
+          name: Test
+          command: bundle exec rspec
+
+      - run:
+          name: Post Coverage to CodeClimate
+          command: bundle exec codeclimate-test-reporter
+
+  deploy_to_review:
+    machine: true
+    steps:
+      - checkout
+      - run: chmod 777 ./tool/deploy/deploy_lupin.sh
+      - run: ENVIRONMENT=review APPLICATION_NAME=lupin bash ./tool/deploy/deploy_lupin.sh
+
+  deploy_to_staging:
+    machine: true
+    steps:
+      - checkout
+      - run: chmod 777 ./tool/deploy/deploy_lupin.sh
+      - run: ENVIRONMENT=staging APPLICATION_NAME=lupin bash ./tool/deploy/deploy_lupin.sh
+
+workflows:
+  version: 2
+  build_and_test_and_deploy:
+    jobs:
+      - build
+      - deploy_to_review:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - review
+      - deploy_to_staging:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - develop

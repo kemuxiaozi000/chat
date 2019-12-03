@@ -1,0 +1,28 @@
+/*
+ * This is a manifest file that'll be compiled into application.css, which will include all the files
+ * listed below.
+ *
+ * Any CSS and SCSS file within this directory, lib/assets/stylesheets, or any plugin's
+ * vendor/assets/stylesheets directory can be referenced here using a relative path.
+ *
+ * You're free to add application-wide styles to this file and they'll appear at the bottom of the
+ * compiled file so the styles you add here take precedence over styles defined in any other CSS/SCSS
+ * files in this directory. Styles in this file should be added after the last require_* statement.
+ * It is generally better to create a new file per style scope.
+ *
+ *= require admin-lte/dist/css/adminlte.min
+ *= require admin-lte/plugins/iCheck/flat/blue
+ *= require admin-lte/plugins/morris/morris
+ *= require admin-lte/plugins/jvectormap/jquery-jvectormap-1.2.2
+ *= require admin-lte/plugins/datepicker/datepicker3
+ *= require admin-lte/plugins/daterangepicker/daterangepicker-bs3
+ *= require admin-lte/plugins/datatables/dataTables.bootstrap4
+ *= require admin-lte/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min
+ *= require admin-lte/plugins/daterangepicker/daterangepicker-bs3
+ *= require admin-lte/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min
+ *= require_tree .
+ *= require_self
+ */
+
+ @import "font-awesome-sprockets";
+ @import "font-awesome";
