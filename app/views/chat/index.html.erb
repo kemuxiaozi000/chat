@@ -290,15 +290,15 @@
     .right-side-mid {
       width: 600px;
       height: 360px;
-      padding:5px;
-      border-bottom: 1px solid #bda8a8;
+
     }
 
     .right-side-mid-inner {
       width: 100%;
       height: 100%;
-      padding:5px;
-      border-bottom: 1px solid #bda8a8;
+      padding-left:6px;
+      padding-right:6px;
+      overflow:auto;
     }
 
     .right-side-bottom {
@@ -380,6 +380,7 @@
 
 <body>
   <div id="app" v-cloak>
+    <input type="hidden" id="selfId" value="" />
     <div class="main-content">
       <!--左边栏 START-->
       <div class="left-side">
@@ -508,39 +509,41 @@
           </el-dropdown>
         </p>
         <div class="right-side-mid">
-          <div class="right-side-mid-inner">
-          <div v-if="chatRecordTableData.length>0">
-          <div v-for="chatRec in chatRecordTableData">
-            <div v-if="chatRec.dir == 'left'" class="direct-chat-msg">
-              <div class="direct-chat-info clearfix">
-                <span class="direct-chat-name float-left">{{chatRec.notedName}}</span>
-                <span class="direct-chat-timestamp float-right" style="margin-right:242px">{{chatRec.time}}</span>
+          <div class="right-side-mid-inner" id="chat_record">
+            <div v-if="chatRecordTableData.length>0">
+              <div v-for="chatRec in chatRecordTableData">
+                <div v-if="chatRec.dir == 'left'" class="direct-chat-msg">
+                  <div class="direct-chat-info clearfix">
+                    <span class="direct-chat-name float-left">{{chatRec.notedName}}</span>
+                    <span class="direct-chat-timestamp float-right" style="margin-right:242px">{{chatRec.time}}</span>
+                  </div>
+                  <!-- /.direct-chat-info -->
+                  <!-- <el-avatar shape="square" :size="40" :src="https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg"></el-avatar> -->
+                  <img class="chat-direct-chat-img" src="https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg" alt="message user image">
+                  <!-- /.direct-chat-img -->
+                  <div class="chat-direct-chat-text" v-bind:style="chatRec.contentLen">
+                    {{chatRec.content}}
+                  </div>
+                  <!-- /.direct-chat-text -->
+                </div>
+                <div v-else-if="chatRec.dir == 'right'" class="direct-chat-msg right">
+                  <div class="direct-chat-info clearfix">
+                    <span class="direct-chat-name float-right">Me</span>
+                    <span class="direct-chat-timestamp float-left" style="margin-left:230px">{{chatRec.time}}</span>
+                  </div>
+                  <!-- /.direct-chat-info -->
+                  <img class="chat-direct-chat-img" src="https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg" alt="message user image">
+                  <!-- /.direct-chat-img -->
+                  <div class="direct-chat-text" v-bind:style="chatRec.contentLen">
+                    {{chatRec.content}}
+                  </div>
+                  <!-- /.direct-chat-text -->
+                </div>
               </div>
-              <!-- /.direct-chat-info -->
-              <!-- <el-avatar shape="square" :size="40" :src="https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg"></el-avatar> -->
-              <img class="chat-direct-chat-img" src="https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg" alt="message user image">
-              <!-- /.direct-chat-img -->
-              <div class="chat-direct-chat-text" v-bind:style="chatRec.contentLen">
-                {{chatRec.content}}
-              </div>
-              <!-- /.direct-chat-text -->
             </div>
-            <div v-else-if="chatRec.dir == 'right'" class="direct-chat-msg right">
-              <div class="direct-chat-info clearfix">
-                <span class="direct-chat-name float-right">Me</span>
-                <span class="direct-chat-timestamp float-left" style="margin-left:230px">{{chatRec.time}}</span>
-              </div>
-              <!-- /.direct-chat-info -->
-              <img class="chat-direct-chat-img" src="https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg" alt="message user image">
-              <!-- /.direct-chat-img -->
-              <div class="direct-chat-text" v-bind:style="chatRec.contentLen">
-                {{chatRec.content}}
-              </div>
-              <!-- /.direct-chat-text -->
-            </div>
+            <!-- <div id="msg_end" style="height:0px; overflow:hidden"></div> -->
           </div>
-          </div>
-          </div>
+
         </div>
         <div class="right-side-bottom">
           <div class="right-side-bottom-toolbar">
@@ -556,41 +559,17 @@
           <div class="right-side-bottom-send">
             <span style="color:#E9E9EB">按下Ctrl+Enter换行&nbsp&nbsp&nbsp</span>
             <!-- <el-button onclick="publishMessage()">发送</el-button> -->
-            <el-button @click.native="sendMsg">发送</el-button>
+            <el-button @click.native="publishMessage">发送</el-button>
           </div>
         </div>
       </div>
     </div>
   </div>
 </body>
-<!-- <script type="text/javascript" src="https://cdn-hangzhou.goeasy.io/goeasy.js"></script> -->
+<script type="text/javascript" src="https://cdn-hangzhou.goeasy.io/goeasy.js"></script>
 <script type="text/javascript">
-  // var goeasy = new GoEasy({
-  //   appkey: 'BC-242425a937724e418b4f51105a138e3b'
-  // });
+  var selfId = "USR_test01"
 
-  // goeasy.subscribe({
-  //   channel: 'demo',
-  //   onMessage: function (message) {
-  //     //收到消息的第一行，打出日志，以这个时间作为检查的标准
-  //     alert('收到：' + message.content);
-  //     $(".right-side-mid-inner").val(message.content);
-  //   }
-  // });
-
-  // function publishMessage() {
-  //   var publishMessage = $(".right-side-bottom-input-inner").val();
-  //   goeasy.publish({
-  //     channel: 'demo',
-  //     message: publishMessage,
-  //     onFailed: function (error) {
-  //       alert(error.code + " : " + error.content);
-  //     },
-  //     onSuccess: function () {
-  //       document.getElementById("content").value = '';
-  //     }
-  //   });
-  // }
 
   $(document).ready(function () {
     $(".tab-item").on("click", function () {
@@ -628,7 +607,6 @@
       ],
       tableDataPeople:"",
       groupList:"",
-
     },
 
     created: function () {
@@ -768,23 +746,23 @@
         }
       },
 
-      sendMsg: function() {
-        console.log("click")
-        var _this = this.sayText;
-        $.ajax({
-          url: '/chat/send_msg',
-          type: 'post',
-          data: {
-            user_id: this.selfId,
-            target_id: this.currentChatUid,
-            text: this.sayText
-          },
-          success: function () {
-          },
-          error: function () {
-          }
-        })
-      },
+      // sendMsg: function() {
+      //   console.log("click")
+      //   var _this = this.sayText;
+      //   $.ajax({
+      //     url: '/chat/send_msg',
+      //     type: 'post',
+      //     data: {
+      //       user_id: this.selfId,
+      //       target_id: this.currentChatUid,
+      //       text: this.sayText
+      //     },
+      //     success: function () {
+      //     },
+      //     error: function () {
+      //     }
+      //   })
+      // },
 
       showMsg: function() {
         console.log("show")
@@ -813,7 +791,113 @@
         })
       },
     }
-  })
+  });
+  var goeasy = new GoEasy({
+    appkey: 'BC-242425a937724e418b4f51105a138e3b'
+  });
+
+  function fun() {
+    var oWords = document.getElementById('chat_record');
+    console.log(oWords.scrollHeight)
+    oWords.scrollTop = oWords.scrollHeight+246;
+  }
+
+  goeasy.subscribe({
+    channel: 'demo',
+    onMessage: function (message) {
+      var index = message.content.lastIndexOf("|");
+      var side
+      var len
+      var chatRecord = {}
+      var sendMsgUserId = message.content.substring(index + 1, message.content.length);
+      var msgContent = message.content.substring(0, index);
+      var sendTime = timestamp2FormatDate(message.time,"yyyy/MM/dd hh:mm")
+      var jmz = {};
+      jmz.GetLength = function(str) {
+        return str.replace(/[\u0391-\uFFE5]/g,"aa").length;  //先把中文替换成两个字节的英文，在计算长度
+      };
+      if(sendMsgUserId == app.selfId){
+        side="right";
+        styleSide="left";
+        if(jmz.GetLength(msgContent) < 50){
+          len = 508 - jmz.GetLength(msgContent) * 8;
+        } else {
+          len = 50
+        }
+      } else {
+        side="left";
+        styleSide="right";
+        len = 444 + jmz.GetLength(msgContent) * 8;
+      }
+      var contentStyle = "margin-" + styleSide + ": " + len + "px;"
+      console.log(contentStyle)
+      chatRecord = {"dir":side,
+                    "notedName":"粑粑",
+                    "time":sendTime,
+                    "content":msgContent,
+                    "contentLen":contentStyle}
+      app.chatRecordTableData.push(chatRecord);
+      fun()
+      // ($('.right-side-mid-inner').children("last-child")[0]).scrollIntoView()
+      // $(".right-side-mid-inner").scrollTop($(".right-side-mid-inner")[0].scrollHeight);
+      console.log("asasas")
+    }
+  });
+
+  function publishMessage() {
+    var publishMessage = $(".right-side-bottom-input-inner").val();
+    publishMessage = publishMessage + "|" + selfId;
+    goeasy.publish({
+      channel: 'demo',
+      message: publishMessage,
+      onFailed: function (error) {
+        alert(error.code + " : " + error.content);
+      },
+      onSuccess: function () {
+        // document.getElementById("content").value = '';
+      }
+    });
+  }
+
+  function timestamp2Date(timestamp) {
+    var date = new Date();
+    date.setTime(timestamp);
+    return date;
+  }
+
+  function formatDate(date, fmt) {
+    var o = {
+        "M+" : date.getMonth()+1,                 //月份
+        "d+" : date.getDate(),                    //日
+        "h+" : date.getHours(),                   //小时
+        "m+" : date.getMinutes(),                 //分
+        "s+" : date.getSeconds(),                 //秒
+        "q+" : Math.floor((date.getMonth()+3)/3), //季度
+        "S"  : date.getMilliseconds()             //毫秒
+    };
+    if(/(y+)/.test(fmt)) {
+            fmt=fmt.replace(RegExp.$1, (date.getFullYear()+"").substr(4 - RegExp.$1.length));
+    }
+     for(var k in o) {
+        if(new RegExp("("+ k +")").test(fmt)){
+             fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
+         }
+     }
+    return fmt;
+  }
+
+  function timestamp2FormatDate(timestamp, fmt) {
+    var date = timestamp2Date(timestamp);
+    var res = formatDate(date, fmt);
+    return res;
+  }
+
+  function add(){
+    var now = new Date();
+    var div = document.getElementById('scrolldIV');
+    div.innerHTML = div.innerHTML + 'time_' + now.getTime() + '<br />';
+    div.scrollTop = div.scrollHeight;
+  }
 </script>
 
 </html>
