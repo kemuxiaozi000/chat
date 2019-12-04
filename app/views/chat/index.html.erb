@@ -380,9 +380,10 @@
 
 <body>
   <div id="app" v-cloak>
-    <input type="hidden" id="selfId" value="" />
-    <p><%= current_user.email %></p>
-    <p><%= current_user.id %></p>
+    <input type="hidden" id="currentChanel" value="" />
+    <input type="hidden" id="currentNickname" value="" />
+    <%= image_tag("new/headimg.png") %>
+    <img src="/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png">
     <% if user_signed_in? %>
       <li>
       <%= link_to('Logout', destroy_user_session_path, method: :delete) %>
@@ -392,16 +393,17 @@
       <%= link_to('Login', new_user_session_path) %>
       </li>
     <% end %>
+
     <div class="main-content">
       <!--左边栏 START-->
       <div class="left-side">
         <div class="left-header" v-if="tableDataSelfInfo.length>0" v-loading="loadingSelfInfo" element-loading-text="loading...">
           <div v-for="(item, index) in tableDataSelfInfo" :key="index" class="left-header-inner">
             <div class="left-header-photo">
-              <el-avatar shape="square" :size="40" :src="item.photo"></el-avatar>
+              <el-avatar shape="square" :size="40" :src="item.photo" :alt="avatarUrl"></el-avatar>
             </div>
             <div class="left-header-name">
-              {{item.nickname}}
+              <%= current_user.nickname %>
             </div>
             <div class="left-header-function">
               <i class="fa fa-bars fa-lg"></i>
@@ -469,6 +471,7 @@
                           {{item.index}}
                       </div>
                       <div v-for="person in item.personList" class="person-list-in-line" @click="selectChatTarget(person.uid,person.name)">
+                        <!-- <input type="hidden" id="selfId" value="person.uid" /> -->
                         <div>
                           <el-avatar shape="square" :size="40" :src="person.photo"></el-avatar>
                         </div>
@@ -579,8 +582,10 @@
 </body>
 <script type="text/javascript" src="https://cdn-hangzhou.goeasy.io/goeasy.js"></script>
 <script type="text/javascript">
-  var selfId = "USR_test01"
-
+  var selfId = "<%= current_user.id%>"
+  var goeasy = new GoEasy({
+    appkey: 'BC-242425a937724e418b4f51105a138e3b'
+  });
 
   $(document).ready(function () {
     $(".tab-item").on("click", function () {
@@ -593,19 +598,21 @@
     el: "#app",
     data:{
       dropDownClickStatus:false,
-      selfId:"USR_test01",
-      currentChatUid:"USR_test02",
+      selfId:"<%= current_user.id%>",
+      currentChatUid:"",
+      currentChannel:"",
       tableDataSelfInfo:"",
       loadingSelfInfo: false,
       loadingShowMsg: false,
       loadingAddressBook: false,
       input2:"",
-      chatRecordTableData: [
-        {"dir":"left","notedName":"粑粑","time":"2019/10/25 08:49","content":"hahaha","contentLen":"margin-right: 460px;"},
-        {"dir":"left","notedName":"粑粑","time":"2019/10/26 09:12","content":"晚上来吗","contentLen":"margin-right: 444px;"},
-        {"dir":"right","notedName":"Me","time":"2019/10/26 12:39","content":"可以","contentLen":"margin-left: 476px;"},
-        {"dir":"left","notedName":"粑粑","time":"2019/10/27 22:33","content":"昨天又放鸽子","contentLen":"margin-right: 412px;"}
-      ],
+      // chatRecordTableData: [
+      //   {"dir":"left","notedName":"粑粑","time":"2019/10/25 08:49","content":"hahaha","contentLen":"margin-right: 460px;"},
+      //   {"dir":"left","notedName":"粑粑","time":"2019/10/26 09:12","content":"晚上来吗","contentLen":"margin-right: 444px;"},
+      //   {"dir":"right","notedName":"Me","time":"2019/10/26 12:39","content":"可以","contentLen":"margin-left: 476px;"},
+      //   {"dir":"left","notedName":"粑粑","time":"2019/10/27 22:33","content":"昨天又放鸽子","contentLen":"margin-right: 412px;"}
+      // ],
+      chatRecordTableData: [],
       targetNotedName: "未选择聊天",
       sayText:"",
       activeName: 'second',
@@ -636,7 +643,34 @@
     methods: {
       selectChatTarget:function (target_id, target_name) {
         console.log("selectChatTarget "+target_name)
-        this.targetNotedName =target_name
+        if(this.currentChatUid != target_id){
+          this.currentChatUid = target_id;
+          //生成channel——id
+          $.ajax({
+            url: '/chat/show_chat_record',
+            type: 'post',
+            data: {
+              user_id: this.selfId,
+              target_id: target_id
+            },
+            success: function (res) {
+              if (res.count !== 0) {
+                $("#currentChanel").val(res.channel_id)
+                $("#currentChanel").val(res.current_nickname)
+                console.log("Chanel"+this.currentChannel)
+                //channel history chat record
+                historyChatRecord(res.channel_id)
+                //channel now chat
+                showNowChatRecord(res.channel_id)
+              } else {
+
+              }
+            },
+            error: function (err) {
+            }
+          })
+        }
+        
       },
 
       handleClick(tab, event) {
@@ -729,7 +763,6 @@
       },
 
       loadTableDataMemberInfo: function () {
-        console.log();
         this.loadingMemberInfo = true;
         this.dropDownClickStatus = !(this.dropDownClickStatus);
         var _this = this;
@@ -803,65 +836,100 @@
       },
     }
   });
-  var goeasy = new GoEasy({
-    appkey: 'BC-242425a937724e418b4f51105a138e3b'
-  });
 
-  function fun() {
+  //最新消息来的时候滚动条到最下
+  function scrollToBottom() {
     var oWords = document.getElementById('chat_record');
-    console.log(oWords.scrollHeight)
-    console.log(oWords.scrollTop)
     oWords.scrollTop = oWords.scrollHeight;
   }
 
-  $("#chat_record").bind("DOMNodeInserted", fun);
+  $("#chat_record").bind("DOMNodeInserted", scrollToBottom);
 
-  goeasy.subscribe({
-    channel: 'demo',
-    onMessage: function (message) {
-      var index = message.content.lastIndexOf("|");
-      var side
-      var len
-      var chatRecord = {}
-      var sendMsgUserId = message.content.substring(index + 1, message.content.length);
-      var msgContent = message.content.substring(0, index);
-      var sendTime = timestamp2FormatDate(message.time,"yyyy/MM/dd hh:mm")
-      var jmz = {};
-      jmz.GetLength = function(str) {
-        return str.replace(/[\u0391-\uFFE5]/g,"aa").length;  //先把中文替换成两个字节的英文，在计算长度
-      };
-      if(sendMsgUserId == app.selfId){
-        side="right";
-        styleSide="left";
-        if(jmz.GetLength(msgContent) < 50){
-          len = 508 - jmz.GetLength(msgContent) * 8;
-        } else {
-          len = 50
-        }
-      } else {
-        side="left";
-        styleSide="right";
-        len = 444 + jmz.GetLength(msgContent) * 8;
+  //展示最新的订阅消息
+  function showNowChatRecord(channel_id){
+    goeasy.subscribe({
+      channel: channel_id,
+      onMessage: function (message) {
+        handleGoeasyMsg(message)
       }
-      var contentStyle = "margin-" + styleSide + ": " + len + "px;"
-      console.log(contentStyle)
-      chatRecord = {"dir":side,
-                    "notedName":"粑粑",
-                    "time":sendTime,
-                    "content":msgContent,
-                    "contentLen":contentStyle}
-      app.chatRecordTableData.push(chatRecord);
-      // ($('.right-side-mid-inner').children("last-child")[0]).scrollIntoView()
-      // $(".right-side-mid-inner").scrollTop($(".right-side-mid-inner")[0].scrollHeight);
-      console.log("asasas")
-    }
-  });
+    });
+  }
 
+  //显示以前的订阅消息
+  function historyChatRecord(channel_id) {
+    console.log("historyChatRecord")
+    goeasy.history({
+        channel: channel_id, //必需项
+        // start: start_time, //可选项，开始时间
+        // end: end_time, //可选项，结束时间
+        // limit: limit_num //可选项，返回的消息条数，默认为100条，最多1000条
+    }, 
+    function(response){
+        // console.log("收到历史消息: "+ JSON.stringify(response));
+        for (let item of response.content.messages) {
+          handleGoeasyMsg(item)
+        }
+        /**        
+        response示例：
+        {
+            "code":200,
+            "content":{
+                "messages":[
+                    {"time":1561347527649,"content":"my 001"}
+                    {"time":1561347596077,"content":"my 002"}
+                    {"time":1561347622613,"content":"my 003"}
+                    {"time":1561347691826,"content":"my 004"}
+                    {"time":1561347706447,"content":"my 005"}
+                ]
+            }
+        }
+        **/    
+    });
+  }
+
+  //把消息转成需要的json格式
+  function handleGoeasyMsg(message) {
+    var index = message.content.lastIndexOf("|");
+    var side
+    var len
+    var chatRecord = {}
+    var sendMsgUserId = message.content.substring(index + 1, message.content.length);
+    var msgContent = message.content.substring(0, index);
+    var sendTime = timestamp2FormatDate(message.time,"yyyy/MM/dd hh:mm")
+    var jmz = {};
+    jmz.GetLength = function(str) {
+      return str.replace(/[\u0391-\uFFE5]/g,"aa").length;  //先把中文替换成两个字节的英文，在计算长度
+    };
+    if(sendMsgUserId == app.selfId){
+      side="right";
+      styleSide="left";
+      if(jmz.GetLength(msgContent) < 50){
+        len = 508 - jmz.GetLength(msgContent) * 8;
+      } else {
+        len = 50
+      }
+    } else {
+      side="left";
+      styleSide="right";
+      len = 444 + jmz.GetLength(msgContent) * 8;
+    }
+    var contentStyle = "margin-" + styleSide + ": " + len + "px;"
+    chatRecord = {"dir":side,
+                  "notedName":"粑粑",
+                  "time":sendTime,
+                  "content":msgContent,
+                  "contentLen":contentStyle}
+    app.chatRecordTableData.push(chatRecord);
+  }
+
+  //点击发送按钮
   function publishMessage() {
+    console.log("publishMessage")
     var publishMessage = $(".right-side-bottom-input-inner").val();
     publishMessage = publishMessage + "|" + selfId;
+    currentChannel = $("#currentChanel").val()
     goeasy.publish({
-      channel: 'demo',
+      channel: currentChannel,
       message: publishMessage,
       onFailed: function (error) {
         alert(error.code + " : " + error.content);
@@ -872,6 +940,7 @@
     });
   }
 
+  //时间格式化
   function timestamp2Date(timestamp) {
     var date = new Date();
     date.setTime(timestamp);
@@ -905,12 +974,6 @@
     return res;
   }
 
-  function add(){
-    var now = new Date();
-    var div = document.getElementById('scrolldIV');
-    div.innerHTML = div.innerHTML + 'time_' + now.getTime() + '<br />';
-    div.scrollTop = div.scrollHeight;
-  }
 </script>
 
 </html>

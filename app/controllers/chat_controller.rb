@@ -9,11 +9,22 @@ class ChatController < ApplicationController
   # in params[:user_id]
   # out {photo:"", name:""}
   def self_info
-    user = UserManagement.find_by_user_id(params[:user_id])
+    user = UserManagement.find_by_user_id(current_user.id)
+    default_avatar = "/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png"
     res_tmp = {}
     res = []
-    res_tmp["photo"] = user.photo
-    res_tmp["nickname"] = user.nickname
+    if user.present?
+      res_tmp["nickname"] = current_user.nickname
+      if user.photo.present?
+        res_tmp["photo"] = user.photo
+      else
+        res_tmp["photo"] = default_avatar
+      end
+    else
+      res_tmp["nickname"] = current_user.nickname
+      res_tmp["photo"] = default_avatar
+    end
+
     res.push(res_tmp)
     render json: res
   end
@@ -98,12 +109,15 @@ class ChatController < ApplicationController
       # { index: "s", personList: [{name: "sunke",uid:"USRxxxx"},{name: "孙中山",uid:"USERxxxx"},{name: "孙得好1",uid:"USERxxxx"},{name: "孙得好2",uid:"USERxxxx"},{name: "孙得好3",uid:"USERxxxx"}] }
       # ]
   def address_book
+    p "address_book"
+    p params[:user_id]
     res = []
     tmp = UserManagement.joins('inner join name_notes on user_managements.user_id = name_notes.noted_id').
                           select('user_managements.user_id,user_managements.photo, name_notes.note_name, name_notes.noted_id').
                           where('name_notes.user_id = ? ', params[:user_id])
+                          p tmp
     for item in tmp
-      if item.noted_id.to_s[0,3] == "USR"
+      if item.noted_id.to_s[0,3] != "GRP"
         hash = {}
         hash["uid"] = item.noted_id
         hash["name"] = item.note_name
@@ -121,12 +135,7 @@ class ChatController < ApplicationController
   # out [{note_name:"",photo:""}...]
   def member_info_brief
     res = []
-    if params[:u_id].to_s.start_with?("USR")
-      p "1"
-      tmp_user = UserManagement.joins('inner join name_notes on user_managements.user_id = name_notes.noted_id').
-                                select('user_managements.user_id,user_managements.photo, name_notes.note_name, name_notes.noted_id').
-                              where('name_notes.user_id = ?  and user_managements.user_id = ? ', params[:user_id], params[:u_id])
-    elsif params[:u_id].to_s.start_with?("GRP")
+    if params[:u_id].to_s.start_with?("GRP")
       p "2"
       members = GroupInfo.find_by_group_id(params[:u_id]).member_list
       arr_members = members.to_s.split(",")
@@ -138,6 +147,11 @@ class ChatController < ApplicationController
       self_hash["user_note_name"] = "我"
       self_hash["photo"] = self_info.photo
       res.push(self_hash)
+    else
+      p "1"
+      tmp_user = UserManagement.joins('inner join name_notes on user_managements.user_id = name_notes.noted_id').
+                                select('user_managements.user_id,user_managements.photo, name_notes.note_name, name_notes.noted_id').
+                                where('name_notes.user_id = ?  and user_managements.user_id = ? ', params[:user_id], params[:u_id])
     end
     for i in tmp_user
       hash = {}
@@ -149,11 +163,25 @@ class ChatController < ApplicationController
   end
 
   # 聊天记录
-  # timing 点击左下角列表个人聊天的群或个人
+  # timing 点击左下角列表个人聊天的群或个人，出现聊天记录
   # in params[:u_id] 群或个人
   # out [{memo_name:"",photo:""}...]
-  def chat_record
-
+  def show_chat_record
+    res = {}
+    params[:user_id]
+    params[:target_id]
+    user_relation_1 = UserRelation.where('user_relations.user_id_1 = ? and user_relations.user_id_2 = ?', params[:user_id], params[:target_id])[0]
+    user_relation_2 = UserRelation.where('user_relations.user_id_2 = ? and user_relations.user_id_1 = ?', params[:user_id], params[:target_id])[0]
+    if user_relation_1.channel_id.present?
+      channel_id = user_relation_1.channel_id
+    else
+      channel_id = PersonChatRecord.new.make_rc_uuid
+      user_relation_1.update({'channel_id': channel_id})
+      user_relation_2.update({'channel_id': channel_id})
+    end
+    res[:channel_id] = channel_id
+    res[:current_nickname] = current_nickname
+    render json: res
   end
 
   # 发送消息 websocket  goeasy？

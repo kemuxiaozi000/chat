@@ -13,7 +13,7 @@ Rails.application.routes.draw do
     post 'search_user', action: 'search_user'
     post 'chat_brief', action: "chat_brief"
     post 'member_info_brief', action: "member_info_brief"
-    post 'chat_record', action: "chat_record"
+    post 'show_chat_record', action: "show_chat_record"
     post 'send_msg', action: "send_msg"
     post 'show_msg', action: "show_msg"
     post 'address_book', action: "address_book"

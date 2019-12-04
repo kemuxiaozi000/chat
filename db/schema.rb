@@ -10,9 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_12_05_031905) do
+ActiveRecord::Schema.define(version: 2019_12_05_031906) do
 
-  create_table "group_chat_records", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci", force: :cascade do |t|
+  create_table "group_chat_records", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "chat_content_id"
     t.string "content", comment: "内容(图片保存为base64,)"
     t.string "group_id", comment: "群id"
@@ -24,7 +24,7 @@ ActiveRecord::Schema.define(version: 2019_12_05_031905) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "group_infos", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci", force: :cascade do |t|
+  create_table "group_infos", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "group_id", comment: "群id"
     t.string "member_list", comment: "群成员 xx,xx2,xx3"
     t.string "group_creator", comment: "群主"
@@ -33,13 +33,7 @@ ActiveRecord::Schema.define(version: 2019_12_05_031905) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "messages", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci", force: :cascade do |t|
-    t.text "content"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  create_table "name_notes", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci", force: :cascade do |t|
+  create_table "name_notes", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "user_id", comment: "用户"
     t.string "noted_id", comment: "被备注的用户或群"
     t.string "note_name", comment: "被备注的别名"
@@ -47,19 +41,19 @@ ActiveRecord::Schema.define(version: 2019_12_05_031905) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "person_chat_records", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci", force: :cascade do |t|
+  create_table "person_chat_records", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "chat_content_id", comment: "内容id"
     t.string "chat_content", comment: "内容(图片保存为base64,)"
     t.string "user_id_1", comment: "用户1(发言人)"
     t.string "user_id_2", comment: "用户2(接收人)"
     t.string "speak_time", comment: "发言时间"
     t.string "is_withdraw", comment: "撤回状态 默认：0 撤回：1"
-    t.string "is_seen", comment: "撤回状态 默认：0 已读：1"
+    t.string "is_seen", comment: "接收人查看状态 默认：0 已读：1"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
-  create_table "sessions", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci", force: :cascade do |t|
+  create_table "sessions", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "session_id", null: false
     t.text "data", limit: 4294967295
     t.datetime "created_at", null: false
@@ -67,7 +61,7 @@ ActiveRecord::Schema.define(version: 2019_12_05_031905) do
     t.index ["session_id"], name: "index_sessions_on_session_id", unique: true
   end
 
-  create_table "user_careers", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci", force: :cascade do |t|
+  create_table "user_careers", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "user_id", comment: "用户id"
     t.string "company", comment: "公司"
     t.string "company_tel", comment: "公司联系方式"
@@ -80,7 +74,7 @@ ActiveRecord::Schema.define(version: 2019_12_05_031905) do
     t.index ["user_id"], name: "index_user_careers_on_user_id"
   end
 
-  create_table "user_managements", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci", force: :cascade do |t|
+  create_table "user_managements", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "user_id", comment: "用户id"
     t.string "nickname", comment: "昵称"
     t.string "name", comment: "姓名"
@@ -107,15 +101,16 @@ ActiveRecord::Schema.define(version: 2019_12_05_031905) do
     t.index ["user_id"], name: "index_user_managements_on_user_id"
   end
 
-  create_table "user_relations", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci", force: :cascade do |t|
+  create_table "user_relations", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "user_id_1", comment: "用户1(发起添加好友的人)"
     t.string "user_id_2", comment: "用户2(接受添加好友的人)"
     t.string "relation", comment: "关系值 1 为互为好友"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "channel_id", comment: "订阅号id"
   end
 
-  create_table "users", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci", force: :cascade do |t|
+  create_table "users", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
     t.string "reset_password_token"
