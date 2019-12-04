@@ -97,13 +97,10 @@ gem 'jquery-rails'
 gem 'elasticsearch-model'
 gem 'elasticsearch-rails'
 
-
-#delete gem 'carrierwave'
-#delete gem 'mini_magick'
-# gem 'fog'
-
 gem 'curb'
 gem 'redis'
 gem 'websocket-rails'
 gem "faye-websocket"
 gem "sinatra"
+
+gem 'devise'

@@ -1,13 +1,12 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
+  devise_for :users
   # namespace :rooms do
   #   get '/', action: 'show'
   # end
-  # root to: "rooms#show"
   # mount ActionCable.server => "/cable"
   root 'chat#index'
-  # get '/', to: redirect(ENV['ACCESS_PASS'] + '/' + ENV['REPAIR_CASE_PATH'])
   namespace :chat do
     get '/', action: 'index'
     post 'self_info', action: 'self_info'

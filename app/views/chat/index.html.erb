@@ -381,6 +381,17 @@
 <body>
   <div id="app" v-cloak>
     <input type="hidden" id="selfId" value="" />
+    <p><%= current_user.email %></p>
+    <p><%= current_user.id %></p>
+    <% if user_signed_in? %>
+      <li>
+      <%= link_to('Logout', destroy_user_session_path, method: :delete) %>
+      </li>
+    <% else %>
+      <li>
+      <%= link_to('Login', new_user_session_path) %>
+      </li>
+    <% end %>
     <div class="main-content">
       <!--左边栏 START-->
       <div class="left-side">
@@ -799,8 +810,11 @@
   function fun() {
     var oWords = document.getElementById('chat_record');
     console.log(oWords.scrollHeight)
-    oWords.scrollTop = oWords.scrollHeight+246;
+    console.log(oWords.scrollTop)
+    oWords.scrollTop = oWords.scrollHeight;
   }
+
+  $("#chat_record").bind("DOMNodeInserted", fun);
 
   goeasy.subscribe({
     channel: 'demo',
@@ -837,7 +851,6 @@
                     "content":msgContent,
                     "contentLen":contentStyle}
       app.chatRecordTableData.push(chatRecord);
-      fun()
       // ($('.right-side-mid-inner').children("last-child")[0]).scrollIntoView()
       // $(".right-side-mid-inner").scrollTop($(".right-side-mid-inner")[0].scrollHeight);
       console.log("asasas")

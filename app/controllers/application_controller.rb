@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 class ApplicationController < ActionController::Base
   # before_action :set_locale
-  #before_action :configure_permitted_parameters, if: :devise_controller?
+  before_action :configure_permitted_parameters, if: :devise_controller?
   # before_action :session_save
   require 'net/http'
   require 'net/https'
@@ -59,6 +59,10 @@ class ApplicationController < ActionController::Base
 
   def configure_permitted_parameters
     # strong parametersを設定し、phone_numberを許可
+    added_attrs = [ :nickname, :email, :password, :password_confirmation　]
+    devise_parameter_sanitizer.permit :sign_up, keys: added_attrs
+    devise_parameter_sanitizer.permit :account_update, keys: added_attrs
+    devise_parameter_sanitizer.permit :sign_in, keys: added_attrs
     # devise_parameter_sanitizer.permit(:sign_up) { |u| u.permit(:phone_number, :password, :password_confirmation) }
     # devise_parameter_sanitizer.permit(:sign_in) { |u| u.permit(:phone_number, :password, :password_confirmation) }
     # devise_parameter_sanitizer.permit(
