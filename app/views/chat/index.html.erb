@@ -62,15 +62,15 @@
 
     .left-header-photo {
       margin: 2px;
-      height: 40px;
-      width: 40px;
+      height: 50px;
+      width: 50px;
       color: blue;
     }
 
     .left-header-name {
       /* margin: 2px; */
       height: 32px;
-      width: 136px;
+      width: 130px;
       margin-left: 5px;
     }
 
@@ -227,6 +227,14 @@
       /* position:absolute; */
       margin-left: 8px;
       margin-top: 8px;
+      font-size:14px;
+      /* align-items: center; */
+    }
+
+    .game-list{
+      /* position:absolute; */
+      margin-left: 8px;
+      margin-top: 2px;
       font-size:14px;
       /* align-items: center; */
     }
@@ -389,7 +397,7 @@
         <div class="left-header" v-if="tableDataSelfInfo.length>0" v-loading="loadingSelfInfo" element-loading-text="loading...">
           <div v-for="(item, index) in tableDataSelfInfo" :key="index" class="left-header-inner">
             <div class="left-header-photo">
-              <el-avatar shape="square" :size="40" :src="item.photo" :alt="avatarUrl"></el-avatar>
+              <el-avatar shape="square" :size="50" :src="item.photo" :alt="avatarUrl"></el-avatar>
             </div>
             <div class="left-header-name">
               <%= current_user.nickname %>
@@ -491,9 +499,26 @@
                   </div>
                 </div>
               </el-tab-pane>
+              <!--Game框-->
               <el-tab-pane>
                 <span slot="label"><i class="fa fa-gamepad" style="font-size:22px; margin:14px;"></i></span>
-                table3
+                <div v-if="tableDataGame.length>0" v-loading="loadingGame" element-loading-text="loading...">
+                  <div v-for="item in tableDataGame" class="person-list-in-line">
+                    <div>
+                      <el-avatar shape="square" :size="40" :src="item.cover"></el-avatar>
+                    </div>
+                    <div>
+                    <a :href="'/game/'+item.href">
+                      <div class="game-list">
+                        {{item.name}}
+                      </div>
+                      <div class="game-list">
+                        <el-rate v-model="item.star" disabled show-score text-color="#ff9900"></el-rate>
+                      </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
               </el-tab-pane>
             </el-tabs>
           </template>
@@ -522,11 +547,6 @@
                   <!--</el-tooltip> -->
                 </div>
               </div>
-              <!-- <el-dropdown-item>黄金糕</el-dropdown-item>
-              <el-dropdown-item>狮子头</el-dropdown-item>
-              <el-dropdown-item>螺蛳粉</el-dropdown-item>
-              <el-dropdown-item disabled>双皮奶</el-dropdown-item>
-              <el-dropdown-item divided>蚵仔煎</el-dropdown-item> -->
             </el-dropdown-menu>
           </el-dropdown>
         </p>
@@ -632,6 +652,12 @@
       ],
       tableDataPeople:"",
       groupList:"",
+      tableDataGame: [
+        {game_id: "game_01", cover: "/assets/game/mario-ba8d4ecc8f126ad22bb0cf5d9d7f2aa4de378b69866e2d096038a6933297e110.jpg", name: "马里奥", star: "4.2", time:"2018-10-11", href:"mario"},
+        {game_id: "game_02", cover: "/assets/game/systemer-4625053fa9975bc3b87bddc40c001b40a8f9911b7ee9a0196abdd57fc336c5e0.jpg", name: "空间站修理工",star: "3.1", time:"2018-10-12", href:"systemer"}
+      ],
+      loadingGame: false,
+      value: 3.7,
     },
 
     created: function () {

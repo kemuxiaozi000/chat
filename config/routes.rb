@@ -19,6 +19,12 @@ Rails.application.routes.draw do
     post 'address_book', action: "address_book"
   end
 
+  namespace :game do
+    namespace :mario do
+      get '/', action: 'index'
+    end
+  end
+
     # get 'pdf/download/' => 'pdf#read'
 
     # get 'scroll/' => 'scroll#index'
