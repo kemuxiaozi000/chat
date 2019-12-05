@@ -179,8 +179,9 @@ class ChatController < ApplicationController
       user_relation_1.update({'channel_id': channel_id})
       user_relation_2.update({'channel_id': channel_id})
     end
+    current_target = NameNote.where('name_notes.user_id = ? and name_notes.noted_id = ?', params[:user_id], params[:target_id])
     res[:channel_id] = channel_id
-    res[:current_nickname] = current_nickname
+    res[:current_nickname] = current_target[0].note_name
     render json: res
   end
 
