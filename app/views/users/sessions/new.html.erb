@@ -19,11 +19,13 @@
         <section class="col-lg-8 login-box">
           <%= form_for(resource, as: resource_name, url: session_path(resource_name), :html => {:class => "form-signin"}) do |f| %>
             <h1 class="form-signin-heading">You<%= image_tag("youchat1.jpg", width: "150px",height: "150px") %> Chat</h2>
+            <!--
             <% if alert %>
               <div>
                 <p class="alert alert-error"><%= alert %></p>
               </div>
             <% end %>
+            -->
             <div class="field">
               <%= f.label :email %>
               <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-control" %>

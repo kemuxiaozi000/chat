@@ -132,7 +132,7 @@ class ChatController < ApplicationController
   # timing 鼠标hover在聊天记录框上方群名或个人名字上
   # in params[:user_id] 自己
   #    params[:u_id] 群或个人
-  # out [{note_name:"",photo:""}...]
+  # out [{note_name:"",photo:"",id:""}...]
   def member_info_brief
     res = []
     if params[:u_id].to_s.start_with?("GRP")
@@ -157,6 +157,7 @@ class ChatController < ApplicationController
       hash = {}
       hash["user_note_name"] = i.note_name
       hash["photo"] = i.photo
+      hash["noted_id"] = i.noted_id
       res.push(hash)
     end
     render json: res

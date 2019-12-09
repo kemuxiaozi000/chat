@@ -287,7 +287,7 @@
       flex-direction: column;
       align-items: center;
       justify-content:center;
-      margin: 17px;
+      margin: 9px;
       /* height: 50px;
       width: 40px; */
     }
@@ -384,6 +384,19 @@
       margin: 5px 0 0 50px;
       color: #444;
     }
+
+    .personal-unknown{
+      width: 600px;
+      height: 280px;
+      padding: 80px;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .personal-detail{
+      text-align: center;
+      vertical-align: middle;
+    }
   </style>
 </head>
 
@@ -443,7 +456,7 @@
               <!--每个聊天的展开-->
               <!--右击 置顶 (修改群名) 关闭聊天-->
               <el-tab-pane style="overflow-y:auto;overflow-x:hidden;height:550px">
-                <span slot="label"><i class="fa fa-comments" style="font-size:22px; margin:14px;"></i></span>
+                <span slot="label" id="tab_0"><i class="fa fa-comments" style="font-size:22px; margin:14px;"></i></span>
                 <div v-if="tableData.length>0" v-loading="loading" element-loading-text="loading...">
                   <div v-for="(item, index) in tableData" :key="index">
                     <div class="left-single-content">
@@ -526,30 +539,24 @@
       </div>
       <!--左边栏 END-->
       <!--右边栏 START-->
-      <div class="right-side">
+      <div v-if="activeName==0" class="right-side">
         <div class="right-side-top">
-          <el-dropdown placement="bottom-start" trigger="click" @click.native="loadTableDataMemberInfo" >
+          <el-dropdown placement="bottom-start" trigger="click" @click.native="loadTableDataMemberInfo" @command="handleCommand" >
             <span class="el-dropdown-link">
               {{targetNotedName}}<i class="el-icon-arrow-down el-icon--right"></i>
             </span>
-            <!--<el-divider style="margin-top: 0px;margin-bottom: 0px;"></el-divider> -->
-            <el-dropdown-menu slot="dropdown" style="width:600px">
-              <div class="person-list-in-row">
-                <div class="person-list-in-column">
-                  <%= image_tag(image_path("icon_add.png"), :class => 'img-size-50') %>
-                  <!-- <el-avatar shape="square" :size="40" :src=""></el-avatar> %>-->
-                  <el-button type="text" disabled size="mini" style="color:#9eacb6;">添加</el-button>
-                </div>
-                <div v-for="person in groupList" class="person-list-in-column">
-                  <el-avatar shape="square" :size="50" :src="person.photo"></el-avatar>
-                  <!--<el-tooltip class="tooltip-item" effect="dark" content="{person.name}}" placement="bottom-start"> -->
-                  <el-button type="text" size="mini" style="color:#9eacb6; max-width: 60px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">{{person.user_note_name}}</el-button>
-                  <!--</el-tooltip> -->
-                </div>
-              </div>
+            <el-dropdown-menu slot="dropdown" class="person-list-in-row" style="width:600px">
+              <el-dropdown-item command="add" class="person-list-in-column">
+                <%= image_tag(image_path("icon_add.png"), :class => 'img-size-50') %>
+                <el-button type="text" disabled size="mini" style="color:#9eacb6;">添加</el-button>
+              </el-dropdown-item>
+              <el-dropdown-item v-for="person in groupList" :command="person.noted_id" class="person-list-in-column">
+                <el-avatar shape="square" :size="50" :src="person.photo"></el-avatar>
+                <el-button type="text" size="mini" style="color:#9eacb6; max-width: 60px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">{{person.user_note_name}}</el-button>
+              </el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
-        </p>
+        </div>
         <div class="right-side-mid">
           <div class="right-side-mid-inner" id="chat_record">
             <div v-if="chatRecordTableData.length>0">
@@ -585,7 +592,6 @@
             </div>
             <!-- <div id="msg_end" style="height:0px; overflow:hidden"></div> -->
           </div>
-
         </div>
         <div class="right-side-bottom">
           <div class="right-side-bottom-toolbar">
@@ -603,6 +609,14 @@
             <!-- <el-button onclick="publishMessage()">发送</el-button> -->
             <el-button @click.native="publishMessage">发送</el-button>
           </div>
+        </div>
+      </div>
+      <div v-else-if="activeName==1" class="right-side">
+        <span class="el-dropdown-link" style="font-size:14px">
+          详细信息
+        </span>
+        <div class="personal-unknown">
+          <%= image_tag(image_path("new/headimg.png"), :width => '140') %>
         </div>
       </div>
     </div>
@@ -642,14 +656,15 @@
       // ],
       chatRecordTableData: [],
       targetNotedName: "未选择聊天",
-      activeName: 'second',
+      activeName: '',
       avatarUrl: 'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
       loading: false,
       loadingPeople: false,
-      tableData:[{ name: "好友", msg_num: "4", latest_msg_brief: "王铭铭-换尿布...", latest_msg_time: "22:20",is_block: true },
-      { name: "Dota小分队", msg_num: "2", latest_msg_brief: "今晚干...", latest_msg_time: "08:10" ,is_block: true },
-      { name: "电装", msg_num: "5", latest_msg_brief: "今天加班吗...", latest_msg_time: "21:20" ,is_block: true }
-      ],
+      // tableData:[{ name: "好友", msg_num: "4", latest_msg_brief: "王铭铭-换尿布...", latest_msg_time: "22:20",is_block: true },
+      // { name: "Dota小分队", msg_num: "2", latest_msg_brief: "今晚干...", latest_msg_time: "08:10" ,is_block: true },
+      // { name: "电装", msg_num: "5", latest_msg_brief: "今天加班吗...", latest_msg_time: "21:20" ,is_block: true }
+      // ],
+      tableData:[],
       tableDataPeople:"",
       groupList:"",
       tableDataGame: [
@@ -674,8 +689,18 @@
 
     // mounted
     methods: {
+      handleCommand(command) {
+        this.$message('click on item ' + command);
+        if(command == "add"){
+
+        } else {
+
+        }
+      },
+
       selectChatTarget:function (target_id, target_name) {
-        console.log("selectChatTarget "+target_name)
+        // console.log("selectChatTarget "+target_name)
+        $("#tab_0").click();
         if(this.currentChatUid != target_id){
           this.chatRecordTableData = [];
           this.currentChatUid = target_id;
@@ -696,6 +721,8 @@
                 historyChatRecord(res.channel_id)
                 //channel now chat
                 showNowChatRecord(res.channel_id)
+                //左边选择的追加到顶端(数据在底部)
+                leftSelectMoveTop(res.channel_id)
               } else {
 
               }
@@ -708,8 +735,14 @@
       },
 
       handleClick(tab, event) {
-        if(tab._uid == "11") {
+        console.log("handleClick");
+        if(this.activeName == 1) {
+          //address
           this.loadTableDataAddressBook();
+        } else if (this.activeName == 0){
+          //chat
+        } else if (this.activeName == 2){
+          //game
         }
         // console.log(tab, event);
       },
@@ -734,14 +767,14 @@
           },
           error: function (err) {
             _this.loadingSelfInfo = false
-            _this.tableData = []
+            _this.tableDataSelfInfo = []
           }
         })
       },
 
       // 加载tab2的所有好友
       loadTableDataAddressBook: function () {
-        console.log("loadTableDataAddressBook")
+        // console.log("loadTableDataAddressBook")
         this.loadingAddressBook = true;
         var _this = this;
         $.ajax({
@@ -761,7 +794,6 @@
               obj["personList"] = personInfoArr
               result.push(obj)
             }
-            // console.log(result[25]["index"])
             res.forEach(function (val) {
               if(index_tmp = getPinYinByName(val.name).substring(0,1)){
                 result.forEach(function (tmp) {
@@ -791,7 +823,7 @@
           },
           error: function (err) {
             _this.loadingAddressBook = false
-            _this.tableData = []
+            _this.tableDataPeople = []
           }
         })
       },
@@ -843,7 +875,7 @@
       // },
 
       showMsg: function() {
-        console.log("show")
+        // console.log("show")
         this.loadingShowMsg = true;
         var _this = this;
         $.ajax({
@@ -854,7 +886,7 @@
             target_id: this.currentChatUid
           },
           success: function (res) {
-            console.log(res)
+            // console.log(res)
             _this.loadingShowMsg = false
             if (res) {
               _this.chatRecordTableData = res
@@ -879,9 +911,43 @@
 
   $("#chat_record").bind("DOMNodeInserted", scrollToBottom);
 
+  //从通讯录点击目标人物之后，左边chat标签下顶部显示
+  function leftSelectMoveTop(channel_id) {
+    //取得target 的 id，去搜索最后的未读信息，得到未读的msg_num，最后一条未读消息和时间，取得是否屏蔽的状态
+    let add_top_item = {}
+    goeasy.history({
+        channel: channel_id, //必需项
+        limit: 10 //可选项，返回的消息条数，默认为100条，最多1000条
+    },
+    function(response){
+        // console.log("收到历史消息: "+ JSON.stringify(response));
+        for (let item of response.content.messages) {
+          handleGoeasyMsgBrief(item)
+        }
+    });
+  }
+
+  //维护chat brief 队列 --
+  function handleGoeasyMsgBrief(message) {
+    let current_nickname = app.targetNotedName;
+    let index = message.content.lastIndexOf("|");
+    let chat_brief = {}
+    let sendMsgUserId = message.content.substring(index + 1, message.content.length);
+    let msgContent = message.content.substring(0, index);
+    let sendTime = timestamp2FormatDate(message.time,"hh:mm")
+    let msg_num = 1
+
+    chat_brief = {"name":name,
+                  "msg_num":msg_num,
+                  "latest_msg_brief":msgContent,
+                  "latest_msg_time":sendTime,
+                  "is_block":is_block}
+    app.tableData.push(chat_brief)
+  }
+
   //展示最新的订阅消息
   function showNowChatRecord(channel_id){
-    console.log("showNowChatRecord")
+    // console.log("showNowChatRecord")
     goeasy.subscribe({
       channel: channel_id,
       onMessage: function (message) {
@@ -893,7 +959,7 @@
 
   //显示以前的订阅消息
   function historyChatRecord(channel_id) {
-    console.log("historyChatRecord")
+    // console.log("historyChatRecord")
     goeasy.history({
         channel: channel_id, //必需项
         // start: start_time, //可选项，开始时间
@@ -965,7 +1031,7 @@
 
   //点击发送按钮
   function publishMessage() {
-    console.log("publishMessage")
+    // console.log("publishMessage")
     var publishMessage = $(".right-side-bottom-input-inner").val();
     publishMessage = publishMessage + "|" + selfId;
     currentChannel = $("#currentChanel").val()
@@ -977,7 +1043,6 @@
       },
       onSuccess: function () {
         // document.getElementById("content").value = '';
-        console.log("clear")
         $(".right-side-bottom-input-inner").val("")
       }
     });
@@ -1001,13 +1066,13 @@
         "S"  : date.getMilliseconds()             //毫秒
     };
     if(/(y+)/.test(fmt)) {
-            fmt=fmt.replace(RegExp.$1, (date.getFullYear()+"").substr(4 - RegExp.$1.length));
+      fmt=fmt.replace(RegExp.$1, (date.getFullYear()+"").substr(4 - RegExp.$1.length));
     }
-     for(var k in o) {
-        if(new RegExp("("+ k +")").test(fmt)){
-             fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
-         }
-     }
+    for(var k in o) {
+      if(new RegExp("("+ k +")").test(fmt)){
+            fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
+        }
+    }
     return fmt;
   }
 
