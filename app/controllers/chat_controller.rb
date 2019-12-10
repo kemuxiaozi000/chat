@@ -4,6 +4,10 @@ class ChatController < ApplicationController
 
   end
 
+  def show
+
+  end
+
   # 加载个人数据（左上角）头像，昵称
   # timing 登陆就加载
   # in params[:user_id]

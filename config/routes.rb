@@ -9,6 +9,7 @@ Rails.application.routes.draw do
   root 'chat#index'
   namespace :chat do
     get '/', action: 'index'
+    get 'show', action: 'show'
     post 'self_info', action: 'self_info'
     post 'search_user', action: 'search_user'
     post 'chat_brief', action: "chat_brief"
