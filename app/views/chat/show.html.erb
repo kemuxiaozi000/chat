@@ -700,23 +700,53 @@
             margin-bottom: 20px;
         }
 
-        #frame .content .messages ul li.sent img {
+        #frame .content .messages ul li.msg-reply img {
             margin: 6px 8px 0 0;
         }
 
-        #frame .content .messages ul li.sent p {
+        #frame .content .messages ul li.msg-reply div {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        #frame .content .messages ul li.msg-reply div p {
             background: #435f7a;
             color: #f5f5f5;
         }
 
-        #frame .content .messages ul li.replies img {
+        #frame .content .messages ul li.msg-reply div span{
+            /* position: absolute; */
+            /* left: 0; */
+            float: left;
+            bottom: -15px;
+            color: rgba(33,33,33,0.5);
+            font-size: 10px;
+        }
+
+        #frame .content .messages ul li.msg-sent img {
             float: right;
             margin: 6px 0 0 8px;
         }
 
-        #frame .content .messages ul li.replies p {
+        #frame .content .messages ul li.msg-sent div {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            float: right;
+            align-items: flex-end;
+        }
+
+        #frame .content .messages ul li.msg-sent div p {
             background: #f5f5f5;
             float: right;
+        }
+
+        #frame .content .messages ul li.msg-sent div span {
+            float: right;
+            bottom: -15px;
+            color: rgba(33,33,33,0.5);
+            font-size: 10px;
         }
 
         #frame .content .messages ul li img {
@@ -901,76 +931,6 @@
                                     </div>
                                 </div>
                             </li>
-                            <li class="contact">
-                                <div class="wrap">
-                                    <span class="contact-status online"></span>
-                                    <img src="http://emilcarlsson.se/assets/donnapaulsen.png" alt="" />
-                                    <div class="meta">
-                                        <p class="name">Donna Paulsen</p>
-                                        <p class="preview">Mike, I know everything! I'm Donna..</p>
-                                    </div>
-                                </div>
-                            </li>
-                            <li class="contact">
-                                <div class="wrap">
-                                    <span class="contact-status busy"></span>
-                                    <img src="http://emilcarlsson.se/assets/jessicapearson.png" alt="" />
-                                    <div class="meta">
-                                        <p class="name">Jessica Pearson</p>
-                                        <p class="preview">Have you finished the draft on the Hinsenburg deal?</p>
-                                    </div>
-                                </div>
-                            </li>
-                            <li class="contact">
-                                <div class="wrap">
-                                    <span class="contact-status"></span>
-                                    <img src="http://emilcarlsson.se/assets/haroldgunderson.png" alt="" />
-                                    <div class="meta">
-                                        <p class="name">Harold Gunderson</p>
-                                        <p class="preview">Thanks Mike! :)</p>
-                                    </div>
-                                </div>
-                            </li>
-                            <li class="contact">
-                                <div class="wrap">
-                                    <span class="contact-status"></span>
-                                    <img src="http://emilcarlsson.se/assets/danielhardman.png" alt="" />
-                                    <div class="meta">
-                                        <p class="name">Daniel Hardman</p>
-                                        <p class="preview">We'll meet again, Mike. Tell Jessica I said 'Hi'.</p>
-                                    </div>
-                                </div>
-                            </li>
-                            <li class="contact">
-                                <div class="wrap">
-                                    <span class="contact-status busy"></span>
-                                    <img src="http://emilcarlsson.se/assets/katrinabennett.png" alt="" />
-                                    <div class="meta">
-                                        <p class="name">Katrina Bennett</p>
-                                        <p class="preview">I've sent you the files for the Garrett trial.</p>
-                                    </div>
-                                </div>
-                            </li>
-                            <li class="contact">
-                                <div class="wrap">
-                                    <span class="contact-status"></span>
-                                    <img src="http://emilcarlsson.se/assets/charlesforstman.png" alt="" />
-                                    <div class="meta">
-                                        <p class="name">Charles Forstman</p>
-                                        <p class="preview">Mike, this isn't over.</p>
-                                    </div>
-                                </div>
-                            </li>
-                            <li class="contact">
-                                <div class="wrap">
-                                    <span class="contact-status"></span>
-                                    <img src="http://emilcarlsson.se/assets/jonathansidwell.png" alt="" />
-                                    <div class="meta">
-                                        <p class="name">Jonathan Sidwell</p>
-                                        <p class="preview"><span>You:</span> That's bullshit. This deal is solid.</p>
-                                    </div>
-                                </div>
-                            </li>
                         </ul>
                     </div>
                     <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
@@ -1004,9 +964,14 @@
                 </div>
             </div>
             <div id="bottom-bar">
-                <button id="addcontact"><i class="fa fa-user-plus fa-fw" aria-hidden="true"></i> <span>Add
-            contact</span></button>
-                <button id="settings"><i class="fa fa-cog fa-fw" aria-hidden="true"></i> <span>Settings</span></button>
+                <button id="addcontact">
+                    <i class="fa fa-user-plus fa-fw" aria-hidden="true"></i>
+                    <span>Add contact</span>
+                </button>
+                <button id="settings">
+                    <i class="fa fa-cog fa-fw" aria-hidden="true"></i>
+                    <span>Settings</span>
+                </button>
             </div>
         </div>
         <div class="content">
@@ -1020,14 +985,20 @@
                 </div>
             </div>
             <div class="messages">
-                <ul>
-                    <li class="sent">
-                        <img src="" alt="" />
-                        <p>How the hell am I supposed to get a jury to believe you when I am not even sure that I do?!</p>
-                    </li>
-                    <li class="replies">
+                <ul v-if="chatRecordTableData.length>0" v-for="chatRec in chatRecordTableData">
+                    <li class="msg-reply" v-if="chatRec.dir == 'left'">
                         <img v-bind:src="targetPhoto" alt="" />
-                        <p>When you're backed against the wall, break the god damn thing down.</p>
+                        <div>
+                            <span>{{chatRec.time}}</span>
+                            <p>{{chatRec.content}}</p>
+                        </div>
+                    </li>
+                    <li class="msg-sent" v-else-if="chatRec.dir == 'right'" v-for="item in tableDataSelfInfo">
+                        <img v-bind:src="item.photo" alt="" />
+                        <div>
+                            <span>{{chatRec.time}}</span>
+                            <p>{{chatRec.content}}</p>
+                        </div>
                     </li>
                 </ul>
             </div>
@@ -1039,6 +1010,7 @@
                 </div>
             </div>
         </div>
+        <input type="hidden" id="currentChanel" value="" />
     </div>
     <script src='//production-assets.codepen.io/assets/common/stopExecutionOnTimeout-b2a7b3fe212eaa732349046d8416e00a9dec26eb7fd347590fbced3ab38af52e.js'></script>
     <script type="text/javascript" src="https://cdn-hangzhou.goeasy.io/goeasy.js"></script>
@@ -1048,8 +1020,8 @@
             appkey: 'BC-242425a937724e418b4f51105a138e3b'
         });
         $(document).on("click", ".submit", function () {
-            console.log("document")
-            newMessage();
+            // newMessage();
+            publishMessage();
         });
 
         $(".messages").animate({
@@ -1093,7 +1065,8 @@
             if ($.trim(message) == '') {
                 return false;
             }
-            $('<li class="sent"><img src="http://emilcarlsson.se/assets/mikeross.png" alt="" /><p>' + message + '</p></li>')
+
+            $('<li class="msg-reply" v-for="item in tableDataSelfInfo"><img v-bind:src="item.photo" alt="" /><div><span>8:40 AM, Today</span><p>' + message + '</p></div></li>')
                 .appendTo($('.messages ul'));
             $('.message-input input').val(null);
             $('.contact.active .preview').html('<span>You: </span>' + message);
@@ -1102,12 +1075,13 @@
             }, "fast");
         };
 
-        $(window).on('keydown', function(e) {
-            if (e.which == 13) {
-                newMessage();
-                return false;
-            }
-        });
+        // $(window).on('keydown', function(e) {
+        //     if (e.which == 13) {
+        //         // newMessage();
+        //         publishMessage();
+        //         return false;
+        //     }
+        // });
 
         var frame = new Vue({
             el: "#frame",
@@ -1189,7 +1163,7 @@
                                     //channel now chat
                                     showNowChatRecord(res.channel_id)
                                     //左边选择的追加到顶端(数据在底部)
-                                    leftSelectMoveTop(res.channel_id)
+                                    // leftSelectMoveTop(res.channel_id)
                                 } else {
 
                                 }
@@ -1340,11 +1314,8 @@
     });
 
     $("#pills-profile-tab").on("click", function(){
-        console.log("click");
         frame.loadTableDataAddressBook();
     });
-
-
 
     //从通讯录点击目标人物之后，左边chat标签下顶部显示
     // function leftSelectMoveTop(channel_id) {
@@ -1380,142 +1351,133 @@
     //     app.tableData.push(chat_brief)
     // }
 
-    // //展示最新的订阅消息
-    // function showNowChatRecord(channel_id){
-    //     // console.log("showNowChatRecord")
-    //     goeasy.subscribe({
-    //     channel: channel_id,
-    //     onMessage: function (message) {
-    //         console.log("onMessage")
-    //         handleGoeasyMsg(message)
-    //     }
-    //     });
-    // }
+    //展示最新的订阅消息
+    function showNowChatRecord(channel_id){
+        // console.log("showNowChatRecord")
+        goeasy.subscribe({
+        channel: channel_id,
+        onMessage: function (message) {
+            console.log("onMessage")
+            handleGoeasyMsg(message)
+        }
+        });
+    }
 
-    // //显示以前的订阅消息
-    // function historyChatRecord(channel_id) {
-    //     // console.log("historyChatRecord")
-    //     goeasy.history({
-    //         channel: channel_id, //必需项
-    //         // start: start_time, //可选项，开始时间
-    //         // end: end_time, //可选项，结束时间
-    //         // limit: limit_num //可选项，返回的消息条数，默认为100条，最多1000条
-    //     },
-    //     function(response){
-    //         // console.log("收到历史消息: "+ JSON.stringify(response));
-    //         for (let item of response.content.messages) {
-    //         handleGoeasyMsg(item)
-    //         }
-    //         /**
-    //         response示例：
-    //         {
-    //             "code":200,
-    //             "content":{
-    //                 "messages":[
-    //                     {"time":1561347527649,"content":"my 001"}
-    //                     {"time":1561347596077,"content":"my 002"}
-    //                     {"time":1561347622613,"content":"my 003"}
-    //                     {"time":1561347691826,"content":"my 004"}
-    //                     {"time":1561347706447,"content":"my 005"}
-    //                 ]
-    //             }
-    //         }
-    //         **/
-    //     });
-    // }
+    //显示以前的订阅消息
+    function historyChatRecord(channel_id) {
+        // console.log("historyChatRecord")
+        goeasy.history({
+            channel: channel_id, //必需项
+            // start: start_time, //可选项，开始时间
+            // end: end_time, //可选项，结束时间
+            // limit: limit_num //可选项，返回的消息条数，默认为100条，最多1000条
+        },
+        function(response){
+            // console.log("收到历史消息: "+ JSON.stringify(response));
+            for (let item of response.content.messages) {
+                handleGoeasyMsg(item)
+            }
+            /**
+            response示例：
+            {
+                "code":200,
+                "content":{
+                    "messages":[
+                        {"time":1561347527649,"content":"my 001"}
+                        {"time":1561347596077,"content":"my 002"}
+                        {"time":1561347622613,"content":"my 003"}
+                        {"time":1561347691826,"content":"my 004"}
+                        {"time":1561347706447,"content":"my 005"}
+                    ]
+                }
+            }
+            **/
+        });
+    }
 
-    // //把消息转成需要的json格式
-    // function handleGoeasyMsg(message) {
-    //     var current_nickname = app.targetNotedName;
-    //     var index = message.content.lastIndexOf("|");
-    //     var side
-    //     var len
-    //     var chatRecord = {}
-    //     var sendMsgUserId = message.content.substring(index + 1, message.content.length);
-    //     var msgContent = message.content.substring(0, index);
-    //     var sendTime = timestamp2FormatDate(message.time,"yyyy/MM/dd hh:mm")
-    //     var jmz = {};
-    //     jmz.GetLength = function(str) {
-    //     return str.replace(/[\u0391-\uFFE5]/g,"aa").length;  //先把中文替换成两个字节的英文，在计算长度
-    //     };
-    //     if(sendMsgUserId == app.selfId){
-    //     side="right";
-    //     styleSide="left";
-    //     if(jmz.GetLength(msgContent) < 50){
-    //         len = 508 - jmz.GetLength(msgContent) * 8;
-    //     } else {
-    //         len = 50
-    //     }
-    //     } else {
-    //     side="left";
-    //     styleSide="right";
-    //     if(jmz.GetLength(msgContent) < 50){
-    //         len = 508 - jmz.GetLength(msgContent) * 8;
-    //     } else {
-    //         len = 50
-    //     }
-    //     }
-    //     var contentStyle = "margin-" + styleSide + ": " + len + "px;"
-    //     chatRecord = {"dir":side,
-    //                 "notedName":current_nickname,
-    //                 "time":sendTime,
-    //                 "content":msgContent,
-    //                 "contentLen":contentStyle}
-    //     app.chatRecordTableData.push(chatRecord);
-    // }
+    //把消息转成需要的json格式
+    function handleGoeasyMsg(message) {
+        let current_nickname = frame.targetNotedName;
+        let index = message.content.lastIndexOf("|");
+        let chatRecord = {};
+        let side;
+        let sendMsgUserId = message.content.substring(index + 1, message.content.length);
+        let msgContent = message.content.substring(0, index);
+        var sendTime = timestamp2FormatDate(message.time,"yyyy/MM/dd hh:mm");
+        (sendMsgUserId == frame.selfId)?(side="right"):(side="left");
+        chatRecord = {"dir":side,
+                    "notedName":current_nickname,
+                    "time":sendTime,
+                    "content":msgContent
+                    }
+        frame.chatRecordTableData.push(chatRecord);
+        $(".messages").animate({
+            scrollTop: $(document).height()
+        }, "fast");
+    }
 
-    // //点击发送按钮
-    // function publishMessage() {
-    //     // console.log("publishMessage")
-    //     var publishMessage = $(".right-side-bottom-input-inner").val();
-    //     publishMessage = publishMessage + "|" + selfId;
-    //     currentChannel = $("#currentChanel").val()
-    //     goeasy.publish({
-    //     channel: currentChannel,
-    //     message: publishMessage,
-    //     onFailed: function (error) {
-    //         alert(error.code + " : " + error.content);
-    //     },
-    //     onSuccess: function () {
-    //         // document.getElementById("content").value = '';
-    //         $(".right-side-bottom-input-inner").val("")
-    //     }
-    //     });
-    // }
+    //点击发送按钮
+    function publishMessage() {
+        console.log("publishMessage")
+        let message = $(".message-input input").val();
+        if ($.trim(message) == '') {
+            return false;
+        }
+        // console.log("publishMessage")
+        let publishMessage = "";
+        publishMessage = message + "|" + selfId;
+        console.log(publishMessage)
+        currentChannel = $("#currentChanel").val()
+        goeasy.publish({
+            channel: currentChannel,
+            message: publishMessage,
+            onFailed: function (error) {
+                alert(error.code + " : " + error.content);
+        },
+        onSuccess: function () {
+            // document.getElementById("content").value = '';
+            $(".message-input input").val("")
+            //滚动到底部
+            $(".messages").animate({
+                scrollTop: $(document).height()
+            }, "fast");
+        }
+        });
+    }
 
-    // //时间格式化
-    // function timestamp2Date(timestamp) {
-    //     var date = new Date();
-    //     date.setTime(timestamp);
-    //     return date;
-    // }
+    //时间格式化
+    function timestamp2Date(timestamp) {
+        var date = new Date();
+        date.setTime(timestamp);
+        return date;
+    }
 
-    // function formatDate(date, fmt) {
-    //     var o = {
-    //         "M+" : date.getMonth()+1,                 //月份
-    //         "d+" : date.getDate(),                    //日
-    //         "h+" : date.getHours(),                   //小时
-    //         "m+" : date.getMinutes(),                 //分
-    //         "s+" : date.getSeconds(),                 //秒
-    //         "q+" : Math.floor((date.getMonth()+3)/3), //季度
-    //         "S"  : date.getMilliseconds()             //毫秒
-    //     };
-    //     if(/(y+)/.test(fmt)) {
-    //     fmt=fmt.replace(RegExp.$1, (date.getFullYear()+"").substr(4 - RegExp.$1.length));
-    //     }
-    //     for(var k in o) {
-    //     if(new RegExp("("+ k +")").test(fmt)){
-    //             fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
-    //         }
-    //     }
-    //     return fmt;
-    // }
+    function formatDate(date, fmt) {
+        var o = {
+            "M+" : date.getMonth()+1,                 //月份
+            "d+" : date.getDate(),                    //日
+            "h+" : date.getHours(),                   //小时
+            "m+" : date.getMinutes(),                 //分
+            "s+" : date.getSeconds(),                 //秒
+            "q+" : Math.floor((date.getMonth()+3)/3), //季度
+            "S"  : date.getMilliseconds()             //毫秒
+        };
+        if(/(y+)/.test(fmt)) {
+        fmt=fmt.replace(RegExp.$1, (date.getFullYear()+"").substr(4 - RegExp.$1.length));
+        }
+        for(var k in o) {
+        if(new RegExp("("+ k +")").test(fmt)){
+                fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
+            }
+        }
+        return fmt;
+    }
 
-    // function timestamp2FormatDate(timestamp, fmt) {
-    //     var date = timestamp2Date(timestamp);
-    //     var res = formatDate(date, fmt);
-    //     return res;
-    // }
+    function timestamp2FormatDate(timestamp, fmt) {
+        var date = timestamp2Date(timestamp);
+        var res = formatDate(date, fmt);
+        return res;
+    }
 
         //# sourceURL=pen.js
     </script>
