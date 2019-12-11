@@ -24,6 +24,9 @@ Rails.application.routes.draw do
     namespace :mario do
       get '/', action: 'index'
     end
+    namespace :systemer do
+      get '/', action: 'index'
+    end
   end
 
     # get 'pdf/download/' => 'pdf#read'

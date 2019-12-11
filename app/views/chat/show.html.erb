@@ -859,13 +859,13 @@
             <div id="contacts">
                 <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
                     <li class="nav-item">
-                        <a class="nav-link active" id="pills-home-tab" data-toggle="pill" href="#pills-home" role="tab" aria-controls="pills-home" aria-selected="true">Home</a>
+                        <a class="nav-link active" id="pills-home-tab" data-toggle="pill" href="#pills-home" role="tab" aria-controls="pills-home" aria-selected="true"><i class="fa fa-comments"></i></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" id="pills-profile-tab" data-toggle="pill" href="#pills-profile" role="tab" aria-controls="pills-profile" aria-selected="false">Profile</a>
+                        <a class="nav-link" id="pills-profile-tab" data-toggle="pill" href="#pills-profile" role="tab" aria-controls="pills-profile" aria-selected="false"><i class="fa fa-user"></i></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" id="pills-contact-tab" data-toggle="pill" href="#pills-contact" role="tab" aria-controls="pills-contact" aria-selected="false">Contact</a>
+                        <a class="nav-link" id="pills-contact-tab" data-toggle="pill" href="#pills-contact" role="tab" aria-controls="pills-contact" aria-selected="false"><i class="fa fa-gamepad"></i></a>
                     </li>
                 </ul>
                 <div class="tab-content" id="pills-tabContent">
@@ -974,61 +974,35 @@
                         </ul>
                     </div>
                     <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
-                        <div v-if="tableDataPeople.length>0" v-loading="loadingPeople" element-loading-text="loading...">
-                            <ul v-for="item in tableDataPeople">
-                                {{item.index}}
-                                <li v-for="item in tableDataPeople" class="contact">
-                                    <div class="wrap" v-for="person in item.personList" @click="selectChatTarget(person.uid,person.name)">
-                                        <span class="contact-status online"></span>
-                                        <img v-bind:src="person.photo" alt="" />
-                                        <div class="meta">
-                                            <p class="name">{{person.name}}</p>
-                                        </div>
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">3..</div>
-                </div>
-            </div>
-                <!--
-
-                        <div v-if="tableDataPeople.length>0" v-loading="loadingPeople" element-loading-text="loading...">
-                            <ul v-for="item in tableDataPeople">
-                                {{item.index}}
-                                <li v-for="item in tableDataPeople" class="contact">
-                                    <div class="wrap" v-for="person in item.personList" @click="selectChatTarget(person.uid,person.name)">
-                                        <span class="contact-status online"></span>
-                                        <img v-bind:src="person.photo" alt="" />
-                                        <div class="meta">
-                                            <p class="name">{{person.name}}</p>
-                                        </div>
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div v-if="tableDataPeople.length>0" v-loading="loadingPeople" element-loading-text="loading...">
-                            <div v-for="item in tableDataPeople">
-                                <div class="left-people-single-content">
-                                    <div class="left-people-abc-index">
-                                        {{item.index}}
-                                    </div>
-                                    <div v-for="person in item.personList" class="person-list-in-line" @click="selectChatTarget(person.uid,person.name)">
-                                        <div>
-                                            <el-avatar shape="square" :size="40" :src="person.photo"></el-avatar>
-                                        </div>
-                                        <div class="person-list-person-name">
-                                            {{person.name}}
-                                        </div>
+                        <ul v-if="tableDataPeople.length>0" v-loading="loadingPeople" element-loading-text="loading..." v-for="item in tableDataPeople">
+                            <li>{{item.index}}</li>
+                            <li class="contact">
+                                <div class="wrap" v-for="person in item.personList" @click="selectChatTarget(person.uid,person.name, person.photo)">
+                                    <span class="contact-status online"></span>
+                                    <img v-bind:src="person.photo" alt="" />
+                                    <div class="meta">
+                                        <p class="name">{{person.name}}</p>
+                                        <p class="name">...</p>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">
+                        <ul v-if="tableDataGame.length>0" v-loading="loadingGame" element-loading-text="loading...">
+                            <li class="contact" v-for="item in tableDataGame">
+                                <div class="wrap">
+                                    <img v-bind:src="item.cover" alt="" />
+                                    <div class="meta">
+                                        <p class="name">{{item.name}}</p>
+                                    </div>
+                                </div>
+                                <el-rate v-model="item.star" disabled show-score text-color="#ff9900"></el-rate>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-            </div> -->
+            </div>
             <div id="bottom-bar">
                 <button id="addcontact"><i class="fa fa-user-plus fa-fw" aria-hidden="true"></i> <span>Add
             contact</span></button>
@@ -1037,8 +1011,8 @@
         </div>
         <div class="content">
             <div class="contact-profile">
-                <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
-                <p>Harvey Specter</p>
+                <img v-bind:src="targetPhoto" alt="" />
+                <p>{{targetNotedName}}</p>
                 <div class="social-media">
                     <i class="fa fa-facebook" aria-hidden="true"></i>
                     <i class="fa fa-twitter" aria-hidden="true"></i>
@@ -1048,36 +1022,12 @@
             <div class="messages">
                 <ul>
                     <li class="sent">
-                        <img src="http://emilcarlsson.se/assets/mikeross.png" alt="" />
+                        <img src="" alt="" />
                         <p>How the hell am I supposed to get a jury to believe you when I am not even sure that I do?!</p>
                     </li>
                     <li class="replies">
-                        <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
+                        <img v-bind:src="targetPhoto" alt="" />
                         <p>When you're backed against the wall, break the god damn thing down.</p>
-                    </li>
-                    <li class="replies">
-                        <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
-                        <p>Excuses don't win championships.</p>
-                    </li>
-                    <li class="sent">
-                        <img src="http://emilcarlsson.se/assets/mikeross.png" alt="" />
-                        <p>Oh yeah, did Michael Jordan tell you that?</p>
-                    </li>
-                    <li class="replies">
-                        <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
-                        <p>No, I told him that.</p>
-                    </li>
-                    <li class="replies">
-                        <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
-                        <p>What are your choices when someone puts a gun to your head?</p>
-                    </li>
-                    <li class="sent">
-                        <img src="http://emilcarlsson.se/assets/mikeross.png" alt="" />
-                        <p>What are you talking about? You do what they say or they shoot you.</p>
-                    </li>
-                    <li class="replies">
-                        <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
-                        <p>Wrong. You take the gun, or you pull out a bigger one. Or, you call their bluff. Or, you do any one of a hundred and forty six other things.</p>
                     </li>
                 </ul>
             </div>
@@ -1179,6 +1129,7 @@
                 // ],
                 chatRecordTableData: [],
                 targetNotedName: "未选择聊天",
+                targetPhoto: '',
                 activeName: '',
                 avatarUrl: 'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
                 loading: false,
@@ -1200,218 +1151,371 @@
 
             created: function () {
                 this.loadTableDataSelfInfo()
-                var _this = this;
-                },
+                // var _this = this;
+            },
 
             // mounted
             methods: {
-            handleCommand(command) {
-                this.$message('click on item ' + command);
-                if(command == "add"){
+                handleCommand(command) {
+                    this.$message('click on item ' + command);
+                    if(command == "add"){
 
-                } else {
+                    } else {
 
-                }
-            },
+                    }
+                },
 
-            selectChatTarget:function (target_id, target_name) {
-                // console.log("selectChatTarget "+target_name)
-                $("#tab_0").click();
-                if(this.currentChatUid != target_id){
-                this.chatRecordTableData = [];
-                this.currentChatUid = target_id;
-                _this = this;
-                //生成channel——id
-                $.ajax({
-                    url: '/chat/show_chat_record',
+                selectChatTarget:function (target_id, target_name, target_photo) {
+                    // console.log("selectChatTarget "+target_name)
+                    if(this.currentChatUid != target_id){
+                        this.chatRecordTableData = [];
+                        this.currentChatUid = target_id;
+                        this.targetPhoto = target_photo;
+                        _this = this;
+                        //生成channel——id
+                        $.ajax({
+                            url: '/chat/show_chat_record',
+                            type: 'post',
+                            data: {
+                            user_id: this.selfId,
+                            target_id: target_id
+                            },
+                            success: function (res) {
+                                if (res.count !== 0) {
+                                    _this.targetNotedName = res.current_nickname
+                                    $("#currentChanel").val(res.channel_id)
+                                    //channel history chat record
+                                    historyChatRecord(res.channel_id)
+                                    //channel now chat
+                                    showNowChatRecord(res.channel_id)
+                                    //左边选择的追加到顶端(数据在底部)
+                                    leftSelectMoveTop(res.channel_id)
+                                } else {
+
+                                }
+                            },
+                            error: function (err) {
+                            }
+                        })
+                    }
+
+                },
+
+                // 加载个人信息
+                loadTableDataSelfInfo: function () {
+                    this.loadingSelfInfo = true;
+                    var _this = this;
+                    $.ajax({
+                    url: '/chat/self_info',
                     type: 'post',
                     data: {
-                    user_id: this.selfId,
-                    target_id: target_id
+                        user_id: this.selfId
                     },
                     success: function (res) {
+                        _this.loadingSelfInfo = false;
                         if (res.count !== 0) {
-                            _this.targetNotedName = res.current_nickname
-                            $("#currentChanel").val(res.channel_id)
-                            //channel history chat record
-                            historyChatRecord(res.channel_id)
-                            //channel now chat
-                            showNowChatRecord(res.channel_id)
-                            //左边选择的追加到顶端(数据在底部)
-                            leftSelectMoveTop(res.channel_id)
+                        _this.tableDataSelfInfo = res
                         } else {
-
+                        _this.tableDataSelfInfo = []
                         }
                     },
                     error: function (err) {
+                        _this.loadingSelfInfo = false
+                        _this.tableDataSelfInfo = []
                     }
-                })
-                }
-
-            },
-
-            // 加载个人信息
-            loadTableDataSelfInfo: function () {
-                this.loadingSelfInfo = true;
-                var _this = this;
-                $.ajax({
-                url: '/chat/self_info',
-                type: 'post',
-                data: {
-                    user_id: this.selfId
+                    })
                 },
-                success: function (res) {
-                    _this.loadingSelfInfo = false
-                    if (res.count !== 0) {
-                    _this.tableDataSelfInfo = res
-                    } else {
-                    _this.tableDataSelfInfo = []
-                    }
-                },
-                error: function (err) {
-                    _this.loadingSelfInfo = false
-                    _this.tableDataSelfInfo = []
-                }
-                })
-            },
 
-            // 加载tab2的所有好友
-            loadTableDataAddressBook: function () {
-                // console.log("loadTableDataAddressBook")
-                this.loadingAddressBook = true;
-                var _this = this;
-                $.ajax({
-                url: '/chat/address_book',
-                type: 'post',
-                data: {
-                    user_id: this.selfId
-                },
-                success: function (res) {
-                    _this.loadingAddressBook = false
-                    var result = [];
-                    var index_arr = [];
-                    for(var i = 97; i <=122; i++){
-                    let obj = {}
-                    var personInfoArr = []
-                    obj["index"] = String.fromCharCode(i)
-                    obj["personList"] = personInfoArr
-                    result.push(obj)
-                    }
-                    res.forEach(function (val) {
-                    if(index_tmp = getPinYinByName(val.name).substring(0,1)){
-                        result.forEach(function (tmp) {
-                        if (tmp["index"] == index_tmp){
-                            let obj_tmp = {}
-                            obj_tmp["uid"] = val.uid
-                            obj_tmp["name"] = val.name
-                            obj_tmp["photo"] = val.photo
-                            tmp["personList"].push(obj_tmp)
+                // 加载tab2的所有好友
+                loadTableDataAddressBook: function () {
+                    // console.log("loadTableDataAddressBook")
+                    this.loadingAddressBook = true;
+                    var _this = this;
+                    $.ajax({
+                        url: '/chat/address_book',
+                        type: 'post',
+                        data: {
+                            user_id: this.selfId
+                        },
+                        success: function (res) {
+                            _this.loadingAddressBook = false
+                            var result = [];
+                            var index_arr = [];
+                            for(var i = 97; i <=122; i++){
+                            let obj = {}
+                            var personInfoArr = []
+                            obj["index"] = String.fromCharCode(i)
+                            obj["personList"] = personInfoArr
+                            result.push(obj)
+                            }
+                            res.forEach(function (val) {
+                            if(index_tmp = getPinYinByName(val.name).substring(0,1)){
+                                result.forEach(function (tmp) {
+                                if (tmp["index"] == index_tmp){
+                                    let obj_tmp = {}
+                                    obj_tmp["uid"] = val.uid
+                                    obj_tmp["name"] = val.name
+                                    obj_tmp["photo"] = val.photo
+                                    tmp["personList"].push(obj_tmp)
+                                }
+                                });
+                            }
+                            });
+                            for(var j = 0; j < result.length;){
+                            if(result[j].personList == "" ){
+                                result.splice($.inArray(result[j],result),1);
+                            } else {
+                                j++;
+                            }
+                            }
+                            _this.loadingAddressBook = false
+                            if (res.count !== 0) {
+                            _this.tableDataPeople = result
+                            } else {
+                            _this.tableDataPeople = []
+                            }
+                        },
+                        error: function (err) {
+                            _this.loadingAddressBook = false
+                            _this.tableDataPeople = []
                         }
-                        });
-                    }
-                    });
-                    for(var j = 0; j < result.length;){
-                    if(result[j].personList == "" ){
-                        result.splice($.inArray(result[j],result),1);
-                    } else {
-                        j++;
-                    }
-                    }
-                    _this.loadingAddressBook = false
-                    if (res.count !== 0) {
-                    _this.tableDataPeople = result
-                    } else {
-                    _this.tableDataPeople = []
-                    }
+                    })
                 },
-                error: function (err) {
-                    _this.loadingAddressBook = false
-                    _this.tableDataPeople = []
-                }
-                })
-            },
 
-            loadTableDataMemberInfo: function () {
-                this.loadingMemberInfo = true;
-                this.dropDownClickStatus = !(this.dropDownClickStatus);
-                var _this = this;
-                if(this.dropDownClickStatus){
-                $.ajax({
-                    url: '/chat/member_info_brief',
-                    type: 'post',
-                    data: {
-                    user_id: this.selfId,
-                    u_id: this.currentChatUid,
-                    },
-                    success: function (res) {
-                    _this.loadingMemberInfo = false
-                    if (res.count !== 0) {
-                        _this.groupList = res
-                    } else {
+                loadTableDataMemberInfo: function () {
+                    this.loadingMemberInfo = true;
+                    this.dropDownClickStatus = !(this.dropDownClickStatus);
+                    var _this = this;
+                    if(this.dropDownClickStatus){
+                    $.ajax({
+                        url: '/chat/member_info_brief',
+                        type: 'post',
+                        data: {
+                        user_id: this.selfId,
+                        u_id: this.currentChatUid,
+                        },
+                        success: function (res) {
+                        _this.loadingMemberInfo = false
+                        if (res.count !== 0) {
+                            _this.groupList = res
+                        } else {
+                            _this.groupList = []
+                        }
+                        },
+                        error: function (err) {
+                        _this.loadingMemberInfo = false
                         _this.groupList = []
-                    }
-                    },
-                    error: function (err) {
-                    _this.loadingMemberInfo = false
-                    _this.groupList = []
-                    }
-                })
-                }
-            },
-
-            // sendMsg: function() {
-            //   console.log("click")
-            //   var _this = this.sayText;
-            //   $.ajax({
-            //     url: '/chat/send_msg',
-            //     type: 'post',
-            //     data: {
-            //       user_id: this.selfId,
-            //       target_id: this.currentChatUid,
-            //       text: this.sayText
-            //     },
-            //     success: function () {
-            //     },
-            //     error: function () {
-            //     }
-            //   })
-            // },
-
-            showMsg: function() {
-                // console.log("show")
-                this.loadingShowMsg = true;
-                var _this = this;
-                $.ajax({
-                url: '/chat/show_msg',
-                type: 'post',
-                data: {
-                    user_id: this.selfId,
-                    target_id: this.currentChatUid
-                },
-                success: function (res) {
-                    // console.log(res)
-                    _this.loadingShowMsg = false
-                    if (res) {
-                    _this.chatRecordTableData = res
-                    } else {
-                    _this.chatRecordTableData = []
+                        }
+                    })
                     }
                 },
-                error: function (err) {
-                    _this.loadingShowMsg = false
-                    _this.chatRecordTableData = []
-                }
-                })
+
+                showMsg: function() {
+                    // console.log("show")
+                    this.loadingShowMsg = true;
+                    var _this = this;
+                    $.ajax({
+                        url: '/chat/show_msg',
+                        type: 'post',
+                        data: {
+                            user_id: this.selfId,
+                            target_id: this.currentChatUid
+                        },
+                        success: function (res) {
+                            // console.log(res)
+                            _this.loadingShowMsg = false
+                            if (res) {
+                            _this.chatRecordTableData = res
+                            } else {
+                            _this.chatRecordTableData = []
+                            }
+                        },
+                        error: function (err) {
+                            _this.loadingShowMsg = false;
+                            _this.chatRecordTableData = [];
+                        }
+                    })
+                },
             },
-        }
     });
 
-    // $(".nav .nav-link").on("click", function(){
-    //     $(".nav").find(".active").removeClass("active");
-    //     $(this).addClass("active");
-    //     $(".tab-pane").find(".active").removeClass("active");
-    //     console.log($(this).attr("id"))
-    // });
+    $("#pills-profile-tab").on("click", function(){
+        console.log("click");
+        frame.loadTableDataAddressBook();
+    });
+
+
+
+    //从通讯录点击目标人物之后，左边chat标签下顶部显示
+    // function leftSelectMoveTop(channel_id) {
+    //     //取得target 的 id，去搜索最后的未读信息，得到未读的msg_num，最后一条未读消息和时间，取得是否屏蔽的状态
+    //     let add_top_item = {}
+    //     goeasy.history({
+    //         channel: channel_id, //必需项
+    //         limit: 10 //可选项，返回的消息条数，默认为100条，最多1000条
+    //     },
+    //     function(response){
+    //         // console.log("收到历史消息: "+ JSON.stringify(response));
+    //         for (let item of response.content.messages) {
+    //         handleGoeasyMsgBrief(item)
+    //         }
+    //     });
+    // }
+
+    // //维护chat brief 队列 --
+    // function handleGoeasyMsgBrief(message) {
+    //     let current_nickname = app.targetNotedName;
+    //     let index = message.content.lastIndexOf("|");
+    //     let chat_brief = {}
+    //     let sendMsgUserId = message.content.substring(index + 1, message.content.length);
+    //     let msgContent = message.content.substring(0, index);
+    //     let sendTime = timestamp2FormatDate(message.time,"hh:mm")
+    //     let msg_num = 1
+
+    //     chat_brief = {"name":name,
+    //                 "msg_num":msg_num,
+    //                 "latest_msg_brief":msgContent,
+    //                 "latest_msg_time":sendTime,
+    //                 "is_block":is_block}
+    //     app.tableData.push(chat_brief)
+    // }
+
+    // //展示最新的订阅消息
+    // function showNowChatRecord(channel_id){
+    //     // console.log("showNowChatRecord")
+    //     goeasy.subscribe({
+    //     channel: channel_id,
+    //     onMessage: function (message) {
+    //         console.log("onMessage")
+    //         handleGoeasyMsg(message)
+    //     }
+    //     });
+    // }
+
+    // //显示以前的订阅消息
+    // function historyChatRecord(channel_id) {
+    //     // console.log("historyChatRecord")
+    //     goeasy.history({
+    //         channel: channel_id, //必需项
+    //         // start: start_time, //可选项，开始时间
+    //         // end: end_time, //可选项，结束时间
+    //         // limit: limit_num //可选项，返回的消息条数，默认为100条，最多1000条
+    //     },
+    //     function(response){
+    //         // console.log("收到历史消息: "+ JSON.stringify(response));
+    //         for (let item of response.content.messages) {
+    //         handleGoeasyMsg(item)
+    //         }
+    //         /**
+    //         response示例：
+    //         {
+    //             "code":200,
+    //             "content":{
+    //                 "messages":[
+    //                     {"time":1561347527649,"content":"my 001"}
+    //                     {"time":1561347596077,"content":"my 002"}
+    //                     {"time":1561347622613,"content":"my 003"}
+    //                     {"time":1561347691826,"content":"my 004"}
+    //                     {"time":1561347706447,"content":"my 005"}
+    //                 ]
+    //             }
+    //         }
+    //         **/
+    //     });
+    // }
+
+    // //把消息转成需要的json格式
+    // function handleGoeasyMsg(message) {
+    //     var current_nickname = app.targetNotedName;
+    //     var index = message.content.lastIndexOf("|");
+    //     var side
+    //     var len
+    //     var chatRecord = {}
+    //     var sendMsgUserId = message.content.substring(index + 1, message.content.length);
+    //     var msgContent = message.content.substring(0, index);
+    //     var sendTime = timestamp2FormatDate(message.time,"yyyy/MM/dd hh:mm")
+    //     var jmz = {};
+    //     jmz.GetLength = function(str) {
+    //     return str.replace(/[\u0391-\uFFE5]/g,"aa").length;  //先把中文替换成两个字节的英文，在计算长度
+    //     };
+    //     if(sendMsgUserId == app.selfId){
+    //     side="right";
+    //     styleSide="left";
+    //     if(jmz.GetLength(msgContent) < 50){
+    //         len = 508 - jmz.GetLength(msgContent) * 8;
+    //     } else {
+    //         len = 50
+    //     }
+    //     } else {
+    //     side="left";
+    //     styleSide="right";
+    //     if(jmz.GetLength(msgContent) < 50){
+    //         len = 508 - jmz.GetLength(msgContent) * 8;
+    //     } else {
+    //         len = 50
+    //     }
+    //     }
+    //     var contentStyle = "margin-" + styleSide + ": " + len + "px;"
+    //     chatRecord = {"dir":side,
+    //                 "notedName":current_nickname,
+    //                 "time":sendTime,
+    //                 "content":msgContent,
+    //                 "contentLen":contentStyle}
+    //     app.chatRecordTableData.push(chatRecord);
+    // }
+
+    // //点击发送按钮
+    // function publishMessage() {
+    //     // console.log("publishMessage")
+    //     var publishMessage = $(".right-side-bottom-input-inner").val();
+    //     publishMessage = publishMessage + "|" + selfId;
+    //     currentChannel = $("#currentChanel").val()
+    //     goeasy.publish({
+    //     channel: currentChannel,
+    //     message: publishMessage,
+    //     onFailed: function (error) {
+    //         alert(error.code + " : " + error.content);
+    //     },
+    //     onSuccess: function () {
+    //         // document.getElementById("content").value = '';
+    //         $(".right-side-bottom-input-inner").val("")
+    //     }
+    //     });
+    // }
+
+    // //时间格式化
+    // function timestamp2Date(timestamp) {
+    //     var date = new Date();
+    //     date.setTime(timestamp);
+    //     return date;
+    // }
+
+    // function formatDate(date, fmt) {
+    //     var o = {
+    //         "M+" : date.getMonth()+1,                 //月份
+    //         "d+" : date.getDate(),                    //日
+    //         "h+" : date.getHours(),                   //小时
+    //         "m+" : date.getMinutes(),                 //分
+    //         "s+" : date.getSeconds(),                 //秒
+    //         "q+" : Math.floor((date.getMonth()+3)/3), //季度
+    //         "S"  : date.getMilliseconds()             //毫秒
+    //     };
+    //     if(/(y+)/.test(fmt)) {
+    //     fmt=fmt.replace(RegExp.$1, (date.getFullYear()+"").substr(4 - RegExp.$1.length));
+    //     }
+    //     for(var k in o) {
+    //     if(new RegExp("("+ k +")").test(fmt)){
+    //             fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
+    //         }
+    //     }
+    //     return fmt;
+    // }
+
+    // function timestamp2FormatDate(timestamp, fmt) {
+    //     var date = timestamp2Date(timestamp);
+    //     var res = formatDate(date, fmt);
+    //     return res;
+    // }
 
         //# sourceURL=pen.js
     </script>
