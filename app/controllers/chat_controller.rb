@@ -288,4 +288,9 @@ class ChatController < ApplicationController
     params[:target_id]
     params[:user_id]
   end
+
+  def chat_preview
+
+  end
 end
+

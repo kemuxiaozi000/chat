@@ -862,7 +862,7 @@
                     </p>
                     <% if user_signed_in? %>
                         <%= link_to destroy_user_session_path, method: :delete do %>
-                            <i class="fas fa-power-off"></i>
+                            <i class="fas fa-power-off power-off"></i>
                         <% end %>
                     <% else %>
                         <li>
@@ -915,7 +915,7 @@
                 <div class="tab-content" id="pills-tabContent">
                     <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
                         <ul v-if="reverseData.length>0" v-for="chatPreview in reverseData">
-                            <li class="contact" @click="">
+                            <li class="contact" @click="chatPreviewclick(chatPreview.channel_id)">
                                 <div class="wrap">
                                     <span class="contact-status online"></span>
                                     <img v-bind:src="chatPreview.photo" alt="" />
@@ -1165,6 +1165,22 @@
                     }
                 },
 
+                chatPreviewclick:function (_channel_id) {
+                    console.log("chatPreviewclick")
+                    var index
+                    if(this.chatPreviewTableData.length > 0) {
+                        for (var i = 0; i < this.chatPreviewTableData.length; i++) {
+                            if(_channel_id == this.chatPreviewTableData[i].channel_id ){
+                                index = this.chatPreviewTableData.indexOf(this.chatPreviewTableData[i]);
+                                break;
+                            }
+                        }
+                    }
+                    var index = this.chatPreviewTableData.indexOf(this.chatPreviewTableData[i]);
+                    //上下互换
+                    swapArr(this.chatPreviewTableData, index, this.chatPreviewTableData.length-1)
+                },
+
                 selectChatTarget:function (target_id, target_name, target_photo) {
                     // console.log("selectChatTarget "+target_name)
                     $("#pills-home-tab").click();
@@ -1248,11 +1264,11 @@
                             var result = [];
                             var index_arr = [];
                             for(var i = 97; i <=122; i++){
-                            let obj = {}
-                            var personInfoArr = []
-                            obj["index"] = String.fromCharCode(i)
-                            obj["personList"] = personInfoArr
-                            result.push(obj)
+                                let obj = {}
+                                var personInfoArr = []
+                                obj["index"] = String.fromCharCode(i)
+                                obj["personList"] = personInfoArr
+                                result.push(obj)
                             }
                             res.forEach(function (val) {
                             if(index_tmp = getPinYinByName(val.name).substring(0,1)){
@@ -1268,17 +1284,17 @@
                             }
                             });
                             for(var j = 0; j < result.length;){
-                            if(result[j].personList == "" ){
-                                result.splice($.inArray(result[j],result),1);
-                            } else {
-                                j++;
-                            }
+                                if(result[j].personList == "" ){
+                                    result.splice($.inArray(result[j],result),1);
+                                } else {
+                                    j++;
+                                }
                             }
                             _this.loadingAddressBook = false
                             if (res.count !== 0) {
-                            _this.tableDataPeople = result
+                                _this.tableDataPeople = result
                             } else {
-                            _this.tableDataPeople = []
+                                _this.tableDataPeople = []
                             }
                         },
                         error: function (err) {
@@ -1331,9 +1347,9 @@
                             // console.log(res)
                             _this.loadingShowMsg = false
                             if (res) {
-                            _this.chatRecordTableData = res
+                                _this.chatRecordTableData = res
                             } else {
-                            _this.chatRecordTableData = []
+                                _this.chatRecordTableData = []
                             }
                         },
                         error: function (err) {
@@ -1343,6 +1359,39 @@
                     })
                 },
             },
+    });
+
+    $(".power-off").on("click", function(){
+        //chat preview数据存db
+
+        var preview_data = {}
+        for (var i = 0; i < frame.chatPreviewTableData.length; i++) {
+            if(_channel_id == frame.chatPreviewTableData[i].channel_id ){
+                var index = frame.chatPreviewTableData.indexOf(frame.chatPreviewTableData[i]);
+            }
+        }
+
+
+        $.ajax({
+            url: '/chat/chat_preview',
+            type: 'post',
+            data: {
+                preview: preview_data,
+            },
+            success: function (res) {
+                // console.log(res)
+                _this.loadingShowMsg = false
+                if (res) {
+                _this.chatRecordTableData = res
+                } else {
+                _this.chatRecordTableData = []
+                }
+            },
+            error: function (err) {
+                _this.loadingShowMsg = false;
+                _this.chatRecordTableData = [];
+            }
+        })
     });
 
     $("#pills-profile-tab").on("click", function(){
@@ -1417,18 +1466,19 @@
                             "latest_msg_brief":msgContent,
                             "latest_msg_time":sendTime,
                             "is_block":is_block}
-        // 有重复，删除原来的
+
+        // chatPreview有重复，删除原来的
+        // console.log(frame.chatPreviewTableData.length)
         if(frame.chatPreviewTableData.length > 0) {
-            for (var i = 0; i < frame.tableDataSelfInfo[0].channel_ids.length; i++) {
-                if(channel_id == frame.chatPreviewTableData[i].channel_id ){
-                    index = frame.chatPreviewTableData.indexOf(frame.chatPreviewTableData[i]);
-                    frame.chatPreviewTableData.splice(index,1)
+            for (var i = 0; i < frame.chatPreviewTableData.length; i++) {
+                if(_channel_id == frame.chatPreviewTableData[i].channel_id ){
+                    var index_2 = frame.chatPreviewTableData.indexOf(frame.chatPreviewTableData[i]);
+                    frame.chatPreviewTableData.splice(index_2,1)
                     break;
                 }
             }
         }
         frame.chatPreviewTableData.push(chat_brief)
-
         // console.log(frame.chatPreviewTableData)
     }
 
@@ -1583,6 +1633,12 @@
         var date = timestamp2Date(timestamp);
         var res = formatDate(date, fmt);
         return res;
+    }
+
+    //数组内元素位置互换
+    function swapArr(arr, index1, index2) {
+        arr[index1] = arr.splice(index2, 1, arr[index1])[0];
+        return arr;
     }
 
         //# sourceURL=pen.js
