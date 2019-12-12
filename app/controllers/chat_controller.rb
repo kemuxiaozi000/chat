@@ -1,5 +1,6 @@
 class ChatController < ApplicationController
-  before_action :authenticate_user!, :only => [:index, :new]
+  before_action :authenticate_user!, :only => [:index, :show, :new]
+
   def index
 
   end
@@ -8,7 +9,7 @@ class ChatController < ApplicationController
 
   end
 
-  # 加载个人数据（左上角）头像，昵称
+  # 加载个人数据（左上角）头像，昵称 add channel_id
   # timing 登陆就加载
   # in params[:user_id]
   # out {photo:"", name:""}
@@ -17,6 +18,27 @@ class ChatController < ApplicationController
     default_avatar = "/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png"
     res_tmp = {}
     res = []
+    channel_ids_and_notename = []
+
+    # 需要监听的channel 取得，包括交谈的备注名和uid
+    user_relation = UserRelation.where(user_id_1: current_user.id)
+    for item in user_relation
+      tmp = {}
+      tmp_user = NameNote.where('name_notes.user_id = ? and name_notes.noted_id = ? ', current_user.id, item.user_id_2)[0]
+      tmp_photo = UserManagement.find_by_user_id(item.user_id_2)
+      tmp["channel_id"] = item.channel_id
+      tmp["target_user_id"] = item.user_id_2
+      tmp["photo"] = tmp_photo.photo
+      if tmp_user.present?
+        tmp["name"] = tmp_user.note_name
+      else
+        tmp["name"] = User.find_by_id(item.user_id_2).nickname
+      end
+      channel_ids_and_notename.push(tmp)
+    end
+    res_tmp["channel"] = channel_ids_and_notename
+
+    # 个人信息
     if user.present?
       res_tmp["nickname"] = current_user.nickname
       if user.photo.present?
@@ -177,13 +199,14 @@ class ChatController < ApplicationController
     params[:target_id]
     user_relation_1 = UserRelation.where('user_relations.user_id_1 = ? and user_relations.user_id_2 = ?', params[:user_id], params[:target_id])[0]
     user_relation_2 = UserRelation.where('user_relations.user_id_2 = ? and user_relations.user_id_1 = ?', params[:user_id], params[:target_id])[0]
-    if user_relation_1.channel_id.present?
-      channel_id = user_relation_1.channel_id
-    else
-      channel_id = PersonChatRecord.new.make_rc_uuid
-      user_relation_1.update({'channel_id': channel_id})
-      user_relation_2.update({'channel_id': channel_id})
-    end
+    # channel_id在建立关系时已经产生，一定会有
+    # if user_relation_1.channel_id.present?
+    channel_id = user_relation_1.channel_id
+    # else
+    #   channel_id = PersonChatRecord.new.make_rc_uuid
+    #   user_relation_1.update({'channel_id': channel_id})
+    #   user_relation_2.update({'channel_id': channel_id})
+    # end
     current_target = NameNote.where('name_notes.user_id = ? and name_notes.noted_id = ?', params[:user_id], params[:target_id])
     res[:channel_id] = channel_id
     res[:current_nickname] = current_target[0].note_name

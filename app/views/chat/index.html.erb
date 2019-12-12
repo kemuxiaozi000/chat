@@ -747,7 +747,7 @@
         // console.log(tab, event);
       },
 
-      // 加载个人信息
+      // 加载个人信息+ 监听所有channel
       loadTableDataSelfInfo: function () {
         this.loadingSelfInfo = true;
         var _this = this;
@@ -855,24 +855,6 @@
           })
         }
       },
-
-      // sendMsg: function() {
-      //   console.log("click")
-      //   var _this = this.sayText;
-      //   $.ajax({
-      //     url: '/chat/send_msg',
-      //     type: 'post',
-      //     data: {
-      //       user_id: this.selfId,
-      //       target_id: this.currentChatUid,
-      //       text: this.sayText
-      //     },
-      //     success: function () {
-      //     },
-      //     error: function () {
-      //     }
-      //   })
-      // },
 
       showMsg: function() {
         // console.log("show")

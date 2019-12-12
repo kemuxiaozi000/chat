@@ -6,7 +6,7 @@ Rails.application.routes.draw do
   #   get '/', action: 'show'
   # end
   # mount ActionCable.server => "/cable"
-  root 'chat#index'
+  root 'chat#show'
   namespace :chat do
     get '/', action: 'index'
     get 'show', action: 'show'

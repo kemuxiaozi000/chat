@@ -498,6 +498,7 @@
 
         #frame #sidepanel #contacts ul li.contact .wrap img {
             width: 40px;
+            height: 40px;
             border-radius: 50%;
             float: left;
             margin-right: 10px;
@@ -854,7 +855,20 @@
             <div id="profile">
                 <div class="wrap" v-for="(item, index) in tableDataSelfInfo" :key="index">
                     <img id="profile-img" v-bind:src="item.photo" class="online" alt="" />
-                    <p><%= current_user.nickname %></p>
+                    <p>
+                        <%if current_user.present?%>
+                            <%= current_user.nickname %>
+                        <% end %>
+                    </p>
+                    <% if user_signed_in? %>
+                        <%= link_to destroy_user_session_path, method: :delete do %>
+                            <i class="fas fa-power-off"></i>
+                        <% end %>
+                    <% else %>
+                        <li>
+                            <%= link_to('Login', new_user_session_path) %>
+                        </li>
+                    <% end %>
                     <i class="fa fa-chevron-down expand-button" aria-hidden="true"></i>
                     <div id="status-options">
                         <ul>
@@ -900,17 +914,21 @@
                 </ul>
                 <div class="tab-content" id="pills-tabContent">
                     <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
-                        <ul>
-                            <li class="contact">
+                        <ul v-if="reverseData.length>0" v-for="chatPreview in reverseData">
+                            <li class="contact" @click="">
                                 <div class="wrap">
                                     <span class="contact-status online"></span>
-                                    <img src="http://emilcarlsson.se/assets/louislitt.png" alt="" />
+                                    <img v-bind:src="chatPreview.photo" alt="" />
                                     <div class="meta">
-                                        <p class="name">Louis Litt</p>
-                                        <p class="preview">You just got LITT up, Mike.</p>
+                                        <p class="name">{{chatPreview.name}}</p>
+                                        <p class="preview">{{chatPreview.latest_msg_brief}}
+                                            <span style="float:right;width:38px;font-size:13px">{{chatPreview.latest_msg_time}}</span>
+                                        </p>
+                                        <!--<p class="preview">{{chatPreview.latest_msg_time}}</p>-->
                                     </div>
                                 </div>
                             </li>
+                            <!--
                             <li class="contact active">
                                 <div class="wrap">
                                     <span class="contact-status busy"></span>
@@ -931,6 +949,7 @@
                                     </div>
                                 </div>
                             </li>
+                            -->
                         </ul>
                     </div>
                     <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
@@ -1015,10 +1034,11 @@
     <script src='//production-assets.codepen.io/assets/common/stopExecutionOnTimeout-b2a7b3fe212eaa732349046d8416e00a9dec26eb7fd347590fbced3ab38af52e.js'></script>
     <script type="text/javascript" src="https://cdn-hangzhou.goeasy.io/goeasy.js"></script>
     <script type="text/javascript">
-        var selfId = "<%= current_user.id%>"
+        var selfId = "<%if current_user.present?%><%= current_user.id%><%end%>"
         var goeasy = new GoEasy({
             appkey: 'BC-242425a937724e418b4f51105a138e3b'
         });
+
         $(document).on("click", ".submit", function () {
             // newMessage();
             publishMessage();
@@ -1087,7 +1107,7 @@
             el: "#frame",
             data:{
                 dropDownClickStatus:false,
-                selfId:"<%= current_user.id%>",
+                selfId:"<%if current_user.present?%><%= current_user.id%><%end%>",
                 currentChatUid:"",
                 currentChannel:"",
                 tableDataSelfInfo:"",
@@ -1108,11 +1128,11 @@
                 avatarUrl: 'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
                 loading: false,
                 loadingPeople: false,
-                // tableData:[{ name: "好友", msg_num: "4", latest_msg_brief: "王铭铭-换尿布...", latest_msg_time: "22:20",is_block: true },
-                // { name: "Dota小分队", msg_num: "2", latest_msg_brief: "今晚干...", latest_msg_time: "08:10" ,is_block: true },
-                // { name: "电装", msg_num: "5", latest_msg_brief: "今天加班吗...", latest_msg_time: "21:20" ,is_block: true }
+                // chatPreviewTableData:[{ name: "好友", photo: "https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg", msg_num: "4", latest_msg_brief: "王铭铭-换尿布...", latest_msg_time: "22:20",is_block: true },
+                // { name: "bbb", msg_num: "2", photo: "https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg", latest_msg_brief: "今晚干...", latest_msg_time: "08:10" ,is_block: true },
+                // { name: "cccc", msg_num: "5", photo: "https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg", latest_msg_brief: "今天加班吗...", latest_msg_time: "21:20" ,is_block: true }
                 // ],
-                tableData:[],
+                chatPreviewTableData:[],
                 tableDataPeople:"",
                 groupList:"",
                 tableDataGame: [
@@ -1121,6 +1141,12 @@
                 ],
                 loadingGame: false,
                 value: 3.7,
+            },
+
+            computed: {
+                reverseData() {
+                    return this.chatPreviewTableData.reverse();
+                }
             },
 
             created: function () {
@@ -1141,6 +1167,8 @@
 
                 selectChatTarget:function (target_id, target_name, target_photo) {
                     // console.log("selectChatTarget "+target_name)
+                    $("#pills-home-tab").click();
+
                     if(this.currentChatUid != target_id){
                         this.chatRecordTableData = [];
                         this.currentChatUid = target_id;
@@ -1162,8 +1190,8 @@
                                     historyChatRecord(res.channel_id)
                                     //channel now chat
                                     showNowChatRecord(res.channel_id)
-                                    //左边选择的追加到顶端(数据在底部)
-                                    // leftSelectMoveTop(res.channel_id)
+                                    //左边选择的追加到chatPreview顶端(数据在底部)
+                                    leftSelectMoveTop(res.channel_id)
                                 } else {
 
                                 }
@@ -1192,6 +1220,10 @@
                         } else {
                         _this.tableDataSelfInfo = []
                         }
+                        //所有有关的channelid取得
+                        // console.log(_this.tableDataSelfInfo[0].channel)
+                        // xxx()
+                        chatPreviewCurrentUpdate()
                     },
                     error: function (err) {
                         _this.loadingSelfInfo = false
@@ -1265,20 +1297,20 @@
                         url: '/chat/member_info_brief',
                         type: 'post',
                         data: {
-                        user_id: this.selfId,
-                        u_id: this.currentChatUid,
+                            user_id: this.selfId,
+                            u_id: this.currentChatUid,
                         },
                         success: function (res) {
-                        _this.loadingMemberInfo = false
-                        if (res.count !== 0) {
-                            _this.groupList = res
-                        } else {
-                            _this.groupList = []
-                        }
+                            _this.loadingMemberInfo = false
+                            if (res.count !== 0) {
+                                _this.groupList = res
+                            } else {
+                                _this.groupList = []
+                            }
                         },
                         error: function (err) {
-                        _this.loadingMemberInfo = false
-                        _this.groupList = []
+                            _this.loadingMemberInfo = false
+                            _this.groupList = []
                         }
                     })
                     }
@@ -1317,49 +1349,134 @@
         frame.loadTableDataAddressBook();
     });
 
-    //从通讯录点击目标人物之后，左边chat标签下顶部显示
-    // function leftSelectMoveTop(channel_id) {
-    //     //取得target 的 id，去搜索最后的未读信息，得到未读的msg_num，最后一条未读消息和时间，取得是否屏蔽的状态
-    //     let add_top_item = {}
-    //     goeasy.history({
-    //         channel: channel_id, //必需项
-    //         limit: 10 //可选项，返回的消息条数，默认为100条，最多1000条
-    //     },
-    //     function(response){
-    //         // console.log("收到历史消息: "+ JSON.stringify(response));
-    //         for (let item of response.content.messages) {
-    //         handleGoeasyMsgBrief(item)
-    //         }
-    //     });
+    // chatPreviewCurrentUpdate();
+
+    // function xxx(){
+    //     console.log("xxx")
     // }
+    // 从通讯录点击目标人物之后，左边chatpreview追加选中项到顶部
+    function leftSelectMoveTop(channel_id) {
+        //取得target 的 id，去搜索最后的未读信息，得到未读的msg_num，最后一条消息和时间，取得是否屏蔽的状态
+        goeasy.history({
+            channel: channel_id, //必需项
+            limit: 1 //可选项，返回的消息条数，默认为100条，最多1000条
+        },
+        function(response){
+            // console.log("收到历史消息: "+ JSON.stringify(response));
+            if(response.content.messages.length > 0) {
+                for (let item of response.content.messages) {
+                    handleGoeasyMsgBrief(channel_id, item)
+                }
+            } else {
+                handleGoeasyMsgBrief(channel_id)
+            }
+        });
+    }
 
-    // //维护chat brief 队列 --
-    // function handleGoeasyMsgBrief(message) {
-    //     let current_nickname = app.targetNotedName;
-    //     let index = message.content.lastIndexOf("|");
+    // 添加chat preview 队列 --
+    function handleGoeasyMsgBrief(channel_id, message = "") {
+        let _channel_id = channel_id
+        let chat_brief = {}
+        let msg_num = 1
+        let is_block = false
+        let msgContent = "";
+        let sendTime = "";
+        var name = frame.targetNotedName;
+        var photo = frame.targetPhoto;
+        if (message != "") {
+            //先取channel_id
+            let index = message.content.lastIndexOf("|");
+            var channel = message.content.substring(index + 1, message.content.length);
+            let msgContentTmp = message.content.substring(0, index);
+            //再取sendMsgUserId
+            let index_1 = msgContentTmp.lastIndexOf("|");
+            // let sendMsgUserId = msgContentTmp.substring(index_1 + 1, msgContentTmp.length);
+            msgContent = msgContentTmp.substring(0, index_1);
+
+            // let index = message.content.lastIndexOf("|");
+            // msgContent = message.content.substring(0, index);
+            sendTime = timestamp2FormatDate(message.time,"hh:mm")
+        }
+        if(_channel_id == "") {
+            _channel_id = channel
+            if(frame.tableDataSelfInfo[0].channel.length > 0) {
+                for(var i = 0; i <frame.tableDataSelfInfo[0].channel.length; i++) {
+                    if(_channel_id == frame.tableDataSelfInfo[0].channel[i].channel_id) {
+                        photo = frame.tableDataSelfInfo[0].channel[i].photo
+                        console.log(photo)
+                        name = frame.tableDataSelfInfo[0].channel[i].name
+                        console.log(name)
+                    }
+                }
+            }
+        }
+        chat_brief = { "channel_id":_channel_id,
+                            "name":name,
+                            "photo":photo,
+                            "msg_num":msg_num,
+                            "latest_msg_brief":msgContent,
+                            "latest_msg_time":sendTime,
+                            "is_block":is_block}
+        // 有重复，删除原来的
+        if(frame.chatPreviewTableData.length > 0) {
+            for (var i = 0; i < frame.tableDataSelfInfo[0].channel_ids.length; i++) {
+                if(channel_id == frame.chatPreviewTableData[i].channel_id ){
+                    index = frame.chatPreviewTableData.indexOf(frame.chatPreviewTableData[i]);
+                    frame.chatPreviewTableData.splice(index,1)
+                    break;
+                }
+            }
+        }
+        frame.chatPreviewTableData.push(chat_brief)
+
+        // console.log(frame.chatPreviewTableData)
+    }
+
+    // 除了当前聊天的channel之外,收到新消息之后，左边chatpreview追加选中项到顶部
+    function chatPreviewCurrentUpdate(){
+        // console.log("chatPreviewCurrentUpdate")
+        //获取到当前左边所有的channel id
+        if(frame.tableDataSelfInfo[0].channel.length > 0) {
+            for(var i = 0; i <frame.tableDataSelfInfo[0].channel.length; i++) {
+                _channel = frame.tableDataSelfInfo[0].channel[i].channel_id
+                goeasy.subscribe({
+                    channel: _channel,
+                    onMessage: function (message) {
+                        // updateGoeasyMsgBrief( frame.tableDataSelfInfo[0].channel_ids[i], message)
+                        console.log("handle")
+                        handleGoeasyMsgBrief("", message)
+                    }
+                });
+            }
+        }
+    }
+
+    // 更新chat preview 队列--
+    // function updateGoeasyMsgBrief(channel_id, message) {
     //     let chat_brief = {}
-    //     let sendMsgUserId = message.content.substring(index + 1, message.content.length);
-    //     let msgContent = message.content.substring(0, index);
-    //     let sendTime = timestamp2FormatDate(message.time,"hh:mm")
     //     let msg_num = 1
-
-    //     chat_brief = {"name":name,
-    //                 "msg_num":msg_num,
-    //                 "latest_msg_brief":msgContent,
-    //                 "latest_msg_time":sendTime,
-    //                 "is_block":is_block}
-    //     app.tableData.push(chat_brief)
+    //     let is_block = false
+    //     let msgContent = "";
+    //     let sendTime = "";
+    //     if (message != "") {
+    //         let index = message.content.lastIndexOf("|");
+    //         msgContent = message.content.substring(0, index);
+    //         sendTime = timestamp2FormatDate(message.time,"hh:mm")
+    //     }
+    //     item.latest_msg_brief = msgContent;
+    //     item.latest_msg_time = sendTime;
+    //     // console.log(frame.chatPreviewTableData)
     // }
 
     //展示最新的订阅消息
     function showNowChatRecord(channel_id){
         // console.log("showNowChatRecord")
         goeasy.subscribe({
-        channel: channel_id,
-        onMessage: function (message) {
-            console.log("onMessage")
-            handleGoeasyMsg(message)
-        }
+            channel: channel_id,
+            onMessage: function (message) {
+                // console.log("onMessage")
+                handleGoeasyMsg(message)
+            }
         });
     }
 
@@ -1377,32 +1494,22 @@
             for (let item of response.content.messages) {
                 handleGoeasyMsg(item)
             }
-            /**
-            response示例：
-            {
-                "code":200,
-                "content":{
-                    "messages":[
-                        {"time":1561347527649,"content":"my 001"}
-                        {"time":1561347596077,"content":"my 002"}
-                        {"time":1561347622613,"content":"my 003"}
-                        {"time":1561347691826,"content":"my 004"}
-                        {"time":1561347706447,"content":"my 005"}
-                    ]
-                }
-            }
-            **/
         });
     }
 
     //把消息转成需要的json格式
     function handleGoeasyMsg(message) {
-        let current_nickname = frame.targetNotedName;
-        let index = message.content.lastIndexOf("|");
         let chatRecord = {};
         let side;
-        let sendMsgUserId = message.content.substring(index + 1, message.content.length);
-        let msgContent = message.content.substring(0, index);
+        let current_nickname = frame.targetNotedName;
+        //先取channel_id
+        let index = message.content.lastIndexOf("|");
+        let channel = message.content.substring(index + 1, message.content.length);
+        let msgContentTmp = message.content.substring(0, index);
+        //再取sendMsgUserId
+        let index_1 = msgContentTmp.lastIndexOf("|");
+        let sendMsgUserId = msgContentTmp.substring(index_1 + 1, msgContentTmp.length);
+        let msgContent = msgContentTmp.substring(0, index_1);
         var sendTime = timestamp2FormatDate(message.time,"yyyy/MM/dd hh:mm");
         (sendMsgUserId == frame.selfId)?(side="right"):(side="left");
         chatRecord = {"dir":side,
@@ -1418,16 +1525,14 @@
 
     //点击发送按钮
     function publishMessage() {
-        console.log("publishMessage")
         let message = $(".message-input input").val();
         if ($.trim(message) == '') {
             return false;
         }
-        // console.log("publishMessage")
         let publishMessage = "";
-        publishMessage = message + "|" + selfId;
-        console.log(publishMessage)
         currentChannel = $("#currentChanel").val()
+        publishMessage = message + "|" + selfId + "|" + currentChannel;
+        console.log("message:"+publishMessage)
         goeasy.publish({
             channel: currentChannel,
             message: publishMessage,
@@ -1435,12 +1540,13 @@
                 alert(error.code + " : " + error.content);
         },
         onSuccess: function () {
-            // document.getElementById("content").value = '';
             $(".message-input input").val("")
+
             //滚动到底部
             $(".messages").animate({
                 scrollTop: $(document).height()
             }, "fast");
+            //更新chat preview
         }
         });
     }
