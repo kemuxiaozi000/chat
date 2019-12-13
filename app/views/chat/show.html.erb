@@ -915,7 +915,7 @@
                 <div class="tab-content" id="pills-tabContent">
                     <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
                         <ul v-if="reverseData.length>0" v-for="chatPreview in reverseData">
-                            <li class="contact" @click="chatPreviewclick(chatPreview.channel_id)">
+                            <li class="contact" @click="chatPreviewclick(chatPreview.channel_id,chatPreview.photo,chatPreview.name)">
                                 <div class="wrap">
                                     <span class="contact-status online"></span>
                                     <img v-bind:src="chatPreview.photo" alt="" />
@@ -1003,7 +1003,7 @@
                     <i class="fa fa-instagram" aria-hidden="true"></i>
                 </div>
             </div>
-            <div class="messages">
+            <div id="msg" class="messages">
                 <ul v-if="chatRecordTableData.length>0" v-for="chatRec in chatRecordTableData">
                     <li class="msg-reply" v-if="chatRec.dir == 'left'">
                         <img v-bind:src="targetPhoto" alt="" />
@@ -1080,20 +1080,20 @@
             $("#status-options").removeClass("active");
         });
 
-        function newMessage() {
-            message = $(".message-input input").val();
-            if ($.trim(message) == '') {
-                return false;
-            }
+        // function newMessage() {
+        //     message = $(".message-input input").val();
+        //     if ($.trim(message) == '') {
+        //         return false;
+        //     }
 
-            $('<li class="msg-reply" v-for="item in tableDataSelfInfo"><img v-bind:src="item.photo" alt="" /><div><span>8:40 AM, Today</span><p>' + message + '</p></div></li>')
-                .appendTo($('.messages ul'));
-            $('.message-input input').val(null);
-            $('.contact.active .preview').html('<span>You: </span>' + message);
-            $(".messages").animate({
-                scrollTop: $(document).height()
-            }, "fast");
-        };
+        //     $('<li class="msg-reply" v-for="item in tableDataSelfInfo"><img v-bind:src="item.photo" alt="" /><div><span>8:40 AM, Today</span><p>' + message + '</p></div></li>')
+        //         .appendTo($('.messages ul'));
+        //     $('.message-input input').val(null);
+        //     $('.contact.active .preview').html('<span>You: </span>' + message);
+        //     $(".messages").animate({
+        //         scrollTop: $(document).height()
+        //     }, "fast");
+        // };
 
         // $(window).on('keydown', function(e) {
         //     if (e.which == 13) {
@@ -1165,7 +1165,8 @@
                     }
                 },
 
-                chatPreviewclick:function (_channel_id) {
+                // chat preview 点击某个聊天
+                chatPreviewclick:function (_channel_id, _photo, _name) {
                     console.log("chatPreviewclick")
                     var index
                     if(this.chatPreviewTableData.length > 0) {
@@ -1177,20 +1178,25 @@
                         }
                     }
                     var index = this.chatPreviewTableData.indexOf(this.chatPreviewTableData[i]);
-                    //上下互换
+                    //上下互换（把点击的移动到最顶端）
                     swapArr(this.chatPreviewTableData, index, this.chatPreviewTableData.length-1)
+                    //右边的chat record 显示
+                    $("#currentChanel").val(_channel_id)
+                    this.targetNotedName = _name
+                    this.targetPhoto = _photo
+                    historyChatRecord(_channel_id)
+
                 },
 
+                // 通讯录点击个人
                 selectChatTarget:function (target_id, target_name, target_photo) {
                     // console.log("selectChatTarget "+target_name)
                     $("#pills-home-tab").click();
-
                     if(this.currentChatUid != target_id){
                         this.chatRecordTableData = [];
                         this.currentChatUid = target_id;
                         this.targetPhoto = target_photo;
                         _this = this;
-                        //生成channel——id
                         $.ajax({
                             url: '/chat/show_chat_record',
                             type: 'post',
@@ -1205,7 +1211,7 @@
                                     //channel history chat record
                                     historyChatRecord(res.channel_id)
                                     //channel now chat
-                                    showNowChatRecord(res.channel_id)
+                                    // showNowChatRecord(res.channel_id)
                                     //左边选择的追加到chatPreview顶端(数据在底部)
                                     leftSelectMoveTop(res.channel_id)
                                 } else {
@@ -1224,27 +1230,27 @@
                     this.loadingSelfInfo = true;
                     var _this = this;
                     $.ajax({
-                    url: '/chat/self_info',
-                    type: 'post',
-                    data: {
-                        user_id: this.selfId
-                    },
-                    success: function (res) {
-                        _this.loadingSelfInfo = false;
-                        if (res.count !== 0) {
-                        _this.tableDataSelfInfo = res
-                        } else {
-                        _this.tableDataSelfInfo = []
+                        url: '/chat/self_info',
+                        type: 'post',
+                        data: {
+                            user_id: this.selfId
+                        },
+                        success: function (res) {
+                            _this.loadingSelfInfo = false;
+                            if (res.count !== 0) {
+                            _this.tableDataSelfInfo = res
+                            } else {
+                            _this.tableDataSelfInfo = []
+                            }
+                            //所有有关的channelid取得
+                            console.log(_this.tableDataSelfInfo[0].channel)
+                            // xxx()
+                            chatPreviewCurrentUpdate()
+                        },
+                        error: function (err) {
+                            _this.loadingSelfInfo = false
+                            _this.tableDataSelfInfo = []
                         }
-                        //所有有关的channelid取得
-                        // console.log(_this.tableDataSelfInfo[0].channel)
-                        // xxx()
-                        chatPreviewCurrentUpdate()
-                    },
-                    error: function (err) {
-                        _this.loadingSelfInfo = false
-                        _this.tableDataSelfInfo = []
-                    }
                     })
                 },
 
@@ -1362,15 +1368,11 @@
     });
 
     $(".power-off").on("click", function(){
-        //chat preview数据存db
-
+        // chat preview数据存db
         var preview_data = {}
         for (var i = 0; i < frame.chatPreviewTableData.length; i++) {
-            if(_channel_id == frame.chatPreviewTableData[i].channel_id ){
-                var index = frame.chatPreviewTableData.indexOf(frame.chatPreviewTableData[i]);
-            }
-        }
 
+        }
 
         $.ajax({
             url: '/chat/chat_preview',
@@ -1382,14 +1384,10 @@
                 // console.log(res)
                 _this.loadingShowMsg = false
                 if (res) {
-                _this.chatRecordTableData = res
-                } else {
                 _this.chatRecordTableData = []
                 }
             },
             error: function (err) {
-                _this.loadingShowMsg = false;
-                _this.chatRecordTableData = [];
             }
         })
     });
@@ -1398,14 +1396,9 @@
         frame.loadTableDataAddressBook();
     });
 
-    // chatPreviewCurrentUpdate();
-
-    // function xxx(){
-    //     console.log("xxx")
-    // }
     // 从通讯录点击目标人物之后，左边chatpreview追加选中项到顶部
     function leftSelectMoveTop(channel_id) {
-        //取得target 的 id，去搜索最后的未读信息，得到未读的msg_num，最后一条消息和时间，取得是否屏蔽的状态
+        // 取得target 的 id，去搜索最后的未读信息，得到未读的msg_num，最后一条消息和时间，取得是否屏蔽的状态
         goeasy.history({
             channel: channel_id, //必需项
             limit: 1 //可选项，返回的消息条数，默认为100条，最多1000条
@@ -1422,7 +1415,7 @@
         });
     }
 
-    // 添加chat preview 队列 --
+    // 维护chat preview 队列 --
     function handleGoeasyMsgBrief(channel_id, message = "") {
         let _channel_id = channel_id
         let chat_brief = {}
@@ -1433,11 +1426,11 @@
         var name = frame.targetNotedName;
         var photo = frame.targetPhoto;
         if (message != "") {
-            //先取channel_id
+            // 先取channel_id
             let index = message.content.lastIndexOf("|");
             var channel = message.content.substring(index + 1, message.content.length);
             let msgContentTmp = message.content.substring(0, index);
-            //再取sendMsgUserId
+            // 再取sendMsgUserId
             let index_1 = msgContentTmp.lastIndexOf("|");
             // let sendMsgUserId = msgContentTmp.substring(index_1 + 1, msgContentTmp.length);
             msgContent = msgContentTmp.substring(0, index_1);
@@ -1452,9 +1445,7 @@
                 for(var i = 0; i <frame.tableDataSelfInfo[0].channel.length; i++) {
                     if(_channel_id == frame.tableDataSelfInfo[0].channel[i].channel_id) {
                         photo = frame.tableDataSelfInfo[0].channel[i].photo
-                        console.log(photo)
                         name = frame.tableDataSelfInfo[0].channel[i].name
-                        console.log(name)
                     }
                 }
             }
@@ -1468,7 +1459,6 @@
                             "is_block":is_block}
 
         // chatPreview有重复，删除原来的
-        // console.log(frame.chatPreviewTableData.length)
         if(frame.chatPreviewTableData.length > 0) {
             for (var i = 0; i < frame.chatPreviewTableData.length; i++) {
                 if(_channel_id == frame.chatPreviewTableData[i].channel_id ){
@@ -1478,56 +1468,37 @@
                 }
             }
         }
+        // chatPreview 追加这次新的
         frame.chatPreviewTableData.push(chat_brief)
         // console.log(frame.chatPreviewTableData)
     }
 
-    // 除了当前聊天的channel之外,收到新消息之后，左边chatpreview追加选中项到顶部
+    // 收到新消息之后，左边chatpreview追加选中项到顶部
     function chatPreviewCurrentUpdate(){
         // console.log("chatPreviewCurrentUpdate")
-        //获取到当前左边所有的channel id
+        // 获取到当前左边所有的channel id
         if(frame.tableDataSelfInfo[0].channel.length > 0) {
             for(var i = 0; i <frame.tableDataSelfInfo[0].channel.length; i++) {
                 _channel = frame.tableDataSelfInfo[0].channel[i].channel_id
                 goeasy.subscribe({
                     channel: _channel,
                     onMessage: function (message) {
-                        // updateGoeasyMsgBrief( frame.tableDataSelfInfo[0].channel_ids[i], message)
                         console.log("handle")
+                        // chat preview 显示
                         handleGoeasyMsgBrief("", message)
+                        // 先取channel_id
+                        let index = message.content.lastIndexOf("|");
+                        var channel = message.content.substring(index + 1, message.content.length);
+                        var currentChannel = $("#currentChanel").val()
+                        // 如果是点击或者会话中的channel, 则右边的chat record 需要更新
+                        if( channel == currentChannel ){
+                            console.log("handleGoeasyMsg")
+                            handleGoeasyMsg(message)
+                        }
                     }
                 });
             }
         }
-    }
-
-    // 更新chat preview 队列--
-    // function updateGoeasyMsgBrief(channel_id, message) {
-    //     let chat_brief = {}
-    //     let msg_num = 1
-    //     let is_block = false
-    //     let msgContent = "";
-    //     let sendTime = "";
-    //     if (message != "") {
-    //         let index = message.content.lastIndexOf("|");
-    //         msgContent = message.content.substring(0, index);
-    //         sendTime = timestamp2FormatDate(message.time,"hh:mm")
-    //     }
-    //     item.latest_msg_brief = msgContent;
-    //     item.latest_msg_time = sendTime;
-    //     // console.log(frame.chatPreviewTableData)
-    // }
-
-    //展示最新的订阅消息
-    function showNowChatRecord(channel_id){
-        // console.log("showNowChatRecord")
-        goeasy.subscribe({
-            channel: channel_id,
-            onMessage: function (message) {
-                // console.log("onMessage")
-                handleGoeasyMsg(message)
-            }
-        });
     }
 
     //显示以前的订阅消息
@@ -1537,17 +1508,24 @@
             channel: channel_id, //必需项
             // start: start_time, //可选项，开始时间
             // end: end_time, //可选项，结束时间
-            // limit: limit_num //可选项，返回的消息条数，默认为100条，最多1000条
+            limit: 40 //可选项，返回的消息条数，默认为100条，最多1000条
         },
         function(response){
             // console.log("收到历史消息: "+ JSON.stringify(response));
             for (let item of response.content.messages) {
                 handleGoeasyMsg(item)
             }
+            console.log($(document).height())
+            console.log($(document.body).height())
+
+            console.log($(window).height())
+            $(".messages").animate({
+                scrollTop: 9999
+            }, "fast");
         });
     }
 
-    //把消息转成需要的json格式
+    //把消息转成需要的json格式，并在右边的chat record 展示
     function handleGoeasyMsg(message) {
         let chatRecord = {};
         let side;
@@ -1568,9 +1546,14 @@
                     "content":msgContent
                     }
         frame.chatRecordTableData.push(chatRecord);
-        $(".messages").animate({
-            scrollTop: $(document).height()
-        }, "fast");
+        // console.log($(document).height())
+        // $(".messages").animate({
+        //     scrollTop: $(document).height()
+        // }, "fast");
+        // $(".messages").animate({
+        //     scrollTop: 100
+        // }, "fast");
+        // $("#msg").scrollTop(200)
     }
 
     //点击发送按钮
@@ -1580,7 +1563,7 @@
             return false;
         }
         let publishMessage = "";
-        currentChannel = $("#currentChanel").val()
+        var currentChannel = $("#currentChanel").val()
         publishMessage = message + "|" + selfId + "|" + currentChannel;
         console.log("message:"+publishMessage)
         goeasy.publish({
@@ -1588,16 +1571,14 @@
             message: publishMessage,
             onFailed: function (error) {
                 alert(error.code + " : " + error.content);
-        },
-        onSuccess: function () {
-            $(".message-input input").val("")
-
-            //滚动到底部
-            $(".messages").animate({
-                scrollTop: $(document).height()
-            }, "fast");
-            //更新chat preview
-        }
+            },
+            onSuccess: function () {
+                $(".message-input input").val("")
+                //滚动到底部
+                $(".messages").animate({
+                    scrollTop: $(document).height()
+                }, "fast");
+            }
         });
     }
 
