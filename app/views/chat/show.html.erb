@@ -921,7 +921,8 @@
                                     <img v-bind:src="chatPreview.photo" alt="" />
                                     <div class="meta">
                                         <p class="name">{{chatPreview.name}}</p>
-                                        <p class="preview">{{chatPreview.latest_msg_brief}}
+                                        <p class="preview">
+                                            <span style="float:left;width:130px;font-size:13px;overflow: hidden;text-overflow:ellipsis;white-space: nowrap;font-color: #32465a;opacity: .8;">{{chatPreview.latest_msg_brief}}</span>
                                             <span style="float:right;width:38px;font-size:13px">{{chatPreview.latest_msg_time}}</span>
                                         </p>
                                         <!--<p class="preview">{{chatPreview.latest_msg_time}}</p>-->
@@ -1003,20 +1004,20 @@
                     <i class="fa fa-instagram" aria-hidden="true"></i>
                 </div>
             </div>
-            <div id="msg" class="messages">
+            <div class="messages">
                 <ul v-if="chatRecordTableData.length>0" v-for="chatRec in chatRecordTableData">
                     <li class="msg-reply" v-if="chatRec.dir == 'left'">
                         <img v-bind:src="targetPhoto" alt="" />
                         <div>
-                            <span>{{chatRec.time}}</span>
-                            <p>{{chatRec.content}}</p>
+                            <span style="margin-bottom:4px">{{chatRec.time}}</span>
+                            <p style="word-break:break-word;">{{chatRec.content}}</p>
                         </div>
                     </li>
                     <li class="msg-sent" v-else-if="chatRec.dir == 'right'" v-for="item in tableDataSelfInfo">
                         <img v-bind:src="item.photo" alt="" />
                         <div>
-                            <span>{{chatRec.time}}</span>
-                            <p>{{chatRec.content}}</p>
+                            <span style="margin-bottom:4px">{{chatRec.time}}</span>
+                            <p style="word-break:break-word;">{{chatRec.content}}</p>
                         </div>
                     </li>
                 </ul>
@@ -1184,8 +1185,8 @@
                     $("#currentChanel").val(_channel_id)
                     this.targetNotedName = _name
                     this.targetPhoto = _photo
+                    this.chatRecordTableData = []
                     historyChatRecord(_channel_id)
-
                 },
 
                 // 通讯录点击个人
@@ -1515,10 +1516,6 @@
             for (let item of response.content.messages) {
                 handleGoeasyMsg(item)
             }
-            console.log($(document).height())
-            console.log($(document.body).height())
-
-            console.log($(window).height())
             $(".messages").animate({
                 scrollTop: 9999
             }, "fast");
@@ -1546,14 +1543,6 @@
                     "content":msgContent
                     }
         frame.chatRecordTableData.push(chatRecord);
-        // console.log($(document).height())
-        // $(".messages").animate({
-        //     scrollTop: $(document).height()
-        // }, "fast");
-        // $(".messages").animate({
-        //     scrollTop: 100
-        // }, "fast");
-        // $("#msg").scrollTop(200)
     }
 
     //点击发送按钮
@@ -1576,7 +1565,7 @@
                 $(".message-input input").val("")
                 //滚动到底部
                 $(".messages").animate({
-                    scrollTop: $(document).height()
+                    scrollTop: 9999
                 }, "fast");
             }
         });
