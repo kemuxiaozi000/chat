@@ -289,8 +289,58 @@ class ChatController < ApplicationController
     params[:user_id]
   end
 
+  # 将下线前的chat_preview的顺序以数组存入db
   def chat_preview
 
+  end
+
+  # 搜索匹配的用户
+  def add_contact_search
+    p "add_contact_search"
+    res = []
+    if params[:type] == "by_id"
+      res_ele = {}
+      user = User.find_by_id(params[:kw])
+      user_manage = UserManagement.find_by_user_id(params[:kw])
+      user_relation = UserRelation.where('user_relations.user_id_1 = ? and user_relations.user_id_2 = ?', current_user.id, params[:kw])
+      res_ele["photo"] = user_manage.photo
+      res_ele["nickname"] = user.nickname
+      res_ele["user_id"] = user.id
+      # 默认自己和自己是朋友
+      if params[:kw].to_i == current_user.id
+        res_ele["is_friend"] = true
+      else
+        user_relation = UserRelation.where('user_relations.user_id_1 = ? and user_relations.user_id_2 = ?', current_user.id, params[:kw])
+        if user_relation.present? && (user_relation[0].relation == "1")
+          res_ele["is_friend"] = true
+        else
+          res_ele["is_friend"] = false
+        end
+      end
+      res.push(res_ele)
+    elsif params[:type] == "by_name"
+      p "by_name"
+      users = User.joins('inner join user_managements on users.id = user_managements.user_id').
+                select('users.id, users.nickname, user_managements.photo').
+                where('users.nickname LIKE ? ', '%'+params[:kw]+'%')
+      p "by_name 11"
+      p users
+      for item in users
+        res_ele = {}
+        res_ele["photo"] = item.photo
+        res_ele["nickname"] = item.nickname
+        res_ele["user_id"] = item.id
+        user_relation = UserRelation.where('user_relations.user_id_1 = ? and user_relations.user_id_2 = ?', current_user.id, item.id)
+        if user_relation.present? && (user_relation[0].relation == "1")
+          res_ele["is_friend"] = true
+        else
+          res_ele["is_friend"] = false
+        end
+        p "by_name 22"
+        res.push(res_ele)
+      end
+    end
+    render json: res
   end
 end
 

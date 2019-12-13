@@ -18,6 +18,7 @@ Rails.application.routes.draw do
     post 'send_msg', action: "send_msg"
     post 'show_msg', action: "show_msg"
     post 'address_book', action: "address_book"
+    get 'add_contact_search', action: "add_contact_search"
   end
 
   namespace :game do
