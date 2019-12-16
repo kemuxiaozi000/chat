@@ -19,6 +19,10 @@ Rails.application.routes.draw do
     post 'show_msg', action: "show_msg"
     post 'address_book', action: "address_book"
     get 'add_contact_search', action: "add_contact_search"
+    post 'add_friend', action: "add_friend"
+    post 'find_user', action: "find_user"
+    post 'add_friend_accept', action: "add_friend_accept"
+    post 'add_friend_ignore', action: "add_friend_ignore"
   end
 
   namespace :game do

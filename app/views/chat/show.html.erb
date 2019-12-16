@@ -269,13 +269,16 @@
                                                 </small>
                                             </td>
                                             <td>
-                                                <div v-if="item.is_friend==false" class>
-                                                    <a href="" class="text-muted">
+                                                <div v-if="item.is_friend==false">
+                                                    <a href="javascript:void(0);" @click="addFriend(item.user_id)" class="text-muted">
                                                         <i class="fa fa-user-plus fa-fw"></i>
                                                     </a>
                                                 </div>
                                                 <div v-else-if="item.is_friend==true">
                                                     <i class="fas fa-user-friends"></i>
+                                                </div>
+                                                <div v-else-if="item.is_friend=='wait'">
+                                                    <i class="fas fa-hourglass-half"></i>
                                                 </div>
                                             </td>
                                         </tr>
@@ -286,7 +289,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary " data-dismiss="modal" @click="addContactClose">Close</button>
                 </div>
             </div>
         </div>
@@ -300,9 +303,23 @@
             appkey: 'BC-242425a937724e418b4f51105a138e3b'
         });
 
+        $(document).ready(function() {
+            // 登录就创建临时websocket,用于接收广播和服务器发送的消息
+            // var d = new Date().valueOf()
+            var channel_tmp = "|SERVER|" + selfId
+            console.log(channel_tmp)
+            addSelfAndServerChannel(channel_tmp)
+        });
+
+        //点击发送
         $(document).on("click", ".submit", function () {
             // newMessage();
             publishMessage();
+        });
+
+        // 点击添加朋友
+        $(document).on("click", ".add-friend", function () {
+            // 弹出框，好友添加请求已发送，等待对方回复，然后
         });
 
         $(".messages").animate({
@@ -419,6 +436,13 @@
                     } else {
 
                     }
+                },
+
+                //addContact 点击close按钮，清空相关查询数据
+                addContactClose: function() {
+                    console.log(111)
+                    this.tableDataAddContactSearchRes = [];
+                    this.loadingAddContactSearchRes = false;
                 },
 
                 // chat preview 点击某个聊天
@@ -591,10 +615,28 @@
                     })
                     }
                 },
+
+                // 添加好友
+                addFriend: function (id) {
+                    console.log("addFriend"+id);
+                    for( var i = 0; i < this.tableDataAddContactSearchRes.length; i++){
+                        if (this.tableDataAddContactSearchRes[i].user_id == id) {
+                            this.tableDataAddContactSearchRes[i].is_friend = "wait";
+                        }
+                    }
+                    $.ajax({
+                        url: '/chat/add_friend',
+                        type: 'post',
+                        data: {
+                            add_user_id: id,
+                        },
+                    })
+                },
             },
     });
 
     // 点击退出登录按钮，将chat preview 里的chanel 数组顺序保存
+    //TODO
     $(".power-off").on("click", function(){
         // chat preview数据存db
         var preview_data = {}
@@ -712,7 +754,7 @@
                 goeasy.subscribe({
                     channel: _channel,
                     onMessage: function (message) {
-                        console.log("handle")
+                        // console.log("handle")
                         // chat preview 显示
                         handleGoeasyMsgBrief("", message)
                         // 先取channel_id
@@ -721,7 +763,7 @@
                         var currentChannel = $("#currentChanel").val()
                         // 如果是点击或者会话中的channel, 则右边的chat record 需要更新
                         if( channel == currentChannel ){
-                            console.log("handleGoeasyMsg")
+                            // console.log("handleGoeasyMsg")
                             handleGoeasyMsg(message)
                         }
                     }
@@ -836,6 +878,144 @@
         })
     });
 
+    //一登陆就添加订阅一个临时channel， 方便推送
+    function addSelfAndServerChannel(_channel){
+        console.log("addSelfAndServerChannel")
+        goeasy.subscribe({
+            channel: _channel,
+            onMessage: function (message) {
+                // message.content msg_content|msg_type|user_id
+                var arr = divideMsgIntoParts(message.content, 3)
+                var msg_content = arr[0]
+                var msg_type = arr[1]
+                var user_id = arr[2]
+                if(msg_type == "AddFriend") {
+                    console.log("AddFriend")
+                    // 根据user_id 查photo 和nickname
+                    $.ajax({
+                        url: '/chat/find_user',
+                        type: 'post',
+                        data: {
+                            user_id: user_id,
+                        },
+                        success: function (res) {
+                            var template
+                            if(msg_content == "Request") {
+                                template ='<div data-notify="container" class="col-xs-11 col-sm-3 alert alert-{0}" role="alert">' +
+                                            '<button type="button" aria-hidden="true" class="close" data-notify="dismiss">×</button>' +
+                                            '<span data-notify="icon"></span> ' +
+                                            '<span data-notify="title">{1}</span> ' +
+                                            '<span data-notify="message">{2}</span>' +
+                                            '<div><button type="button" class="btn btn-warning btn-sm m-2 add-friend-ignore" value="'+ user_id + '">忽略</button>' +
+                                            '<button type="button" class="btn btn-warning btn-sm m-2 add-friend-accept" value="'+ user_id + '">接受</button></div>' +
+                                        '</div>'
+                                createNotify(res.photo, '好友添加',res.nickname+'请求添加您为好友', template)
+                            } else if(msg_content == "Refuse"){
+                                var template =  '<div data-notify="container" class="col-xs-11 col-sm-3 alert alert-{0}" role="alert">' +
+                                                    '<button type="button" aria-hidden="true" class="close" data-notify="dismiss">×</button>' +
+                                                    '<span data-notify="icon"></span> ' +
+                                                    '<span data-notify="title">{1}</span> ' +
+                                                    '<span data-notify="message">{2}</span>' +
+                                                '</div>'
+                                createNotify(res.photo, '好友添加',res.nickname+'拒绝了您的添加请求', template)
+                            } else if(msg_content == "Accept"){
+                                var template =  '<div data-notify="container" class="col-xs-11 col-sm-3 alert alert-{0}" role="alert">' +
+                                                    '<button type="button" aria-hidden="true" class="close" data-notify="dismiss">×</button>' +
+                                                    '<span data-notify="icon"></span> ' +
+                                                    '<span data-notify="title">{1}</span> ' +
+                                                    '<span data-notify="message">{2}</span>' +
+                                                '</div>'
+                                createNotify(res.photo, '好友添加',res.nickname+'接受了您的添加请求，你们已经是好友啦', template)
+                            }
+                        },
+                    })
+                }
+            }
+        });
+    }
+
+    function divideMsgIntoParts(msg, num_of_parts) {
+        var arr = []
+        var part_1, part_2, part_3
+        var index, index_1
+        if(num_of_parts == 2) {
+            index = msg.lastIndexOf("|");
+            part_1 = msg.substring(0, index);
+            part_2 = msg.substring(index + 1, msg.length);
+            arr.push(part_1)
+            arr.push(part_2)
+        } else if (num_of_parts == 3) {
+            index = msg.lastIndexOf("|");
+            part_3 = msg.substring(index + 1, msg.length);
+            let msgContentTmp = msg.substring(0, index);
+            index_1 = msgContentTmp.lastIndexOf("|");
+            part_2 = msgContentTmp.substring(index_1 + 1, msgContentTmp.length);
+            part_1 = msgContentTmp.substring(0, index_1);
+            arr.push(part_1)
+            arr.push(part_2)
+            arr.push(part_3)
+        }
+        return arr
+    }
+
+    // 创建通知对象
+    function createNotify(icon, title, message, template){
+        var notify = $.notify({
+            // options
+            icon: icon,
+            title: title,
+            message: message,
+        },{
+            // settings
+            type: 'pastel-info',
+            placement: {
+                from: "bottom",
+                align: "right"
+            },
+            delay: 0,
+            icon_type: 'image',
+            newest_on_top: true,
+            allow_dismiss: false,
+            template:   '<div data-notify="container" class="col-xs-11 col-sm-3 alert alert-{0}" role="alert">' +
+                            '<button type="button" aria-hidden="true" class="close" data-notify="dismiss">×</button>' +
+                            '<span data-notify="icon"></span> ' +
+                            '<span data-notify="title">{1}</span> ' +
+                            '<span data-notify="message">{2}</span>' +
+                            '<div><button type="button" class="btn btn-warning btn-sm m-2 add-friend-ignore" value="'+ user_id + '">忽略</button>' +
+                            '<button type="button" class="btn btn-warning btn-sm m-2 add-friend-accept" value="'+ user_id + '">接受</button></div>' +
+                        '</div>'
+        });
+    }
+
+    // 忽略添加好友
+    $(document).on("click", ".add-friend-ignore", function () {
+        var user_id = $(this).val()
+        $.ajax({
+            url: '/chat/add_friend_ignore',
+            type: 'post',
+            data: {
+                user_id: user_id,
+            },
+            success: function (res) {
+                // 告诉server拒绝了
+            },
+        })
+    });
+
+    // 接受添加好友
+    $(document).on("click", ".add-friend-accept", function () {
+        var user_id = $(this).val()
+        $.ajax({
+            url: '/chat/add_friend_accept',
+            type: 'post',
+            data: {
+                user_id: user_id,
+            },
+            success: function (res) {
+
+            },
+        })
+    });
      //# sourceURL=pen.js
     </script>
 </body>

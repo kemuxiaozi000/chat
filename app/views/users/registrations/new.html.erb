@@ -44,7 +44,7 @@
             </div>
 
             <div class="actions">
-              <%= f.submit "Sign up", class: "btn btn-lg btn-primary btn-block mt-3" %>
+              <%= f.submit "Sign up", class: "btn btn-lg btn-primary btn-block mt-3 sign-up" %>
             </div>
             <div class="text-right">
               <%= link_to "Log in", new_session_path(resource_name) %>
@@ -55,4 +55,11 @@
     </div>
   </section>
 </div>
+
+<script type="text/javascript">
+  $(document).on("click", ".sign-up", function () {
+    //在devise创建user表的同时，创建user_management表，记录photo
+
+  });
+</script>
 

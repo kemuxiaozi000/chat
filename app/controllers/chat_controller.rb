@@ -319,28 +319,79 @@ class ChatController < ApplicationController
       end
       res.push(res_ele)
     elsif params[:type] == "by_name"
-      p "by_name"
       users = User.joins('inner join user_managements on users.id = user_managements.user_id').
                 select('users.id, users.nickname, user_managements.photo').
                 where('users.nickname LIKE ? ', '%'+params[:kw]+'%')
-      p "by_name 11"
-      p users
       for item in users
         res_ele = {}
         res_ele["photo"] = item.photo
         res_ele["nickname"] = item.nickname
         res_ele["user_id"] = item.id
-        user_relation = UserRelation.where('user_relations.user_id_1 = ? and user_relations.user_id_2 = ?', current_user.id, item.id)
-        if user_relation.present? && (user_relation[0].relation == "1")
+        # 默认自己和自己是朋友
+        if item.id.to_i == current_user.id
           res_ele["is_friend"] = true
         else
-          res_ele["is_friend"] = false
+          user_relation = UserRelation.where('user_relations.user_id_1 = ? and user_relations.user_id_2 = ?', current_user.id, item.id)
+          if user_relation.present? && (user_relation[0].relation == "1")
+            res_ele["is_friend"] = true
+          else
+            res_ele["is_friend"] = false
+          end
         end
-        p "by_name 22"
+
         res.push(res_ele)
       end
     end
     render json: res
   end
+
+  # 添加好友
+  def add_friend
+    p "add_friend"
+    p params
+    channel = "|SERVER|"+ params[:add_user_id]
+    # content format :  msg_content|msg_type|user_id
+    content = "Request|AddFriend|" + current_user.id
+    GoEasyClient.send(channel, content)
+  end
+
+  def find_user
+    p "find_user"
+    p params
+    # 创建user_relation表
+    user_tmp = User.find_by_id(params[:user_id])
+    user_manage_tmp = UserManagement.find_by_user_id(params[:user_id])
+    res = {
+      "photo": user_manage_tmp.photo,
+      "nickname": user_tmp.nickname,
+    }
+    render json: res
+  end
+
+  def add_friend_ignore
+    p "add_friend_ignore"
+    channel = "|SERVER|"+ params[:user_id]
+    content = "Refuse|AddFriend|" + current_user.id
+    GoEasyClient.send(channel, content)
+  end
+
+  def add_friend_accept
+    p "add_friend_accept"
+    channel = "|SERVER|"+ params[:user_id]
+    content = "Accept|AddFriend|" + current_user.id
+    GoEasyClient.send(channel, content)
+    # TODO 更新user_relation表
+    channel_id = PersonChatRecord.new.make_rc_uuid
+    UserRelation.create!([{ user_id_1: current_user.id, user_id_2: params[:user_id], relation: '1', channel_id: channel_id },{  user_id_1: params[:user_id], user_id_2: current_user.id, relation: '1', channel_id: channel_id }])
+  end
 end
 
+require 'net/http'
+class GoEasyClient
+  def self.send(channel, content)
+    Thread.new {
+      Net::HTTP.post_form(URI("http(s)://rest-hangzhou.goeasy.io/publish"),
+      {appkey: "BC-242425a937724e418b4f51105a138e3b", channel: channel, content: content})
+    }
+  end
+end
