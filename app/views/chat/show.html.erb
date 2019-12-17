@@ -26,7 +26,7 @@
         <div id="sidepanel">
             <div id="profile">
                 <div class="wrap" v-for="(item, index) in tableDataSelfInfo" :key="index">
-                    <img id="profile-img" v-bind:src="item.photo" class="online" alt="" />
+                    <img id="profile-img" v-bind:src="item.photo" class="online" alt="no image" onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'" />
                     <p>
                         <%if current_user.present?%>
                             <%= current_user.nickname %>
@@ -257,7 +257,7 @@
                                         <tr v-if="tableDataAddContactSearchRes.length>0" v-loading="loadingAddContactSearchRes"element-loading-text="loading..." v-for="item in tableDataAddContactSearchRes">
                                             <td>
                                                 <div style="display:flex; flex-direction: row; flex-wrap: nowrap;align-items: center;">
-                                                    <img v-bind:src="item.photo" alt="" class="img-circle img-size-32 mr-2">
+                                                    <img v-bind:src="item.photo" alt="no image" onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'" class="img-circle img-size-32 mr-2">
                                                     <span>{{item.nickname}}</span>
                                                 </div>
                                             </td>
@@ -299,15 +299,14 @@
     <script type="text/javascript" src="https://cdn-hangzhou.goeasy.io/goeasy.js"></script>
     <script type="text/javascript">
         var selfId = "<%if current_user.present?%><%= current_user.id%><%end%>"
+        var notify
         var goeasy = new GoEasy({
             appkey: 'BC-242425a937724e418b4f51105a138e3b'
         });
 
         $(document).ready(function() {
             // 登录就创建临时websocket,用于接收广播和服务器发送的消息
-            // var d = new Date().valueOf()
             var channel_tmp = "|SERVER|" + selfId
-            console.log(channel_tmp)
             addSelfAndServerChannel(channel_tmp)
         });
 
@@ -401,7 +400,6 @@
                 chatRecordTableData: [],
                 targetNotedName: "未选择聊天",
                 targetPhoto: '',
-                avatarUrl: 'https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg',
                 loading: false,
                 loadingPeople: false,
                 chatPreviewTableData:[],
@@ -618,7 +616,7 @@
 
                 // 添加好友
                 addFriend: function (id) {
-                    console.log("addFriend"+id);
+                    // console.log("addFriend"+id);
                     for( var i = 0; i < this.tableDataAddContactSearchRes.length; i++){
                         if (this.tableDataAddContactSearchRes[i].user_id == id) {
                             this.tableDataAddContactSearchRes[i].is_friend = "wait";
@@ -880,17 +878,18 @@
 
     //一登陆就添加订阅一个临时channel， 方便推送
     function addSelfAndServerChannel(_channel){
-        console.log("addSelfAndServerChannel")
+        console.log("addSelfAndServerChannel:"+_channel)
         goeasy.subscribe({
             channel: _channel,
             onMessage: function (message) {
+                console.log("onMessage:"+message)
                 // message.content msg_content|msg_type|user_id
                 var arr = divideMsgIntoParts(message.content, 3)
                 var msg_content = arr[0]
                 var msg_type = arr[1]
                 var user_id = arr[2]
                 if(msg_type == "AddFriend") {
-                    console.log("AddFriend")
+                    console.log("onMessage:AddFriend")
                     // 根据user_id 查photo 和nickname
                     $.ajax({
                         url: '/chat/find_user',
@@ -900,6 +899,7 @@
                         },
                         success: function (res) {
                             var template
+                            var msg
                             if(msg_content == "Request") {
                                 template ='<div data-notify="container" class="col-xs-11 col-sm-3 alert alert-{0}" role="alert">' +
                                             '<button type="button" aria-hidden="true" class="close" data-notify="dismiss">×</button>' +
@@ -909,23 +909,44 @@
                                             '<div><button type="button" class="btn btn-warning btn-sm m-2 add-friend-ignore" value="'+ user_id + '">忽略</button>' +
                                             '<button type="button" class="btn btn-warning btn-sm m-2 add-friend-accept" value="'+ user_id + '">接受</button></div>' +
                                         '</div>'
-                                createNotify(res.photo, '好友添加',res.nickname+'请求添加您为好友', template)
+                                msg = `<img src="`+
+                                        res.photo +
+                                        `" alt="no image"` +
+                                        `style="width: 30px;border-radius: 50%;padding: 1px;border: 1px solid #2ecc71;height: auto;"`+
+                                        `onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'" />`+
+                                        res.nickname +
+                                        '请求添加您为好友'
+                                createNotify("", '好友添加', msg, template)
                             } else if(msg_content == "Refuse"){
-                                var template =  '<div data-notify="container" class="col-xs-11 col-sm-3 alert alert-{0}" role="alert">' +
+                                template =  '<div data-notify="container" class="col-xs-11 col-sm-3 alert alert-{0}" role="alert">' +
                                                     '<button type="button" aria-hidden="true" class="close" data-notify="dismiss">×</button>' +
                                                     '<span data-notify="icon"></span> ' +
                                                     '<span data-notify="title">{1}</span> ' +
                                                     '<span data-notify="message">{2}</span>' +
                                                 '</div>'
-                                createNotify(res.photo, '好友添加',res.nickname+'拒绝了您的添加请求', template)
+                                msg = `<img src="`+
+                                        res.photo +
+                                        `" alt="no image"` +
+                                        `style="width: 30px;border-radius: 50%;padding: 1px;border: 1px solid #2ecc71;height: auto;"`+
+                                        `onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'" />`+
+                                        res.nickname +
+                                        '拒绝了您的添加请求'
+                                createNotify("", '好友添加',msg, template, true)
                             } else if(msg_content == "Accept"){
-                                var template =  '<div data-notify="container" class="col-xs-11 col-sm-3 alert alert-{0}" role="alert">' +
+                                template =  '<div data-notify="container" class="col-xs-11 col-sm-3 alert alert-{0}" role="alert">' +
                                                     '<button type="button" aria-hidden="true" class="close" data-notify="dismiss">×</button>' +
                                                     '<span data-notify="icon"></span> ' +
                                                     '<span data-notify="title">{1}</span> ' +
                                                     '<span data-notify="message">{2}</span>' +
                                                 '</div>'
-                                createNotify(res.photo, '好友添加',res.nickname+'接受了您的添加请求，你们已经是好友啦', template)
+                                msg = `<img src="`+
+                                        res.photo +
+                                        `" alt="no image"` +
+                                        `style="width: 30px;border-radius: 50%;padding: 1px;border: 1px solid #2ecc71;height: auto;"`+
+                                        `onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'" />`+
+                                        res.nickname +
+                                        '接受了您的添加请求，你们已经是好友啦'
+                                createNotify("", '好友添加', msg, template, true)
                             }
                         },
                     })
@@ -934,33 +955,9 @@
         });
     }
 
-    function divideMsgIntoParts(msg, num_of_parts) {
-        var arr = []
-        var part_1, part_2, part_3
-        var index, index_1
-        if(num_of_parts == 2) {
-            index = msg.lastIndexOf("|");
-            part_1 = msg.substring(0, index);
-            part_2 = msg.substring(index + 1, msg.length);
-            arr.push(part_1)
-            arr.push(part_2)
-        } else if (num_of_parts == 3) {
-            index = msg.lastIndexOf("|");
-            part_3 = msg.substring(index + 1, msg.length);
-            let msgContentTmp = msg.substring(0, index);
-            index_1 = msgContentTmp.lastIndexOf("|");
-            part_2 = msgContentTmp.substring(index_1 + 1, msgContentTmp.length);
-            part_1 = msgContentTmp.substring(0, index_1);
-            arr.push(part_1)
-            arr.push(part_2)
-            arr.push(part_3)
-        }
-        return arr
-    }
-
     // 创建通知对象
-    function createNotify(icon, title, message, template){
-        var notify = $.notify({
+    function createNotify(icon, title, message, template, allow_dismiss=false){
+        notify = $.notify({
             // options
             icon: icon,
             title: title,
@@ -975,15 +972,8 @@
             delay: 0,
             icon_type: 'image',
             newest_on_top: true,
-            allow_dismiss: false,
-            template:   '<div data-notify="container" class="col-xs-11 col-sm-3 alert alert-{0}" role="alert">' +
-                            '<button type="button" aria-hidden="true" class="close" data-notify="dismiss">×</button>' +
-                            '<span data-notify="icon"></span> ' +
-                            '<span data-notify="title">{1}</span> ' +
-                            '<span data-notify="message">{2}</span>' +
-                            '<div><button type="button" class="btn btn-warning btn-sm m-2 add-friend-ignore" value="'+ user_id + '">忽略</button>' +
-                            '<button type="button" class="btn btn-warning btn-sm m-2 add-friend-accept" value="'+ user_id + '">接受</button></div>' +
-                        '</div>'
+            allow_dismiss: allow_dismiss,
+            template: template,
         });
     }
 
@@ -997,6 +987,7 @@
                 user_id: user_id,
             },
             success: function (res) {
+                notify.close();
                 // 告诉server拒绝了
             },
         })
@@ -1012,7 +1003,7 @@
                 user_id: user_id,
             },
             success: function (res) {
-
+                notify.close();
             },
         })
     });

@@ -15,7 +15,6 @@ class ChatController < ApplicationController
   # out {photo:"", name:""}
   def self_info
     user = UserManagement.find_by_user_id(current_user.id)
-    default_avatar = "/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png"
     res_tmp = {}
     res = []
     channel_ids_and_notename = []
@@ -26,14 +25,18 @@ class ChatController < ApplicationController
       tmp = {}
       tmp_user = NameNote.where('name_notes.user_id = ? and name_notes.noted_id = ? ', current_user.id, item.user_id_2)[0]
       tmp_photo = UserManagement.find_by_user_id(item.user_id_2)
-      tmp["channel_id"] = item.channel_id
-      tmp["target_user_id"] = item.user_id_2
-      tmp["photo"] = tmp_photo.photo
+      if tmp_photo.present?
+        tmp["photo"] = tmp_photo.photo
+      else
+        tmp["photo"] = ""
+      end
       if tmp_user.present?
         tmp["name"] = tmp_user.note_name
       else
         tmp["name"] = User.find_by_id(item.user_id_2).nickname
       end
+      tmp["channel_id"] = item.channel_id
+      tmp["target_user_id"] = item.user_id_2
       channel_ids_and_notename.push(tmp)
     end
     res_tmp["channel"] = channel_ids_and_notename
@@ -44,11 +47,11 @@ class ChatController < ApplicationController
       if user.photo.present?
         res_tmp["photo"] = user.photo
       else
-        res_tmp["photo"] = default_avatar
+        res_tmp["photo"] = ""
       end
     else
       res_tmp["nickname"] = current_user.nickname
-      res_tmp["photo"] = default_avatar
+      res_tmp["photo"] = ""
     end
 
     res.push(res_tmp)
@@ -303,7 +306,11 @@ class ChatController < ApplicationController
       user = User.find_by_id(params[:kw])
       user_manage = UserManagement.find_by_user_id(params[:kw])
       user_relation = UserRelation.where('user_relations.user_id_1 = ? and user_relations.user_id_2 = ?', current_user.id, params[:kw])
-      res_ele["photo"] = user_manage.photo
+      if user_relation.present?
+        res_ele["photo"] = user_manage.photo
+      else
+        res_ele["photo"] = ""
+      end
       res_ele["nickname"] = user.nickname
       res_ele["user_id"] = user.id
       # 默认自己和自己是朋友
@@ -324,6 +331,7 @@ class ChatController < ApplicationController
                 where('users.nickname LIKE ? ', '%'+params[:kw]+'%')
       for item in users
         res_ele = {}
+        # BUG 取不到怎么办
         res_ele["photo"] = item.photo
         res_ele["nickname"] = item.nickname
         res_ele["user_id"] = item.id
@@ -348,10 +356,9 @@ class ChatController < ApplicationController
   # 添加好友
   def add_friend
     p "add_friend"
-    p params
     channel = "|SERVER|"+ params[:add_user_id]
     # content format :  msg_content|msg_type|user_id
-    content = "Request|AddFriend|" + current_user.id
+    content = "Request|AddFriend|" + current_user.id.to_s
     GoEasyClient.send(channel, content)
   end
 
@@ -361,8 +368,13 @@ class ChatController < ApplicationController
     # 创建user_relation表
     user_tmp = User.find_by_id(params[:user_id])
     user_manage_tmp = UserManagement.find_by_user_id(params[:user_id])
+    if user_manage_tmp.present?
+      user_photo = user_manage_tmp.photo
+    else
+      user_photo = ""
+    end
     res = {
-      "photo": user_manage_tmp.photo,
+      "photo": user_photo,
       "nickname": user_tmp.nickname,
     }
     render json: res
@@ -371,18 +383,26 @@ class ChatController < ApplicationController
   def add_friend_ignore
     p "add_friend_ignore"
     channel = "|SERVER|"+ params[:user_id]
-    content = "Refuse|AddFriend|" + current_user.id
+    p "add_friend_ignore1"
+    content = "Refuse|AddFriend|" + current_user.id.to_s
+    p "add_friend_ignore2"
     GoEasyClient.send(channel, content)
+    p "add_friend_ignore3"
   end
 
   def add_friend_accept
     p "add_friend_accept"
     channel = "|SERVER|"+ params[:user_id]
-    content = "Accept|AddFriend|" + current_user.id
+    p "add_friend_accept1"
+    content = "Accept|AddFriend|" + current_user.id.to_s
+    p "add_friend_accept2"
     GoEasyClient.send(channel, content)
+    p "add_friend_accept3"
     # TODO 更新user_relation表
     channel_id = PersonChatRecord.new.make_rc_uuid
+    p "add_friend_accept4"
     UserRelation.create!([{ user_id_1: current_user.id, user_id_2: params[:user_id], relation: '1', channel_id: channel_id },{  user_id_1: params[:user_id], user_id_2: current_user.id, relation: '1', channel_id: channel_id }])
+    p "add_friend_accept5"
   end
 end
 
@@ -390,7 +410,7 @@ require 'net/http'
 class GoEasyClient
   def self.send(channel, content)
     Thread.new {
-      Net::HTTP.post_form(URI("http(s)://rest-hangzhou.goeasy.io/publish"),
+      Net::HTTP.post_form(URI("http://rest-hangzhou.goeasy.io/publish"),
       {appkey: "BC-242425a937724e418b4f51105a138e3b", channel: channel, content: content})
     }
   end
