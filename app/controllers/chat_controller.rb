@@ -25,16 +25,8 @@ class ChatController < ApplicationController
       tmp = {}
       tmp_user = NameNote.where('name_notes.user_id = ? and name_notes.noted_id = ? ', current_user.id, item.user_id_2)[0]
       tmp_photo = UserManagement.find_by_user_id(item.user_id_2)
-      if tmp_photo.present?
-        tmp["photo"] = tmp_photo.photo
-      else
-        tmp["photo"] = ""
-      end
-      if tmp_user.present?
-        tmp["name"] = tmp_user.note_name
-      else
-        tmp["name"] = User.find_by_id(item.user_id_2).nickname
-      end
+      tmp_photo.present? ? tmp["photo"] = tmp_photo.photo : tmp["photo"] = ""
+      tmp_user.present? ? tmp["name"] = tmp_user.note_name : tmp["name"] = User.find_by_id(item.user_id_2).nickname
       tmp["channel_id"] = item.channel_id
       tmp["target_user_id"] = item.user_id_2
       channel_ids_and_notename.push(tmp)
@@ -44,16 +36,11 @@ class ChatController < ApplicationController
     # 个人信息
     if user.present?
       res_tmp["nickname"] = current_user.nickname
-      if user.photo.present?
-        res_tmp["photo"] = user.photo
-      else
-        res_tmp["photo"] = ""
-      end
+      user.photo.present? ? res_tmp["photo"] = user.photo : res_tmp["photo"] = ""
     else
       res_tmp["nickname"] = current_user.nickname
       res_tmp["photo"] = ""
     end
-
     res.push(res_tmp)
     render json: res
   end
@@ -139,7 +126,6 @@ class ChatController < ApplicationController
       # ]
   def address_book
     p "address_book"
-    p params[:user_id]
     res = []
     tmp = UserManagement.joins('inner join name_notes on user_managements.user_id = name_notes.noted_id').
                           select('user_managements.user_id,user_managements.photo, name_notes.note_name, name_notes.noted_id').
@@ -165,7 +151,6 @@ class ChatController < ApplicationController
   def member_info_brief
     res = []
     if params[:u_id].to_s.start_with?("GRP")
-      p "2"
       members = GroupInfo.find_by_group_id(params[:u_id]).member_list
       arr_members = members.to_s.split(",")
       tmp_user = UserManagement.joins('inner join name_notes on user_managements.user_id = name_notes.noted_id').
@@ -177,7 +162,6 @@ class ChatController < ApplicationController
       self_hash["photo"] = self_info.photo
       res.push(self_hash)
     else
-      p "1"
       tmp_user = UserManagement.joins('inner join name_notes on user_managements.user_id = name_notes.noted_id').
                                 select('user_managements.user_id,user_managements.photo, name_notes.note_name, name_notes.noted_id').
                                 where('name_notes.user_id = ?  and user_managements.user_id = ? ', params[:user_id], params[:u_id])
@@ -223,7 +207,6 @@ class ChatController < ApplicationController
   #     params[:user_id]
   # out db 存
   def send_msg
-    # db 存
     p "send_msg"
     if params[:target_id].to_s[0,3] == "USR"
       person_chat_uid = PersonChatRecord.new.make_rc_uuid
@@ -266,30 +249,8 @@ class ChatController < ApplicationController
     end
   end
 
-  # 显示消息 websocket  goeasy？
-  # timing 轮询 每隔2s
-  # in params[:target_id]
-  #     params[:user_id]
-  # out [
-  #   {"dir":"left","notedName":"粑粑","time":"2019/10/25 08:49","content":"hahaha","contentLen":"margin-right: 460px;",photo:""},
-  #   {"dir":"left","notedName":"粑粑","time":"2019/10/26 09:12","content":"晚上来吗","contentLen":"margin-right: 444px;",photo:""},
-  #   {"dir":"right","notedName":"Me","time":"2019/10/26 12:39","content":"可以","contentLen":"margin-left: 476px;",photo:""},
-  #   {"dir":"left","notedName":"粑粑","time":"2019/10/27 22:33","content":"昨天又放鸽子","contentLen":"margin-right: 412px;",photo:""}
-  # ],
-
   def show_msg
-    p "show_msg"
-    # 根据target_id 和 user_id 查
-    if params[:target_id].to_s[0,3] == "USR"
-      # PersonChatRecord.joins('inner join user_managements on person_chat_records.user_id_1 = user_managements.user_id').
-      #                 joins('inner join name_notes on person_chat_records.user_id_1 = name_notes.noted_id').
-      #                 select('user_managements.user_id,user_managements.photo, name_notes.note_name, name_notes.noted_id').
-      #                 where('name_notes.user_id = ?  and user_managements.user_id = ? ', params[:user_id], params[:u_id])
-    elsif params[:target_id].to_s[0,3] == "GRP"
 
-    end
-    params[:target_id]
-    params[:user_id]
   end
 
   # 将下线前的chat_preview的顺序以数组存入db
@@ -346,7 +307,6 @@ class ChatController < ApplicationController
             res_ele["is_friend"] = false
           end
         end
-
         res.push(res_ele)
       end
     end
@@ -364,15 +324,10 @@ class ChatController < ApplicationController
 
   def find_user
     p "find_user"
-    p params
     # 创建user_relation表
     user_tmp = User.find_by_id(params[:user_id])
     user_manage_tmp = UserManagement.find_by_user_id(params[:user_id])
-    if user_manage_tmp.present?
-      user_photo = user_manage_tmp.photo
-    else
-      user_photo = ""
-    end
+    user_manage_tmp.present? ? user_photo = user_manage_tmp.photo : user_photo = ""
     res = {
       "photo": user_photo,
       "nickname": user_tmp.nickname,
@@ -383,26 +338,18 @@ class ChatController < ApplicationController
   def add_friend_ignore
     p "add_friend_ignore"
     channel = "|SERVER|"+ params[:user_id]
-    p "add_friend_ignore1"
     content = "Refuse|AddFriend|" + current_user.id.to_s
-    p "add_friend_ignore2"
     GoEasyClient.send(channel, content)
-    p "add_friend_ignore3"
   end
 
   def add_friend_accept
     p "add_friend_accept"
     channel = "|SERVER|"+ params[:user_id]
-    p "add_friend_accept1"
     content = "Accept|AddFriend|" + current_user.id.to_s
-    p "add_friend_accept2"
     GoEasyClient.send(channel, content)
-    p "add_friend_accept3"
     # TODO 更新user_relation表
     channel_id = PersonChatRecord.new.make_rc_uuid
-    p "add_friend_accept4"
     UserRelation.create!([{ user_id_1: current_user.id, user_id_2: params[:user_id], relation: '1', channel_id: channel_id },{  user_id_1: params[:user_id], user_id_2: current_user.id, relation: '1', channel_id: channel_id }])
-    p "add_friend_accept5"
   end
 end
 
