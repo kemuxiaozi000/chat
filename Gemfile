@@ -68,7 +68,7 @@ gem 'tzinfo-data', platforms: %i[mingw mswin x64_mingw jruby]
 gem 'yard'
 
 # fontawesome
-gem 'font-awesome-sass', '~> 5.2.0'
+gem 'font-awesome-sass', '~> 5.8.0'
 
 gem 'unicorn-worker-killer'
 

@@ -86,11 +86,15 @@
     #frame #sidepanel #profile .wrap {
         height: 60px;
         line-height: 60px;
-        overflow: hidden;
+        /* overflow: hidden; */
         -moz-transition: 0.3s height ease;
         -o-transition: 0.3s height ease;
         -webkit-transition: 0.3s height ease;
         transition: 0.3s height ease;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: center;
     }
 
     @media screen and (max-width: 735px) {

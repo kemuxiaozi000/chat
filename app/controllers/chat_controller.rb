@@ -34,12 +34,19 @@ class ChatController < ApplicationController
     res_tmp["channel"] = channel_ids_and_notename
 
     # 个人信息
+    res_tmp["email"] = current_user.email
     if user.present?
       res_tmp["nickname"] = current_user.nickname
-      user.photo.present? ? res_tmp["photo"] = user.photo : res_tmp["photo"] = ""
+      res_tmp["photo"] = user.photo.present? ?  user.photo : ""
+      res_tmp["tel"] = user.phone.present? ?  user.phone : ""
+      res_tmp["sex"] = user.sex.present? ?  user.sex : ""
+      res_tmp["birthday"] = user.date_of_birth.present? ?  user.date_of_birth : ""
     else
       res_tmp["nickname"] = current_user.nickname
       res_tmp["photo"] = ""
+      res_tmp["tel"] = ""
+      res_tmp["sex"] = ""
+      res_tmp["birthday"] = ""
     end
     res.push(res_tmp)
     render json: res
@@ -127,19 +134,22 @@ class ChatController < ApplicationController
   def address_book
     p "address_book"
     res = []
-    tmp = UserManagement.joins('inner join name_notes on user_managements.user_id = name_notes.noted_id').
-                          select('user_managements.user_id,user_managements.photo, name_notes.note_name, name_notes.noted_id').
-                          where('name_notes.user_id = ? ', params[:user_id])
-                          p tmp
-    for item in tmp
-      if item.noted_id.to_s[0,3] != "GRP"
+    user_tmp = UserRelation.where('user_relations.relation = ? and user_relations.user_id_1 = ?', "1", current_user.id).
+                            joins('left join users on user_relations.user_id_2 = users.id ').
+                            joins('left join user_managements on user_relations.user_id_2 = user_managements.user_id ').
+                            joins('left join name_notes on user_relations.user_id_2 = name_notes.noted_id').
+                            select('users.id, users.nickname, user_managements.photo, name_notes.note_name')
+    if user_tmp.present?
+      for item in user_tmp
         hash = {}
-        hash["uid"] = item.noted_id
-        hash["name"] = item.note_name
-        hash["photo"] = item.photo
+        hash["uid"] = item.id
+        hash["name"] = item.note_name.blank? ? item.nickname : item.note_name
+        hash["photo"] = item.photo.blank? ? "" : item.photo
         res.push(hash)
       end
     end
+    p "address_book2 "
+    p res
     render json: res
   end
 
@@ -328,9 +338,13 @@ class ChatController < ApplicationController
     user_tmp = User.find_by_id(params[:user_id])
     user_manage_tmp = UserManagement.find_by_user_id(params[:user_id])
     user_manage_tmp.present? ? user_photo = user_manage_tmp.photo : user_photo = ""
+    # 查创建的channel,如果能查到，说明已经是好友了
+    user_relation = UserRelation.where('user_relations.user_id_1 = ? and user_relations.user_id_2 = ?', current_user.id, params[:user_id])
+    channel = user_relation.present? ? user_relation[0].channel_id : ""
     res = {
       "photo": user_photo,
       "nickname": user_tmp.nickname,
+      "channel": channel,
     }
     render json: res
   end
@@ -350,6 +364,7 @@ class ChatController < ApplicationController
     # TODO 更新user_relation表
     channel_id = PersonChatRecord.new.make_rc_uuid
     UserRelation.create!([{ user_id_1: current_user.id, user_id_2: params[:user_id], relation: '1', channel_id: channel_id },{  user_id_1: params[:user_id], user_id_2: current_user.id, relation: '1', channel_id: channel_id }])
+    render json: {"channel": channel_id}
   end
 end
 

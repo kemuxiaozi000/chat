@@ -16,9 +16,11 @@
             });
         } catch (e) {}
     </script>
+
     <link rel='stylesheet prefetch' href='https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css'>
     <link rel='stylesheet prefetch' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.2/css/font-awesome.min.css'>
     <%= render 'main_style' %>
+    <%= render 'more_profile' %>
 </head>
 
 <body>
@@ -27,21 +29,32 @@
             <div id="profile">
                 <div class="wrap" v-for="(item, index) in tableDataSelfInfo" :key="index">
                     <img id="profile-img" v-bind:src="item.photo" class="online" alt="no image" onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'" />
-                    <p>
+                    <p style="width:110px">
                         <%if current_user.present?%>
                             <%= current_user.nickname %>
                         <% end %>
                     </p>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-default dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: #6c757d;">
+                            <span class="sr-only"></span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton" style="line-height:30px;">
+                            <button class="dropdown-item" id="more_profile" type="button" data-toggle="modal" data-target="#modalMoreProfile"><i class="fas fa-address-card mr-2" style="opacity: 0.5;"></i>完善信息</button>
+                            <button class="dropdown-item" id="desktop_notify" type="button"><i class="fas fa-bell-slash mr-2" style="opacity: 0.5;"></i>桌面通知</button>
+                            <button class="dropdown-item" id="volumn_mute" type="button"><i class="fas fa-volume-mute mr-2" style="opacity: 0.5;"></i>关闭声音</button>
+                            <button class="dropdown-item" id="feedback" type="button"><i class="fas fa-envelope mr-2" style="opacity: 0.5;"></i>意见反馈</button>
+                        </div>
+                    </div>
                     <% if user_signed_in? %>
                         <%= link_to destroy_user_session_path, method: :delete do %>
-                            <i class="fas fa-power-off power-off" style="margin-left:20px"></i>
+                            <i class="fas fa-power-off power-off" style="margin:10px;"></i>
                         <% end %>
                     <% else %>
                         <li>
                             <%= link_to('Login', new_user_session_path) %>
                         </li>
                     <% end %>
-                    <i class="fa fa-chevron-down expand-button" aria-hidden="true"></i>
+                    <!--
                     <div id="status-options">
                         <ul>
                             <li id="status-online" class="active"><span class="status-circle"></span>
@@ -66,6 +79,7 @@
                         <label for="twitter"><i class="fa fa-instagram fa-fw" aria-hidden="true"></i></label>
                         <input name="twitter" type="text" value="mike.ross" />
                     </div>
+                    -->
                 </div>
             </div>
             <div id="search">
@@ -131,7 +145,7 @@
                             <li class="contact">
                                 <div class="wrap" v-for="person in item.personList" @click="selectChatTarget(person.uid,person.name, person.photo)">
                                     <span class="contact-status online"></span>
-                                    <img v-bind:src="person.photo" alt="" />
+                                    <img v-bind:src="person.photo" alt="no image" onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'"  />
                                     <div class="meta">
                                         <p class="name">{{person.name}}</p>
                                         <p class="name">...</p>
@@ -204,96 +218,197 @@
             </div>
         </div>
         <input type="hidden" id="currentChanel" value="" />
-        <div class="modal fade" id="modalAddContact">
         <!--add contact modal-->
-        <div class="modal-dialog dialog-center" style="margin-top: 128px">
-            <div class="modal-content" style="width: 450px;">
-                <div class="modal-header">
-                    <h4 class="modal-title">Add contact</h4>
-                </div>
-                <div class="modal-body">
-                    <nav>
-                        <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                            <a class="nav-item nav-link active" id="nav-search-id-tab" data-toggle="tab" href="#nav-search-id" role="tab" aria-controls="nav-search-id" aria-selected="true">用户ID</a>
-                            <a class="nav-item nav-link" id="nav-search-name-tab" data-toggle="tab" href="#nav-search-name" role="tab" aria-controls="nav-search-name" aria-selected="false">用户名</a>
-                        </div>
-                    </nav>
-                    <div class="tab-content" id="nav-tabContent">
-                        <div class="tab-pane fade show active" id="nav-search-id" role="tabpanel" aria-labelledby="nav-search-id-tab">
-                            <div class="input-group mb-3 mt-2">
-                                <input type="text" class="form-control" id="add-contact-search-id" placeholder="按用户id精确匹配" aria-label="Recipient's username" aria-describedby="button-addon2">
-                                <div class="input-group-append">
-                                    <button class="btn btn-outline-secondary btn-user-search" type="button" id="button-addon2"><i
-                                            class="fa fa-search" aria-hidden="true"></i></button>
+        <div class="modal fade" id="modalAddContact">
+            <div class="modal-dialog dialog-center" style="margin-top: 128px">
+                <div class="modal-content" style="width: 450px;">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Add contact</h4>
+                    </div>
+                    <div class="modal-body">
+                        <nav>
+                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                                <a class="nav-item nav-link active" id="nav-search-id-tab" data-toggle="tab" href="#nav-search-id" role="tab" aria-controls="nav-search-id" aria-selected="true">用户ID</a>
+                                <a class="nav-item nav-link" id="nav-search-name-tab" data-toggle="tab" href="#nav-search-name" role="tab" aria-controls="nav-search-name" aria-selected="false">用户名</a>
+                            </div>
+                        </nav>
+                        <div class="tab-content" id="nav-tabContent">
+                            <div class="tab-pane fade show active" id="nav-search-id" role="tabpanel" aria-labelledby="nav-search-id-tab">
+                                <div class="input-group mb-3 mt-2">
+                                    <input type="text" class="form-control" id="add-contact-search-id" placeholder="按用户id精确匹配" aria-label="Recipient's username" aria-describedby="button-addon2">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary btn-user-search" type="button" id="button-addon2"><i
+                                                class="fa fa-search" aria-hidden="true"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="nav-search-name" role="tabpanel" aria-labelledby="nav-search-name-tab">
+                                <div class="input-group mb-3 mt-2">
+                                    <input type="text" class="form-control" id="add-contact-search-name" placeholder="按用户名模糊匹配" aria-label="Recipient's username" aria-describedby="button-addon3">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary btn-user-search" type="button" id="button-addon3"><i
+                                                class="fa fa-search" aria-hidden="true"></i></button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="tab-pane fade" id="nav-search-name" role="tabpanel" aria-labelledby="nav-search-name-tab">
-                            <div class="input-group mb-3 mt-2">
-                                <input type="text" class="form-control" id="add-contact-search-name" placeholder="按用户名模糊匹配" aria-label="Recipient's username" aria-describedby="button-addon3">
-                                <div class="input-group-append">
-                                    <button class="btn btn-outline-secondary btn-user-search" type="button" id="button-addon3"><i
-                                            class="fa fa-search" aria-hidden="true"></i></button>
+                        <div class="result-show">
+                            <div class="card">
+                                <div class="card-header border-0">
+                                    <h3 class="card-title">Products</h3>
+                                </div>
+                                <div class="card-body p-0">
+                                    <table class="table table-striped table-valign-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>User</th>
+                                                <th>Id</th>
+                                                <th>xxx</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-if="tableDataAddContactSearchRes.length>0" v-loading="loadingAddContactSearchRes"element-loading-text="loading..." v-for="item in tableDataAddContactSearchRes">
+                                                <td>
+                                                    <div style="display:flex; flex-direction: row; flex-wrap: nowrap;align-items: center;">
+                                                        <img v-bind:src="item.photo" alt="no image" onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'" class="img-circle img-size-32 mr-2">
+                                                        <span>{{item.nickname}}</span>
+                                                    </div>
+                                                </td>
+                                                <td>{{item.user_id}}</td>
+                                                <td>
+                                                    <small class="text-success mr-1">
+                                                        <i class="fas fa-arrow-up"></i>
+                                                        12%
+                                                    </small>
+                                                </td>
+                                                <td>
+                                                    <div v-if="item.is_friend==false">
+                                                        <a href="javascript:void(0);" @click="addFriend(item.user_id)" class="text-muted">
+                                                            <i class="fa fa-user-plus fa-fw"></i>
+                                                        </a>
+                                                    </div>
+                                                    <div v-else-if="item.is_friend==true">
+                                                        <i class="fas fa-user-friends"></i>
+                                                    </div>
+                                                    <div v-else-if="item.is_friend=='wait'">
+                                                        <i class="fas fa-hourglass-half"></i>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="result-show">
-                        <div class="card">
-                            <div class="card-header border-0">
-                                <h3 class="card-title">Products</h3>
-                            </div>
-                            <div class="card-body p-0">
-                                <table class="table table-striped table-valign-middle">
-                                    <thead>
-                                        <tr>
-                                            <th>User</th>
-                                            <th>Id</th>
-                                            <th>xxx</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr v-if="tableDataAddContactSearchRes.length>0" v-loading="loadingAddContactSearchRes"element-loading-text="loading..." v-for="item in tableDataAddContactSearchRes">
-                                            <td>
-                                                <div style="display:flex; flex-direction: row; flex-wrap: nowrap;align-items: center;">
-                                                    <img v-bind:src="item.photo" alt="no image" onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'" class="img-circle img-size-32 mr-2">
-                                                    <span>{{item.nickname}}</span>
-                                                </div>
-                                            </td>
-                                            <td>{{item.user_id}}</td>
-                                            <td>
-                                                <small class="text-success mr-1">
-                                                    <i class="fas fa-arrow-up"></i>
-                                                    12%
-                                                </small>
-                                            </td>
-                                            <td>
-                                                <div v-if="item.is_friend==false">
-                                                    <a href="javascript:void(0);" @click="addFriend(item.user_id)" class="text-muted">
-                                                        <i class="fa fa-user-plus fa-fw"></i>
-                                                    </a>
-                                                </div>
-                                                <div v-else-if="item.is_friend==true">
-                                                    <i class="fas fa-user-friends"></i>
-                                                </div>
-                                                <div v-else-if="item.is_friend=='wait'">
-                                                    <i class="fas fa-hourglass-half"></i>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary " data-dismiss="modal" @click="addContactClose">Close</button>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary " data-dismiss="modal" @click="addContactClose">Close</button>
                 </div>
             </div>
         </div>
-    </div>
+
+        <!--more profile modal-->
+        <div class="modal fade" id="modalMoreProfile">
+            <div class="modal-dialog dialog-center" style="margin-top: 128px">
+                <div class="modal-content" style="width: 550px;height: 500px;">
+                    <div class="modal-header">
+                        <h3 class="modal-title">完善个人信息</h3>
+                    </div>
+                    <div class="modal-body">
+                        <div v-for="item in tableDataSelfInfo">
+                            <form>
+                                <div class="form-row">
+                                    <div class="col-md-7">
+                                        <div class="input-group mt-3 mb-3 ml-2">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text label-text" id="inputGroupPrepend1">User ID</span>
+                                            </div>
+                                            <input type="text" class="form-control" id="form_user_id" :value="selfId" readonly>
+                                        </div>
+                                        <div class="input-group mt-3 mb-3 ml-2">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text label-text" id="inputGroupPrepend2">E-mail</span>
+                                            </div>
+                                            <input type="text" class="form-control" id="form_email" :value="item.email" readonly>
+                                        </div>
+                                        <div class="input-group mt-3 mb-3 ml-2">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text label-text" id="inputGroupPrepend3">Nickname</span>
+                                            </div>
+                                            <input type="text" class="form-control" id="form_nickname" :value="item.nickname" aria-describedby="inputGroupPrepend2" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-5 photo-upload">
+                                        <el-upload
+                                            class="avatar-uploader"
+                                            action="https://jsonplaceholder.typicode.com/posts/"
+                                            :show-file-list="false"
+                                            :on-success="handleAvatarSuccess"
+                                            :before-upload="beforeAvatarUpload">
+                                            <img v-if="item.photo" :src="item.photo" class="avatar">
+                                            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                                        </el-upload>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="col-md-5">
+                                        <div class="input-group m-2">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text label-text" id="tel">Tel</span>
+                                            </div>
+                                            <input type="text" class="form-control" id="form_tel" :value="item.tel">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-5 offset-md-1">
+                                        <div class="input-group m-2">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text label-text" id="sex">Sex</span>
+                                            </div>
+                                            <select id="form_sex" class="form-control" id="form_sex" :value="item.sex">
+                                                <option v-if="item.sex" selected>{{item.sex}}</option>
+                                                <option>Male</option>
+                                                <option>Female</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="col-md-5">
+                                        <div class="input-group date m-2" id="datetimepicker1">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text label-text" id="sex">Birthday</span>
+                                            </div>
+                                            <input type="text" class="form-control" />
+                                            <span class="input-group-append">
+                                                <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-5 offset-md-1">
+                                        <div class="input-group m-2">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text label-text" id="hobby">hobby</span>
+                                            </div>
+                                            <select id="form_hobby" class="form-control">
+                                                <option>Sports</option>
+                                                <option>Game</option>
+                                                <option>Zhai</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" @click="saveProfile()">Save</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <script src='//production-assets.codepen.io/assets/common/stopExecutionOnTimeout-b2a7b3fe212eaa732349046d8416e00a9dec26eb7fd347590fbced3ab38af52e.js'></script>
     <script type="text/javascript" src="https://cdn-hangzhou.goeasy.io/goeasy.js"></script>
@@ -315,6 +430,23 @@
             // newMessage();
             publishMessage();
         });
+
+        // 下拉菜单
+        $(document).on("click", ".dropdown-item", function () {
+            $('.dropdown-toggle').dropdown()
+            switch($(this).attr("id")) {
+                case "more_profile":
+                    console.log("1")
+                    break;
+                case "desktop_notify":
+                    break;
+                case "volumn_mute":
+                    break;
+                case "feedback":
+                    break;
+            }
+        });
+
 
         // 点击添加朋友
         $(document).on("click", ".add-friend", function () {
@@ -413,6 +545,7 @@
                 value: 3.7,
                 loadingAddContactSearchRes: false,
                 tableDataAddContactSearchRes: [],
+                imageUrl: '',
             },
 
             computed: {
@@ -438,7 +571,6 @@
 
                 //addContact 点击close按钮，清空相关查询数据
                 addContactClose: function() {
-                    console.log(111)
                     this.tableDataAddContactSearchRes = [];
                     this.loadingAddContactSearchRes = false;
                 },
@@ -532,7 +664,7 @@
 
                 // 加载tab2的所有好友
                 loadTableDataAddressBook: function () {
-                    // console.log("loadTableDataAddressBook")
+                    console.log("loadTableDataAddressBook")
                     this.loadingAddressBook = true;
                     var _this = this;
                     $.ajax({
@@ -630,6 +762,27 @@
                         },
                     })
                 },
+
+                handleAvatarSuccess(res, file) {
+                    this.imageUrl = URL.createObjectURL(file.raw);
+                },
+
+                beforeAvatarUpload(file) {
+                    const isJPG = file.type === 'image/jpeg';
+                    const isLt2M = file.size / 1024 / 1024 < 2;
+
+                    if (!isJPG) {
+                        this.$message.error('上传头像图片只能是 JPG 格式!');
+                    }
+                    if (!isLt2M) {
+                        this.$message.error('上传头像图片大小不能超过 2MB!');
+                    }
+                    return isJPG && isLt2M;
+                },
+
+                saveProfile() {
+
+                }
             },
     });
 
@@ -947,6 +1100,34 @@
                                         res.nickname +
                                         '接受了您的添加请求，你们已经是好友啦'
                                 createNotify("", '好友添加', msg, template, true)
+                                $("#currentChanel").val(res.channel)
+                                // 追加监听
+                                console.log("追加监听");
+                                goeasy.subscribe({
+                                    channel: res.channel,
+                                    onMessage: function (message) {
+                                        handleGoeasyMsgBrief("", message)
+                                        // 先取channel_id
+                                        let index = message.content.lastIndexOf("|");
+                                        var channel = message.content.substring(index + 1, message.content.length);
+                                        var currentChannel = $("#currentChanel").val()
+                                        if( channel == currentChannel ){
+                                            // console.log("handleGoeasyMsg")
+                                            handleGoeasyMsg(message)
+                                        }
+                                    },
+                                    onSuccess: function () {
+                                        // TODO 跳转到chat preview 添加到队列
+                                        console.log("Channel订阅成功。")
+                                        // 追加好友列表
+                                        frame.loadTableDataAddressBook()
+                                        frame.loadTableDataSelfInfo()
+                                    },
+                                    onFailed: function (error) {
+                                        alert("Channel订阅失败, 错误编码：" + error.code + " 错误信息：" + error.content)
+                                    }
+                                });
+
                             }
                         },
                     })
@@ -1004,6 +1185,7 @@
             },
             success: function (res) {
                 notify.close();
+
             },
         })
     });
