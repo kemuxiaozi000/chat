@@ -46,14 +46,12 @@ class ChatController < ApplicationController
       res_tmp["tel"] = user.phone.present? ?  user.phone : ""
       res_tmp["sex"] = user.sex.present? ?  user.sex : ""
       res_tmp["birthday"] = user.date_of_birth.present? ?  user.date_of_birth : ""
-      res_tmp["avatar"] = user.avatar.present? ?  user.avatar : ""
     else
       res_tmp["nickname"] = current_user.nickname
       res_tmp["photo"] = ""
       res_tmp["tel"] = ""
       res_tmp["sex"] = ""
       res_tmp["birthday"] = ""
-      res_tmp["avatar"] = ""
     end
     res.push(res_tmp)
     render json: res

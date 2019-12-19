@@ -21,6 +21,7 @@
     <link rel='stylesheet prefetch' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.2/css/font-awesome.min.css'>
     <%= render 'main_style' %>
     <%= render 'more_profile' %>
+    <%= render 'revise_notename' %>
 </head>
 
 <body>
@@ -150,11 +151,16 @@
                                         <div class="nameplus">
                                             <div class="personal-name">{{person.name}}</div>
                                             <div>
-                                                <button type="button" class="btn btn-sm btn-default dropdown-toggle dropdown-toggle-split dropdown-toggle-person" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: #6c757d;" @click.stop="addrbookPersonClick(person.uid)">
+                                                <button type="button" class="btn btn-sm btn-default dropdown-toggle dropdown-toggle-split dropdown-toggle-person"
+                                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: #6c757d;"
+                                                    @click.stop="addrbookPersonClick(person.uid)">
                                                     <span class="sr-only"></span>
                                                 </button>
                                                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton" style="line-height:30px;">
-                                                    <button class="dropdown-item dropdown-item-addr" id="notename_revise" type="button" data-toggle="modal" data-target="#modalNotenameRevise"><i class="fas fa-address-card mr-2" style="opacity: 0.5;"></i>修改备注</button>
+                                                    <button class="dropdown-item dropdown-item-addr" id="notename_revise" type="button" @click.stop="openModalNotenameRevise(person.name)">
+                                                        <i class="fas fa-address-card mr-2" style="opacity: 0.5;"></i>
+                                                        修改备注
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -447,17 +453,17 @@
         // 下拉菜单
         $(document).on("click", ".dropdown-item-self", function () {
             $('.dropdown-toggle-self').dropdown()
-            switch($(this).attr("id")) {
-                case "more_profile":
-                    console.log("1")
-                    break;
-                case "desktop_notify":
-                    break;
-                case "volumn_mute":
-                    break;
-                case "feedback":
-                    break;
-            }
+            // switch($(this).attr("id")) {
+            //     case "more_profile":
+            //         console.log("1")
+            //         break;
+            //     case "desktop_notify":
+            //         break;
+            //     case "volumn_mute":
+            //         break;
+            //     case "feedback":
+            //         break;
+            // }
         });
 
 
@@ -580,28 +586,33 @@
 
                 addrbookPersonClick: function(_uid) {
                     // 要点两下对应
-                    if(!this.addrbookPersonClickFlag){
-                        $('.dropdown-toggle-person').click()
-                        this.addrbookPersonClickFlag = true
-                    }
+                    // if(!this.addrbookPersonClickFlag){
+                    //     $('.dropdown-toggle-person').click()
+                    //     this.addrbookPersonClickFlag = true
+                    // }
                     $('.dropdown-toggle-person').dropdown()
-                    switch($(this).attr("id")) {
-                        case "more_profile":
-                            console.log("1")
-                            break;
-                        case "desktop_notify":
-                            break;
-                        case "volumn_mute":
-                            break;
-                        case "feedback":
-                            break;
-                    }
+                    // switch($(this).attr("id")) {
+                    //     // case "revise_notename":
+                    //     //     console.log("revise_notename")
+                    //     //     break;
+                    // }
                 },
 
                 //addContact 点击close按钮，清空相关查询数据
                 addContactClose: function() {
                     this.tableDataAddContactSearchRes = [];
                     this.loadingAddContactSearchRes = false;
+                },
+
+                openModalNotenameRevise: function(name) {
+                    // $('.dropdown-toggle-person').dropdown()
+                    $("#modalNotenameRevise").modal()
+
+                },
+
+                //reviseNotename 点击确定按钮，更新数据库，更新数据
+                reviseNotenameConfirm: function() {
+
                 },
 
                 // chat preview 点击某个聊天
@@ -629,7 +640,7 @@
 
                 // 通讯录点击个人
                 selectChatTarget:function (target_id, target_name, target_photo) {
-                    // console.log("selectChatTarget "+target_name)
+                    console.log("selectChatTarget ")
                     $("#pills-home-tab").click();
                     if(this.currentChatUid != target_id){
                         this.chatRecordTableData = [];
