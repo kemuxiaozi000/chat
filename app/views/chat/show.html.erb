@@ -35,14 +35,14 @@
                         <% end %>
                     </p>
                     <div class="btn-group">
-                        <button type="button" class="btn btn-sm btn-default dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: #6c757d;">
+                        <button type="button" class="btn btn-sm btn-default dropdown-toggle dropdown-toggle-split dropdown-toggle-self" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: #6c757d;">
                             <span class="sr-only"></span>
                         </button>
                         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton" style="line-height:30px;">
-                            <button class="dropdown-item" id="more_profile" type="button" data-toggle="modal" data-target="#modalMoreProfile"><i class="fas fa-address-card mr-2" style="opacity: 0.5;"></i>完善信息</button>
-                            <button class="dropdown-item" id="desktop_notify" type="button"><i class="fas fa-bell-slash mr-2" style="opacity: 0.5;"></i>桌面通知</button>
-                            <button class="dropdown-item" id="volumn_mute" type="button"><i class="fas fa-volume-mute mr-2" style="opacity: 0.5;"></i>关闭声音</button>
-                            <button class="dropdown-item" id="feedback" type="button"><i class="fas fa-envelope mr-2" style="opacity: 0.5;"></i>意见反馈</button>
+                            <button class="dropdown-item dropdown-item-self" id="more_profile" type="button" data-toggle="modal" data-target="#modalMoreProfile"><i class="fas fa-address-card mr-2" style="opacity: 0.5;"></i>完善信息</button>
+                            <button class="dropdown-item dropdown-item-self" id="desktop_notify" type="button"><i class="fas fa-bell-slash mr-2" style="opacity: 0.5;"></i>桌面通知</button>
+                            <button class="dropdown-item dropdown-item-self" id="volumn_mute" type="button"><i class="fas fa-volume-mute mr-2" style="opacity: 0.5;"></i>关闭声音</button>
+                            <button class="dropdown-item dropdown-item-self" id="feedback" type="button"><i class="fas fa-envelope mr-2" style="opacity: 0.5;"></i>意见反馈</button>
                         </div>
                     </div>
                     <% if user_signed_in? %>
@@ -147,7 +147,17 @@
                                     <span class="contact-status online"></span>
                                     <img v-bind:src="person.photo" alt="no image" onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'"  />
                                     <div class="meta mt-1 mb-1">
-                                        <p class="name">{{person.name}}</p>
+                                        <div class="nameplus">
+                                            <div class="personal-name">{{person.name}}</div>
+                                            <div>
+                                                <button type="button" class="btn btn-sm btn-default dropdown-toggle dropdown-toggle-split dropdown-toggle-person" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: #6c757d;" @click.stop="addrbookPersonClick(person.uid)">
+                                                    <span class="sr-only"></span>
+                                                </button>
+                                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton" style="line-height:30px;">
+                                                    <button class="dropdown-item dropdown-item-addr" id="notename_revise" type="button" data-toggle="modal" data-target="#modalNotenameRevise"><i class="fas fa-address-card mr-2" style="opacity: 0.5;"></i>修改备注</button>
+                                                </div>
+                                            </div>
+                                        </div>
                                         <p class="name">&nbsp;</p>
                                         <p class="name">&nbsp;</p>
                                     </div>
@@ -435,8 +445,8 @@
         });
 
         // 下拉菜单
-        $(document).on("click", ".dropdown-item", function () {
-            $('.dropdown-toggle').dropdown()
+        $(document).on("click", ".dropdown-item-self", function () {
+            $('.dropdown-toggle-self').dropdown()
             switch($(this).attr("id")) {
                 case "more_profile":
                     console.log("1")
@@ -544,6 +554,7 @@
                 tableDataAddContactSearchRes: [],
                 editProfileData: {},
                 edit_avatar: "",
+                addrbookPersonClickFlag: false,
             },
 
             computed: {
@@ -564,6 +575,26 @@
 
                     } else {
 
+                    }
+                },
+
+                addrbookPersonClick: function(_uid) {
+                    // 要点两下对应
+                    if(!this.addrbookPersonClickFlag){
+                        $('.dropdown-toggle-person').click()
+                        this.addrbookPersonClickFlag = true
+                    }
+                    $('.dropdown-toggle-person').dropdown()
+                    switch($(this).attr("id")) {
+                        case "more_profile":
+                            console.log("1")
+                            break;
+                        case "desktop_notify":
+                            break;
+                        case "volumn_mute":
+                            break;
+                        case "feedback":
+                            break;
                     }
                 },
 
