@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_12_05_031906) do
+ActiveRecord::Schema.define(version: 2019_12_05_031907) do
 
   create_table "group_chat_records", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8", force: :cascade do |t|
     t.string "chat_content_id"
@@ -98,6 +98,7 @@ ActiveRecord::Schema.define(version: 2019_12_05_031906) do
     t.string "date_of_sign_up", comment: "注册时间"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.binary "avatar", comment: "头像1"
     t.index ["user_id"], name: "index_user_managements_on_user_id"
   end
 

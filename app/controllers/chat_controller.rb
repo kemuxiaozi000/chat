@@ -1,3 +1,5 @@
+require 'tempfile'
+
 class ChatController < ApplicationController
   before_action :authenticate_user!, :only => [:index, :show, :new]
 
@@ -6,7 +8,10 @@ class ChatController < ApplicationController
   end
 
   def show
-
+    # p "show"
+    # @image = UserManagement.find_by_user_id(current_user.id)
+    # p @image.avatar.class
+    # send_data @image.avatar, :type => 'image/jpeg', :disposition => 'inline'
   end
 
   # 加载个人数据（左上角）头像，昵称 add channel_id
@@ -41,12 +46,14 @@ class ChatController < ApplicationController
       res_tmp["tel"] = user.phone.present? ?  user.phone : ""
       res_tmp["sex"] = user.sex.present? ?  user.sex : ""
       res_tmp["birthday"] = user.date_of_birth.present? ?  user.date_of_birth : ""
+      res_tmp["avatar"] = user.avatar.present? ?  user.avatar : ""
     else
       res_tmp["nickname"] = current_user.nickname
       res_tmp["photo"] = ""
       res_tmp["tel"] = ""
       res_tmp["sex"] = ""
       res_tmp["birthday"] = ""
+      res_tmp["avatar"] = ""
     end
     res.push(res_tmp)
     render json: res
@@ -138,18 +145,16 @@ class ChatController < ApplicationController
                             joins('left join users on user_relations.user_id_2 = users.id ').
                             joins('left join user_managements on user_relations.user_id_2 = user_managements.user_id ').
                             joins('left join name_notes on user_relations.user_id_2 = name_notes.noted_id').
-                            select('users.id, users.nickname, user_managements.photo, name_notes.note_name')
+                            select('users.id, users.nickname, user_managements.photo, name_notes.note_name, name_notes.user_id')
     if user_tmp.present?
       for item in user_tmp
         hash = {}
         hash["uid"] = item.id
-        hash["name"] = item.note_name.blank? ? item.nickname : item.note_name
+        hash["name"] = (item.note_name.blank? || (item.user_id != current_user.id.to_s)) ? item.nickname : item.note_name
         hash["photo"] = item.photo.blank? ? "" : item.photo
         res.push(hash)
       end
     end
-    p "address_book2 "
-    p res
     render json: res
   end
 
@@ -187,30 +192,17 @@ class ChatController < ApplicationController
   end
 
   # 聊天记录
-  # timing 点击左下角列表个人聊天的群或个人，出现聊天记录
+  # timing 点击addrbook列表个人聊天
   # in params[:u_id] 群或个人
-  # out [{memo_name:"",photo:""}...]
+  # out {channel_id:channel_id}
   def show_chat_record
-    res = {}
     params[:user_id]
     params[:target_id]
-    user_relation_1 = UserRelation.where('user_relations.user_id_1 = ? and user_relations.user_id_2 = ?', params[:user_id], params[:target_id])[0]
-    user_relation_2 = UserRelation.where('user_relations.user_id_2 = ? and user_relations.user_id_1 = ?', params[:user_id], params[:target_id])[0]
-    # channel_id在建立关系时已经产生，一定会有
-    # if user_relation_1.channel_id.present?
-    channel_id = user_relation_1.channel_id
-    # else
-    #   channel_id = PersonChatRecord.new.make_rc_uuid
-    #   user_relation_1.update({'channel_id': channel_id})
-    #   user_relation_2.update({'channel_id': channel_id})
-    # end
-    current_target = NameNote.where('name_notes.user_id = ? and name_notes.noted_id = ?', params[:user_id], params[:target_id])
-    res[:channel_id] = channel_id
-    res[:current_nickname] = current_target[0].note_name
-    render json: res
+    channel_id = UserRelation.where('user_relations.user_id_1 = ? and user_relations.user_id_2 = ?', params[:user_id], params[:target_id])[0].channel_id
+    render json: {"channel_id": channel_id}
   end
 
-  # 发送消息 websocket  goeasy？
+  # 发送消息 websocket  goeasy
   # timing 点击右下角发送按钮
   # in params[:text]
   #     params[:target_id]
@@ -365,6 +357,48 @@ class ChatController < ApplicationController
     channel_id = PersonChatRecord.new.make_rc_uuid
     UserRelation.create!([{ user_id_1: current_user.id, user_id_2: params[:user_id], relation: '1', channel_id: channel_id },{  user_id_1: params[:user_id], user_id_2: current_user.id, relation: '1', channel_id: channel_id }])
     render json: {"channel": channel_id}
+  end
+
+  # 保存用户编辑的个人信息
+  def edit_profile
+    p "edit_profile"
+    p params
+    user_tmp = UserManagement.find_by_user_id(current_user.id)
+    if user_tmp.present?
+      user_tmp.user_id = current_user.id
+      user_tmp.sex = params[:sex]
+      user_tmp.phone = params[:tel]
+      user_tmp.hobby = params[:hobby]
+      user_tmp.date_of_birth = params[:birthday]
+      user_tmp.photo = params[:imageUrl]
+      user_tmp.save!
+    else
+      user_new = UserManagement.new
+      user_new.user_id = current_user.id
+      user_new.sex = params[:sex]
+      user_new.phone = params[:tel]
+      user_new.hobby = params[:hobby]
+      user_new.date_of_birth = params[:birthday]
+      user_new.photo = params[:imageUrl]
+      user_new.save!
+    end
+    user = User.find_by_id(current_user.id)
+    user.nickname = params[:nickname]
+    user.save!
+  end
+
+  def avatar_upload
+    p "avatar_upload"
+    json_img = prepare_json_image(params[:file])
+    edit_avatar = "data:" + json_img["content_type"] + ";base64," + json_img["data"]
+  end
+
+  def prepare_json_image(file)
+    json = {}
+    json["filename"] = file.original_filename
+    json["content_type"] = file.content_type
+    json["data"] = Base64.strict_encode64(File.read(file.path))
+    json
   end
 end
 

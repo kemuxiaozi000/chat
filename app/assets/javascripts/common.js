@@ -62,3 +62,11 @@ function divideMsgIntoParts(msg, num_of_parts) {
     }
     return arr
 }
+
+function blobToDataURI(blob, callback) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        callback(e.target.result);
+    }
+    reader.readAsDataURL(blob);
+}

@@ -146,9 +146,10 @@
                                 <div class="wrap" v-for="person in item.personList" @click="selectChatTarget(person.uid,person.name, person.photo)">
                                     <span class="contact-status online"></span>
                                     <img v-bind:src="person.photo" alt="no image" onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'"  />
-                                    <div class="meta">
+                                    <div class="meta mt-1 mb-1">
                                         <p class="name">{{person.name}}</p>
-                                        <p class="name">...</p>
+                                        <p class="name">&nbsp;</p>
+                                        <p class="name">&nbsp;</p>
                                     </div>
                                 </div>
                             </li>
@@ -317,93 +318,95 @@
                         <h3 class="modal-title">完善个人信息</h3>
                     </div>
                     <div class="modal-body">
-                        <div v-for="item in tableDataSelfInfo">
-                            <form>
-                                <div class="form-row">
-                                    <div class="col-md-7">
-                                        <div class="input-group mt-3 mb-3 ml-2">
-                                            <div class="input-group-prepend">
-                                                <span class="input-group-text label-text" id="inputGroupPrepend1">User ID</span>
-                                            </div>
-                                            <input type="text" class="form-control" id="form_user_id" :value="selfId" readonly>
+                        <div>
+                            <div class="form-row">
+                                <div class="col-md-7">
+                                    <div class="input-group mt-3 mb-3 ml-2">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text label-text" id="inputGroupPrepend1">User ID</span>
                                         </div>
-                                        <div class="input-group mt-3 mb-3 ml-2">
-                                            <div class="input-group-prepend">
-                                                <span class="input-group-text label-text" id="inputGroupPrepend2">E-mail</span>
-                                            </div>
-                                            <input type="text" class="form-control" id="form_email" :value="item.email" readonly>
-                                        </div>
-                                        <div class="input-group mt-3 mb-3 ml-2">
-                                            <div class="input-group-prepend">
-                                                <span class="input-group-text label-text" id="inputGroupPrepend3">Nickname</span>
-                                            </div>
-                                            <input type="text" class="form-control" id="form_nickname" :value="item.nickname" aria-describedby="inputGroupPrepend2" required>
-                                        </div>
+                                        <input type="text" class="form-control" id="form_user_id" :value="selfId" readonly>
                                     </div>
-                                    <div class="col-md-5 photo-upload">
-                                        <el-upload
-                                            class="avatar-uploader"
-                                            action="https://jsonplaceholder.typicode.com/posts/"
-                                            :show-file-list="false"
-                                            :on-success="handleAvatarSuccess"
-                                            :before-upload="beforeAvatarUpload">
-                                            <img v-if="item.photo" :src="item.photo" class="avatar">
-                                            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-                                        </el-upload>
+                                    <div class="input-group mt-3 mb-3 ml-2">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text label-text" id="inputGroupPrepend2">E-mail</span>
+                                        </div>
+                                        <input type="text" class="form-control" id="form_email" :value="editProfileData.email" readonly>
+                                    </div>
+                                    <div class="input-group mt-3 mb-3 ml-2">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text label-text" id="inputGroupPrepend3">Nickname</span>
+                                        </div>
+                                        <input v-model="editProfileData.nickname" type="text" class="form-control" id="form_nickname" aria-describedby="inputGroupPrepend2" required>
                                     </div>
                                 </div>
-                                <div class="form-row">
-                                    <div class="col-md-5">
-                                        <div class="input-group m-2">
-                                            <div class="input-group-prepend">
-                                                <span class="input-group-text label-text" id="tel">Tel</span>
-                                            </div>
-                                            <input type="text" class="form-control" id="form_tel" :value="item.tel">
+                                <div class="col-md-5 photo-upload">
+                                    <el-upload
+                                        class="avatar-uploader"
+                                        action="chat/avatar_upload"
+                                        :show-file-list="false"
+                                        :on-success="handleAvatarSuccess"
+                                        :before-upload="beforeAvatarUpload">
+                                        <img v-if="editProfileData.imageUrl" :src="editProfileData.imageUrl" class="avatar">
+                                        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                                    </el-upload>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-md-5">
+                                    <div class="input-group m-2">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text label-text" id="tel">Tel</span>
                                         </div>
-                                    </div>
-                                    <div class="col-md-5 offset-md-1">
-                                        <div class="input-group m-2">
-                                            <div class="input-group-prepend">
-                                                <span class="input-group-text label-text" id="sex">Sex</span>
-                                            </div>
-                                            <select id="form_sex" class="form-control" id="form_sex" :value="item.sex">
-                                                <option v-if="item.sex" selected>{{item.sex}}</option>
-                                                <option>Male</option>
-                                                <option>Female</option>
-                                            </select>
-                                        </div>
+                                        <input v-model="editProfileData.tel" type="text" class="form-control" id="form_tel">
                                     </div>
                                 </div>
-                                <div class="form-row">
-                                    <div class="col-md-5">
-                                        <div class="input-group date m-2" id="datetimepicker1">
-                                            <div class="input-group-prepend">
-                                                <span class="input-group-text label-text" id="sex">Birthday</span>
-                                            </div>
-                                            <input type="text" class="form-control" />
-                                            <span class="input-group-append">
-                                                <span class="input-group-text"><i class="fa fa-calendar"></i></span>
-                                            </span>
+                                <div class="col-md-5 offset-md-1">
+                                    <div class="input-group m-2">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text label-text" id="sex">Sex</span>
                                         </div>
-                                    </div>
-                                    <div class="col-md-5 offset-md-1">
-                                        <div class="input-group m-2">
-                                            <div class="input-group-prepend">
-                                                <span class="input-group-text label-text" id="hobby">hobby</span>
-                                            </div>
-                                            <select id="form_hobby" class="form-control">
-                                                <option>Sports</option>
-                                                <option>Game</option>
-                                                <option>Zhai</option>
-                                            </select>
-                                        </div>
+                                        <select v-model="editProfileData.sex" class="form-control" id="form_sex">
+                                            <option v-if="editProfileData.sex" selected>{{editProfileData.sex}}</option>
+                                            <option disabled value="">...请选择...</option>
+                                            <option>Male</option>
+                                            <option>Female</option>
+                                        </select>
                                     </div>
                                 </div>
-                            </form>
+                            </div>
+                            <div class="form-row">
+                                <div class="col-md-5">
+                                    <div class="input-group date m-2" id="datetimepicker1">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text label-text" id="birthday">Birthday</span>
+                                        </div>
+                                        <input v-model="editProfileData.birthday" type="text" class="form-control" id="form_birthday"/>
+                                        <span class="input-group-append">
+                                            <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-md-5 offset-md-1">
+                                    <div class="input-group m-2">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text label-text" id="hobby">Hobby</span>
+                                        </div>
+                                        <select v-model="editProfileData.hobby" id="form_hobby" class="form-control">
+                                            <option v-if="editProfileData.hobby" selected>{{editProfileData.hobby}}</option>
+                                            <option disabled value="">...请选择...</option>
+                                            <option>Sports</option>
+                                            <option>Game</option>
+                                            <option>Zhai</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal" @click="saveProfile()">Save</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" @click="editProfile()">Save</button>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     </div>
                 </div>
@@ -523,12 +526,6 @@
                 loadingSelfInfo: false,
                 loadingShowMsg: false,
                 loadingAddressBook: false,
-                // chatRecordTableData: [
-                //   {"dir":"left","notedName":"粑粑","time":"2019/10/25 08:49","content":"hahaha","contentLen":"margin-right: 460px;"},
-                //   {"dir":"left","notedName":"粑粑","time":"2019/10/26 09:12","content":"晚上来吗","contentLen":"margin-right: 444px;"},
-                //   {"dir":"right","notedName":"Me","time":"2019/10/26 12:39","content":"可以","contentLen":"margin-left: 476px;"},
-                //   {"dir":"left","notedName":"粑粑","time":"2019/10/27 22:33","content":"昨天又放鸽子","contentLen":"margin-right: 412px;"}
-                // ],
                 chatRecordTableData: [],
                 targetNotedName: "未选择聊天",
                 targetPhoto: '',
@@ -545,7 +542,8 @@
                 value: 3.7,
                 loadingAddContactSearchRes: false,
                 tableDataAddContactSearchRes: [],
-                imageUrl: '',
+                editProfileData: {},
+                edit_avatar: "",
             },
 
             computed: {
@@ -611,12 +609,12 @@
                             url: '/chat/show_chat_record',
                             type: 'post',
                             data: {
-                            user_id: this.selfId,
-                            target_id: target_id
+                                user_id: this.selfId,
+                                target_id: target_id
                             },
                             success: function (res) {
                                 if (res.count !== 0) {
-                                    _this.targetNotedName = res.current_nickname
+                                    _this.targetNotedName = target_name
                                     $("#currentChanel").val(res.channel_id)
                                     //channel history chat record
                                     historyChatRecord(res.channel_id)
@@ -647,9 +645,19 @@
                         success: function (res) {
                             _this.loadingSelfInfo = false;
                             if (res.count !== 0) {
-                            _this.tableDataSelfInfo = res
+                                _this.tableDataSelfInfo = res
                             } else {
-                            _this.tableDataSelfInfo = []
+                                _this.tableDataSelfInfo = []
+                            }
+                            // 给编辑个人信息赋值
+                            _this.editProfileData = {
+                                "nickname": _this.tableDataSelfInfo[0].nickname,
+                                "email": _this.tableDataSelfInfo[0].email,
+                                "sex": _this.tableDataSelfInfo[0].sex,
+                                "tel": _this.tableDataSelfInfo[0].tel,
+                                "imageUrl": _this.tableDataSelfInfo[0].photo,
+                                "hobby": _this.tableDataSelfInfo[0].hobby,
+                                "birthday": _this.tableDataSelfInfo[0].birthday
                             }
                             //所有有关的channelid取得
                             console.log(_this.tableDataSelfInfo[0].channel)
@@ -723,26 +731,26 @@
                     this.dropDownClickStatus = !(this.dropDownClickStatus);
                     var _this = this;
                     if(this.dropDownClickStatus){
-                    $.ajax({
-                        url: '/chat/member_info_brief',
-                        type: 'post',
-                        data: {
-                            user_id: this.selfId,
-                            u_id: this.currentChatUid,
-                        },
-                        success: function (res) {
-                            _this.loadingMemberInfo = false
-                            if (res.count !== 0) {
-                                _this.groupList = res
-                            } else {
+                        $.ajax({
+                            url: '/chat/member_info_brief',
+                            type: 'post',
+                            data: {
+                                user_id: this.selfId,
+                                u_id: this.currentChatUid,
+                            },
+                            success: function (res) {
+                                _this.loadingMemberInfo = false
+                                if (res.count !== 0) {
+                                    _this.groupList = res
+                                } else {
+                                    _this.groupList = []
+                                }
+                            },
+                            error: function (err) {
+                                _this.loadingMemberInfo = false
                                 _this.groupList = []
                             }
-                        },
-                        error: function (err) {
-                            _this.loadingMemberInfo = false
-                            _this.groupList = []
-                        }
-                    })
+                        })
                     }
                 },
 
@@ -763,25 +771,52 @@
                     })
                 },
 
+                // 文件上传成功时的钩子
                 handleAvatarSuccess(res, file) {
-                    this.imageUrl = URL.createObjectURL(file.raw);
+                    this.editProfileData.imageUrl = URL.createObjectURL(file.raw);
+                    var _this = this
+                    var reader = new FileReader();
+                    reader.readAsDataURL(file.raw);
+                    reader.onload = function (e) {
+                        _this.edit_avatar = this.result;
+                    }
                 },
 
                 beforeAvatarUpload(file) {
                     const isJPG = file.type === 'image/jpeg';
                     const isLt2M = file.size / 1024 / 1024 < 2;
 
-                    if (!isJPG) {
-                        this.$message.error('上传头像图片只能是 JPG 格式!');
-                    }
+                    // if (!isJPG) {
+                    //     this.$message.error('上传头像图片只能是 JPG 格式!');
+                    // }
                     if (!isLt2M) {
                         this.$message.error('上传头像图片大小不能超过 2MB!');
                     }
-                    return isJPG && isLt2M;
+                    // return isJPG && isLt2M;
+                    return isLt2M;
                 },
 
-                saveProfile() {
-
+                // 保存编辑后的个人信息
+                editProfile() {
+                    var _this = this;
+                    this.editProfileData.imageUrl = this.edit_avatar
+                    // blobToDataURI(blob, function (data) {
+                    //     this.editProfileData.imageUrl = data
+                    // });
+                    $.ajax({
+                        url: '/chat/edit_profile',
+                        type: 'post',
+                        contentType: 'application/json',
+                        dataType: 'json',
+                        data: JSON.stringify(_this.editProfileData),
+                        success: function (res) {
+                            // 刷新个人信息数据
+                            _this.loadTableDataSelfInfo()
+                        },
+                        error: function (err) {
+                            alert("save profile failed")
+                        }
+                    })
                 }
             },
     });
