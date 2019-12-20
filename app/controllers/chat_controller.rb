@@ -143,7 +143,8 @@ class ChatController < ApplicationController
                             joins('left join users on user_relations.user_id_2 = users.id ').
                             joins('left join user_managements on user_relations.user_id_2 = user_managements.user_id ').
                             joins('left join name_notes on user_relations.user_id_2 = name_notes.noted_id').
-                            select('users.id, users.nickname, user_managements.photo, name_notes.note_name, name_notes.user_id')
+                            select('users.id, users.nickname, user_managements.photo, name_notes.note_name, name_notes.user_id').
+                            where('name_notes.user_id = ?', current_user.id)
     if user_tmp.present?
       for item in user_tmp
         hash = {}
@@ -397,6 +398,23 @@ class ChatController < ApplicationController
     json["content_type"] = file.content_type
     json["data"] = Base64.strict_encode64(File.read(file.path))
     json
+  end
+
+  def notename_revise
+    p "notename_revise"
+    params[:target_id]
+    params[:new_notename]
+    name_note = NameNote.where(user_id: current_user.id, noted_id: params[:target_id])
+    if name_note.present?
+      name_note[0].note_name = params[:new_notename]
+      name_note[0].save!
+    else
+      name_note_new = NameNote.new
+      name_note_new.user_id = current_user.id
+      name_note_new.noted_id = params[:target_id]
+      name_note_new.note_name = params[:new_notename]
+      name_note_new.save!
+    end
   end
 end
 

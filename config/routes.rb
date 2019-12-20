@@ -9,7 +9,7 @@ Rails.application.routes.draw do
   root 'chat#show'
   namespace :chat do
     get '/', action: 'index'
-    get 'show', action: 'show', :as => :show_image
+    get 'show', action: 'show'
     post 'self_info', action: 'self_info'
     post 'search_user', action: 'search_user'
     post 'chat_brief', action: "chat_brief"
@@ -25,6 +25,7 @@ Rails.application.routes.draw do
     post 'add_friend_ignore', action: "add_friend_ignore"
     post 'edit_profile', action: "edit_profile"
     post 'avatar_upload', action: "avatar_upload"
+    post 'notename_revise', action: "notename_revise"
   end
 
   namespace :game do
