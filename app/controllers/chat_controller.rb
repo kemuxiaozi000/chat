@@ -139,17 +139,24 @@ class ChatController < ApplicationController
   def address_book
     p "address_book"
     res = []
-    user_tmp = UserRelation.where('user_relations.relation = ? and user_relations.user_id_1 = ?', "1", current_user.id).
-                            joins('left join users on user_relations.user_id_2 = users.id ').
-                            joins('left join user_managements on user_relations.user_id_2 = user_managements.user_id ').
-                            joins('left join name_notes on user_relations.user_id_2 = name_notes.noted_id').
-                            select('users.id, users.nickname, user_managements.photo, name_notes.note_name, name_notes.user_id').
-                            where('name_notes.user_id = ?', current_user.id)
+    # user_tmp = UserRelation.where('user_relations.relation = ? and user_relations.user_id_1 = ?', "1", current_user.id).
+    #                         joins('left join users on user_relations.user_id_2 = users.id ').
+    #                         joins('left join user_managements on user_relations.user_id_2 = user_managements.user_id ').
+    #                         joins('left join name_notes on user_relations.user_id_2 = name_notes.noted_id').
+    #                         select('users.id, users.nickname, user_managements.photo, name_notes.note_name, name_notes.user_id')
+    #                         .where('name_notes.user_id = ?', current_user.id)
+
+    user_tmp = User.joins('left join user_relations on user_relations.user_id_2 = users.id ').
+                    joins('left join user_managements on users.id = user_managements.user_id ').
+                    joins('left join name_notes on users.id = name_notes.noted_id').
+                    select('users.id, users.nickname, user_managements.photo, name_notes.note_name, name_notes.user_id, user_relations.user_id_1, user_relations.relation').
+                    where('user_relations.user_id_1 = ? and user_relations.relation = ?', current_user.id, "1").
+                    where('name_notes.user_id = ? or name_notes.user_id IS NULL', current_user.id)
     if user_tmp.present?
       for item in user_tmp
         hash = {}
         hash["uid"] = item.id
-        hash["name"] = (item.note_name.blank? || (item.user_id != current_user.id.to_s)) ? item.nickname : item.note_name
+        hash["name"] = item.note_name.blank? ? item.nickname : item.note_name
         hash["photo"] = item.photo.blank? ? "" : item.photo
         res.push(hash)
       end
@@ -162,33 +169,37 @@ class ChatController < ApplicationController
   # in params[:user_id] 自己
   #    params[:u_id] 群或个人
   # out [{note_name:"",photo:"",id:""}...]
-  def member_info_brief
-    res = []
-    if params[:u_id].to_s.start_with?("GRP")
-      members = GroupInfo.find_by_group_id(params[:u_id]).member_list
-      arr_members = members.to_s.split(",")
-      tmp_user = UserManagement.joins('inner join name_notes on user_managements.user_id = name_notes.noted_id').
-                                select('user_managements.user_id,user_managements.photo, name_notes.note_name, name_notes.noted_id').
-                                where('name_notes.user_id = ? and user_managements.user_id IN(?) ', params[:user_id], arr_members)
-      self_info = UserManagement.find_by_user_id(params[:user_id])
-      self_hash = {}
-      self_hash["user_note_name"] = "我"
-      self_hash["photo"] = self_info.photo
-      res.push(self_hash)
-    else
-      tmp_user = UserManagement.joins('inner join name_notes on user_managements.user_id = name_notes.noted_id').
-                                select('user_managements.user_id,user_managements.photo, name_notes.note_name, name_notes.noted_id').
-                                where('name_notes.user_id = ?  and user_managements.user_id = ? ', params[:user_id], params[:u_id])
-    end
-    for i in tmp_user
-      hash = {}
-      hash["user_note_name"] = i.note_name
-      hash["photo"] = i.photo
-      hash["noted_id"] = i.noted_id
-      res.push(hash)
-    end
-    render json: res
-  end
+  # def member_info_brief
+  #   res = []
+  #   if params[:u_id].to_s.start_with?("GRP")
+  #     members = GroupInfo.find_by_group_id(params[:u_id]).member_list
+  #     arr_members = members.to_s.split(",")
+  #     tmp_user = UserManagement.joins('inner join name_notes on user_managements.user_id = name_notes.noted_id').
+  #                               select('user_managements.user_id,user_managements.photo, name_notes.note_name, name_notes.noted_id').
+  #                               where('name_notes.user_id = ? and user_managements.user_id IN(?) ', params[:user_id], arr_members)
+  #     self_info = UserManagement.find_by_user_id(params[:user_id])
+  #     self_hash = {}
+  #     self_hash["user_note_name"] = "我"
+  #     self_hash["photo"] = self_info.photo
+  #     res.push(self_hash)
+  #   else
+  #     # tmp_user = UserManagement.joins('inner join name_notes on user_managements.user_id = name_notes.noted_id').
+  #     #                           select('user_managements.user_id,user_managements.photo, name_notes.note_name, name_notes.noted_id').
+  #     #                           where('name_notes.user_id = ?  and user_managements.user_id = ? ', params[:user_id], params[:u_id])
+  #     tmp_user = User.joins('left join user_managements on users.id = user_managements.user_id ').
+  #                     joins('left join name_notes on users.id = name_notes.noted_id').
+  #                     select('users.id, users.nickname, user_managements.photo, name_notes.note_name, name_notes.user_id').
+  #                     where('name_notes.user_id = ? or name_notes.user_id IS NULL', current_user.id)
+  #   end
+  #   for i in tmp_user
+  #     hash = {}
+  #     hash["user_note_name"] = i.note_name
+  #     hash["photo"] = i.photo
+  #     hash["noted_id"] = i.noted_id
+  #     res.push(hash)
+  #   end
+  #   render json: res
+  # end
 
   # 聊天记录
   # timing 点击addrbook列表个人聊天

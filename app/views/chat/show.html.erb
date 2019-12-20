@@ -199,15 +199,35 @@
             </div>
         </div>
         <div class="content">
-            <div class="contact-profile">
-                <img v-bind:src="targetPhoto" alt="" />
-                <p>{{targetNotedName}}</p>
-                <div class="social-media">
-                    <i class="fa fa-facebook" aria-hidden="true"></i>
-                    <i class="fa fa-twitter" aria-hidden="true"></i>
-                    <i class="fa fa-instagram" aria-hidden="true"></i>
+            <div class="card">
+                <div class="card-header target-contact-profile" id="headingOne">
+                    <img v-bind:src="targetPhoto" alt="" />
+                    <p>{{targetNotedName}}</p>
+                    <button v-if="targetNotedName!='未选择聊天'" class="btn btn-link target-profile-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="social-media">
+                        <i class="fa fa-facebook" aria-hidden="true"></i>
+                        <i class="fa fa-twitter" aria-hidden="true"></i>
+                        <i class="fa fa-instagram" aria-hidden="true"></i>
+                    </div>
+                </div>
+                <div id="collapseOne" class="collapse" aria-labelledby="headingOne">
+                    <div class="card-body member-info-container">
+                        <div class="member-info-item member-info-item-add">
+                            <img src="/assets/icon_add-d138b4f886d86cc5873d41ec8358f52049820250cd5145a9abc4539f0f930a07.png"
+                            class="member-info-item-img" alt="no image" />
+                            <p>添加</p>
+                        </div>
+                        <div v-if="groupList.length>0" v-for="item in groupList" class="member-info-item">
+                            <img id="profile-img" v-bind:src="item.photo" class="member-info-item-img"
+                            alt="no image" onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'" />
+                            <p>{{item.name}}</p>
+                        </div>
+                    </div>
                 </div>
             </div>
+
             <div class="messages">
                 <ul v-if="chatRecordTableData.length>0" v-for="chatRec in chatRecordTableData">
                     <li class="msg-reply" v-if="chatRec.dir == 'left'">
@@ -428,6 +448,49 @@
                 </div>
             </div>
         </div>
+
+        <!--start group chat modal-->
+        <div class="modal fade" id="modalStartChat">
+            <div class="modal-dialog dialog-center" style="margin-top: 128px">
+                <div class="modal-content" style="width: 450px;">
+                    <div class="modal-header">
+                        <h4 class="modal-title">发起群聊</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>选择联系人</p>
+                        <div class="start-chat-photo-inline">
+                            <div v-for="item in selectedTargets">
+                                <img v-bind:src="item.photo" class="start-group-chat-img" alt="no image"
+                                onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'" />
+                            </div>
+                            <div>
+                                <el-input
+                                    placeholder="搜索"
+                                    prefix-icon="el-icon-search"
+                                    v-model="searchTarget">
+                                </el-input>
+                            </div>
+                        </div>
+                        <div>
+                            <ul v-if="tableDataPeople.length>0" v-loading="loadingPeople" element-loading-text="loading..." v-for="item in tableDataPeople">
+                                <li>{{item.index}}</li>
+                                <template v-for="person in item.personList">
+                                    <el-checkbox v-model="person.ischeck" class="checkbox-inline" @change="handleCheckChange(person.ischeck, person.uid, person.photo, person.name)">
+                                        <img v-bind:src="person.photo" class="start-group-chat-img" alt="no image"
+                                        onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'" />
+                                        <p>{{person.name}}</p>
+                                    </el-checkbox>
+                                </template>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary notename-revise-confirm" data-dismiss="modal">Confirm</button>
+                        <button type="button" class="btn btn-secondary " data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <script src='//production-assets.codepen.io/assets/common/stopExecutionOnTimeout-b2a7b3fe212eaa732349046d8416e00a9dec26eb7fd347590fbced3ab38af52e.js'></script>
     <script type="text/javascript" src="https://cdn-hangzhou.goeasy.io/goeasy.js"></script>
@@ -549,7 +612,7 @@
                 loadingPeople: false,
                 chatPreviewTableData:[],
                 tableDataPeople:"",
-                groupList:"",
+                groupList:[],
                 tableDataGame: [
                     {game_id: "game_01", cover: "/assets/game/mario-ba8d4ecc8f126ad22bb0cf5d9d7f2aa4de378b69866e2d096038a6933297e110.jpg", name: "马里奥", star: "4.2", time:"2018-10-11", href:"mario"},
                     {game_id: "game_02", cover: "/assets/game/systemer-4625053fa9975bc3b87bddc40c001b40a8f9911b7ee9a0196abdd57fc336c5e0.jpg", name: "空间站修理工",star: "3.1", time:"2018-10-12", href:"systemer"}
@@ -560,7 +623,9 @@
                 tableDataAddContactSearchRes: [],
                 editProfileData: {},
                 edit_avatar: "",
-                addrbookPersonClickFlag: false,
+                memberInfoClickFlag: false,
+                searchTarget: "",
+                selectedTargets: [],
             },
 
             computed: {
@@ -575,6 +640,19 @@
 
             // mounted
             methods: {
+                // 发起群聊多选框 checkbox
+                handleCheckChange(_ischeck, _uid, _photo, _name) {
+                    if(_ischeck) {
+                        this.selectedTargets.push({"user_id":_uid, "photo":_photo, "name":_name})
+                    } else {
+                        for(var i = 0; i < this.selectedTargets.length; i++){
+                            if(_uid == this.selectedTargets[i]["user_id"]){
+                                this.selectedTargets.splice($.inArray(this.selectedTargets[i],this.selectedTargets),1);
+                            }
+                        }
+                    }
+                },
+
                 handleCommand(command) {
                     this.$message('click on item ' + command);
                     if(command == "add"){
@@ -734,6 +812,7 @@
                                         obj_tmp["uid"] = val.uid
                                         obj_tmp["name"] = val.name
                                         obj_tmp["photo"] = val.photo
+                                        obj_tmp["ischeck"] = false
                                         tmp["personList"].push(obj_tmp)
                                     }
                                 });
@@ -758,34 +837,6 @@
                             _this.tableDataPeople = []
                         }
                     })
-                },
-
-                loadTableDataMemberInfo: function () {
-                    this.loadingMemberInfo = true;
-                    this.dropDownClickStatus = !(this.dropDownClickStatus);
-                    var _this = this;
-                    if(this.dropDownClickStatus){
-                        $.ajax({
-                            url: '/chat/member_info_brief',
-                            type: 'post',
-                            data: {
-                                user_id: this.selfId,
-                                u_id: this.currentChatUid,
-                            },
-                            success: function (res) {
-                                _this.loadingMemberInfo = false
-                                if (res.count !== 0) {
-                                    _this.groupList = res
-                                } else {
-                                    _this.groupList = []
-                                }
-                            },
-                            error: function (err) {
-                                _this.loadingMemberInfo = false
-                                _this.groupList = []
-                            }
-                        })
-                    }
                 },
 
                 // 添加好友
@@ -1284,6 +1335,31 @@
             },
         })
     });
+
+    //点击聊天记录框上方群名或个人名字右边的箭头，展开塌陷板，获取数据
+    $(document).on("click", ".target-profile-link", function () {
+        frame.memberInfoClickFlag == !frame.memberInfoClickFlag
+        if(!frame.memberInfoClickFlag){
+            var channel = $("#currentChanel").val()
+            frame.groupList = []
+            frame.groupList.push({"user_id":frame.currentChatUid, "photo":frame.targetPhoto, "name":frame.targetNotedName})
+        }
+    });
+
+    $(document).on("click", ".member-info-item-add", function () {
+        $("#modalStartChat").modal()
+        frame.selectedTargets = []
+        frame.selectedTargets.push({"user_id":frame.currentChatUid, "photo":frame.targetPhoto, "name":frame.targetNotedName})
+        for(var i = 0; i < frame.tableDataPeople.length; i++){
+            console.log(frame.tableDataPeople[i])
+            for(var j = 0; j < frame.tableDataPeople[i]["personList"].length; j++){
+                if(frame.tableDataPeople[i]["personList"][j]["uid"] == frame.currentChatUid) {
+                    frame.tableDataPeople[i]["personList"][j]["ischeck"] = true
+                }
+            }
+        }
+    });
+
      //# sourceURL=pen.js
     </script>
 </body>
