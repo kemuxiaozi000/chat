@@ -478,14 +478,14 @@
                                     <el-checkbox v-model="person.ischeck" class="checkbox-inline" @change="handleCheckChange(person.ischeck, person.uid, person.photo, person.name)">
                                         <img v-bind:src="person.photo" class="start-group-chat-img" alt="no image"
                                         onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'" />
-                                        <p>{{person.name}}</p>
+                                        <div class="ml-3">{{person.name}}</div>
                                     </el-checkbox>
                                 </template>
                             </ul>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary notename-revise-confirm" data-dismiss="modal">Confirm</button>
+                        <button type="button" class="btn btn-secondary start-chat-confirm" data-dismiss="modal">Confirm</button>
                         <button type="button" class="btn btn-secondary " data-dismiss="modal">Close</button>
                     </div>
                 </div>
@@ -1017,11 +1017,12 @@
 
     // 收到新消息之后，左边chatpreview追加选中项到顶部
     function chatPreviewCurrentUpdate(){
-        // console.log("chatPreviewCurrentUpdate")
+        console.log("chatPreviewCurrentUpdate")
         // 获取到当前左边所有的channel id
         if(frame.tableDataSelfInfo[0].channel.length > 0) {
             for(var i = 0; i <frame.tableDataSelfInfo[0].channel.length; i++) {
                 _channel = frame.tableDataSelfInfo[0].channel[i].channel_id
+                console.log(_channel)
                 goeasy.subscribe({
                     channel: _channel,
                     onMessage: function (message) {
@@ -1163,7 +1164,6 @@
                     new_notename: new_notename,
                 },
                 success: function (res) {
-                    alert("notename_revise save success")
                     // 更新
                     frame.loadingAddressBook = false
                     frame.tableDataPeople = []
@@ -1351,7 +1351,7 @@
         frame.selectedTargets = []
         frame.selectedTargets.push({"user_id":frame.currentChatUid, "photo":frame.targetPhoto, "name":frame.targetNotedName})
         for(var i = 0; i < frame.tableDataPeople.length; i++){
-            console.log(frame.tableDataPeople[i])
+            // console.log(frame.tableDataPeople[i])
             for(var j = 0; j < frame.tableDataPeople[i]["personList"].length; j++){
                 if(frame.tableDataPeople[i]["personList"][j]["uid"] == frame.currentChatUid) {
                     frame.tableDataPeople[i]["personList"][j]["ischeck"] = true
@@ -1360,6 +1360,62 @@
         }
     });
 
+    $(document).on("click", ".start-chat-confirm", function () {
+        console.log("click")
+        var str_member_list = ""
+        var chat_group_name = ""
+        for(var i = 0; i < frame.selectedTargets.length; i++){
+            str_member_list = str_member_list + frame.selectedTargets[i]["user_id"] +","
+            chat_group_name = chat_group_name + frame.selectedTargets[i]["name"]+"、"
+        }
+        str_member_list = str_member_list.substring(0,str_member_list.length-1)
+        chat_group_name = chat_group_name.substring(0,chat_group_name.length-1) + "的群聊"
+        $.ajax({
+            url: '/chat/start_group_chat',
+            type: 'post',
+            data: {
+                member_list: str_member_list,
+            },
+            success: function (res) {
+                console.log(res)
+                // 将该channelid 保存为当前channel
+                $("#currentChanel").val(res.channel)
+                // 订阅该channel
+                var is_channel_exist = false;
+                if(frame.tableDataSelfInfo[0].channel.length > 0) {
+                    for(var i = 0; i <frame.tableDataSelfInfo[0].channel.length; i++) {
+                        if(res.channel_id == frame.tableDataSelfInfo[0].channel[i].channel_id) {
+                            // 说明已经存在，不需要再被订阅
+                            // 查找该频道的histroy chat record
+                            is_channel_exist = true;
+                            historyChatRecord(res.channel)
+                            leftSelectMoveTop(res.channel)
+                            break;
+                        }
+                    }
+                }
+
+                // 新创建，要先订阅
+                if(!is_channel_exist) {
+                    var arr_member_user_id = []
+                    var arr_member_name = []
+                    var arr_member_photo = []
+                    for(var i = 0; i < frame.selectedTargets.length; i++){
+                        arr_member_user_id.push(frame.selectedTargets[i]["user_id"])
+                        arr_member_name.push(frame.selectedTargets[i]["name"])
+                        arr_member_photo.push(frame.selectedTargets[i]["photo"])
+                    }
+                    frame.tableDataSelfInfo[0].channel.push({"channel_id":res.channel,
+                                                            "target_user_id": res.channel,
+                                                            "name": chat_group_name,
+                                                            "photo": "/assets/group_default-8115c58d5ced7497e66b68b53f9b21b1b9a512966f267aa8e729ab16023c7591.jpg"})
+                    chatPreviewCurrentUpdate()
+                    historyChatRecord(res.channel)
+                    leftSelectMoveTop(res.channel)
+                }
+            },
+        })
+    });
      //# sourceURL=pen.js
     </script>
 </body>

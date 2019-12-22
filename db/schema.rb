@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_12_05_031906) do
+ActiveRecord::Schema.define(version: 2019_12_05_031907) do
 
   create_table "group_chat_records", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci", force: :cascade do |t|
     t.string "chat_content_id"
@@ -31,6 +31,8 @@ ActiveRecord::Schema.define(version: 2019_12_05_031906) do
     t.string "create_date", comment: "创建时间"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "group_channel_id", comment: "组订阅号id"
+    t.string "member", comment: "成员个人"
   end
 
   create_table "name_notes", options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci", force: :cascade do |t|

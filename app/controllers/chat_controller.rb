@@ -30,8 +30,8 @@ class ChatController < ApplicationController
       tmp = {}
       tmp_user = NameNote.where('name_notes.user_id = ? and name_notes.noted_id = ? ', current_user.id, item.user_id_2)[0]
       tmp_photo = UserManagement.find_by_user_id(item.user_id_2)
-      tmp_photo.present? ? tmp["photo"] = tmp_photo.photo : tmp["photo"] = ""
-      tmp_user.present? ? tmp["name"] = tmp_user.note_name : tmp["name"] = User.find_by_id(item.user_id_2).nickname
+      tmp["photo"] = tmp_photo.present? ? tmp_photo.photo : ""
+      tmp["name"] = tmp_user.present? ? tmp_user.note_name : User.find_by_id(item.user_id_2).nickname
       tmp["channel_id"] = item.channel_id
       tmp["target_user_id"] = item.user_id_2
       channel_ids_and_notename.push(tmp)
@@ -139,24 +139,19 @@ class ChatController < ApplicationController
   def address_book
     p "address_book"
     res = []
-    # user_tmp = UserRelation.where('user_relations.relation = ? and user_relations.user_id_1 = ?', "1", current_user.id).
-    #                         joins('left join users on user_relations.user_id_2 = users.id ').
-    #                         joins('left join user_managements on user_relations.user_id_2 = user_managements.user_id ').
-    #                         joins('left join name_notes on user_relations.user_id_2 = name_notes.noted_id').
-    #                         select('users.id, users.nickname, user_managements.photo, name_notes.note_name, name_notes.user_id')
-    #                         .where('name_notes.user_id = ?', current_user.id)
 
     user_tmp = User.joins('left join user_relations on user_relations.user_id_2 = users.id ').
                     joins('left join user_managements on users.id = user_managements.user_id ').
-                    joins('left join name_notes on users.id = name_notes.noted_id').
-                    select('users.id, users.nickname, user_managements.photo, name_notes.note_name, name_notes.user_id, user_relations.user_id_1, user_relations.relation').
-                    where('user_relations.user_id_1 = ? and user_relations.relation = ?', current_user.id, "1").
-                    where('name_notes.user_id = ? or name_notes.user_id IS NULL', current_user.id)
+                    select('users.id, users.nickname, user_managements.photo, user_relations.user_id_1, user_relations.relation').
+                    where('user_relations.user_id_1 = ? and user_relations.relation = ?', current_user.id, "1")
+                    # joins('left join name_notes on users.id = name_notes.noted_id').
+                    # .where('name_notes.user_id = ? or name_notes.user_id IS NULL', current_user.id)
     if user_tmp.present?
       for item in user_tmp
         hash = {}
+        item_tmp = NameNote.where('name_notes.user_id = ? and name_notes.noted_id = ?', current_user.id, item.id)
+        hash["name"] = item_tmp.blank? ? item.nickname : item_tmp[0].note_name
         hash["uid"] = item.id
-        hash["name"] = item.note_name.blank? ? item.nickname : item.note_name
         hash["photo"] = item.photo.blank? ? "" : item.photo
         res.push(hash)
       end
@@ -413,8 +408,6 @@ class ChatController < ApplicationController
 
   def notename_revise
     p "notename_revise"
-    params[:target_id]
-    params[:new_notename]
     name_note = NameNote.where(user_id: current_user.id, noted_id: params[:target_id])
     if name_note.present?
       name_note[0].note_name = params[:new_notename]
@@ -426,6 +419,36 @@ class ChatController < ApplicationController
       name_note_new.note_name = params[:new_notename]
       name_note_new.save!
     end
+  end
+
+  def start_group_chat
+    p "start_group_chat"
+    p params
+    # 根据群成员列表查找是否该群聊已经存在
+    group_info = GroupInfo.find_by_member_list(params[:member_list])
+    arr_group_info_json = []
+    res_channel = ""
+    if group_info.blank?
+      # 如果不存在，新纪录插入数据库
+      arr = params[:member_list].to_s.split(',')
+      # 创建group_channel_id
+      group_chat_uid = GroupChatRecord.new.make_rc_uuid
+
+      for item in arr
+        group_info_json = {'group_id': group_chat_uid,
+                           'member_list': params[:member_list],
+                           'group_creator': current_user.id,
+                           'member': item}
+        arr_group_info_json.push(group_info_json)
+      end
+      GroupInfo.create(arr_group_info_json)
+      res_channel = group_chat_uid
+    else
+      # 如果存在，读取channel_id并返回
+      res_channel = group_info.group_id
+    end
+
+    render json: {"channel": res_channel}
   end
 end
 

@@ -26,6 +26,7 @@ Rails.application.routes.draw do
     post 'edit_profile', action: "edit_profile"
     post 'avatar_upload', action: "avatar_upload"
     post 'notename_revise', action: "notename_revise"
+    post 'start_group_chat', action: "start_group_chat"
   end
 
   namespace :game do
