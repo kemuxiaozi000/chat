@@ -488,8 +488,10 @@ class ChatController < ApplicationController
                         select('users.id, users.nickname, user_managements.photo').
                         where('users.id = ? ', member)
         name_note = NameNote.where(user_id: current_user.id, noted_id: member)
+        res_ele["user_id"] = member
+        res_ele["photo"] = user_tmp.photo.present? ? user_tmp.photo : ""
         res_ele["name"] = name_note.present? ? name_note[0].note_name : user_tmp.nickname
-        # res_ele["photo"]
+        res.push(res_ele)
       end
     end
     render json: res
