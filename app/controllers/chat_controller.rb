@@ -26,6 +26,7 @@ class ChatController < ApplicationController
 
     # 需要监听的channel 取得，包括交谈的备注名和uid
     user_relation = UserRelation.where(user_id_1: current_user.id)
+    # 与当前用户相关的个人
     for item in user_relation
       tmp = {}
       tmp_user = NameNote.where('name_notes.user_id = ? and name_notes.noted_id = ? ', current_user.id, item.user_id_2)[0]
@@ -35,6 +36,21 @@ class ChatController < ApplicationController
       tmp["channel_id"] = item.channel_id
       tmp["target_user_id"] = item.user_id_2
       channel_ids_and_notename.push(tmp)
+    end
+    # 与当前用户相关的组
+    group_info = GroupInfo.where(member: current_user.id)
+    if group_info.present?
+      for item in group_info
+        tmp = {}
+        tmp["channel_id"] = item.group_id
+        arr_member_list = item.member_list.split(",")
+        arr_member_list.delete(current_user.id.to_s)
+        member_list_except_self = arr_member_list.join(",")
+        tmp["target_user_id"] = member_list_except_self
+        tmp["photo"] = ""
+        tmp["name"] = "xxx group chat"
+        channel_ids_and_notename.push(tmp)
+      end
     end
     res_tmp["channel"] = channel_ids_and_notename
 
@@ -425,18 +441,20 @@ class ChatController < ApplicationController
     p "start_group_chat"
     p params
     # 根据群成员列表查找是否该群聊已经存在
-    group_info = GroupInfo.find_by_member_list(params[:member_list])
+    arr = params[:member_list].to_s.split(',')
+    arr.sort!
+    sorted_arr = arr.join(",")
+    group_info = GroupInfo.find_by_member_list(sorted_arr)
     arr_group_info_json = []
     res_channel = ""
     if group_info.blank?
       # 如果不存在，新纪录插入数据库
-      arr = params[:member_list].to_s.split(',')
       # 创建group_channel_id
       group_chat_uid = GroupChatRecord.new.make_rc_uuid
 
       for item in arr
         group_info_json = {'group_id': group_chat_uid,
-                           'member_list': params[:member_list],
+                           'member_list': sorted_arr,
                            'group_creator': current_user.id,
                            'member': item}
         arr_group_info_json.push(group_info_json)
@@ -448,7 +466,33 @@ class ChatController < ApplicationController
       res_channel = group_info.group_id
     end
 
+    # 让对方知道你邀请他进入群聊，通过固有channel
+    for item in arr
+      channel = "|SERVER|"+ item
+      content = "Start|BeInvitedGroupChat|" + res_channel
+      GoEasyClient.send(channel, content)
+    end
+
     render json: {"channel": res_channel}
+  end
+
+  def find_group_member
+    p "find_group_member"
+    res = []
+    res_ele = {}
+    group_info = GroupInfo.find_by_group_id(params[:channel])
+    if group_info.present?
+      arr_group = group_info.member_list.split(",")
+      for member in arr_group
+        user_tmp = User.joins('inner join user_managements on users.id = user_managements.user_id').
+                        select('users.id, users.nickname, user_managements.photo').
+                        where('users.id = ? ', member)
+        name_note = NameNote.where(user_id: current_user.id, noted_id: member)
+        res_ele["name"] = name_note.present? ? name_note[0].note_name : user_tmp.nickname
+        # res_ele["photo"]
+      end
+    end
+    render json: res
   end
 end
 

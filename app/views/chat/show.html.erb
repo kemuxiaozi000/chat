@@ -107,7 +107,7 @@
                                     <span class="contact-status online"></span>
                                     <img v-bind:src="chatPreview.photo" alt="" />
                                     <div class="meta">
-                                        <p class="name">{{chatPreview.name}}</p>
+                                        <p class="name text-ellipsis">{{chatPreview.name}}</p>
                                         <p class="preview">
                                             <span style="float:left;width:130px;font-size:13px;overflow: hidden;text-overflow:ellipsis;white-space: nowrap;font-color: #32465a;opacity: .8;">{{chatPreview.latest_msg_brief}}</span>
                                             <span style="float:right;width:38px;font-size:13px">{{chatPreview.latest_msg_time}}</span>
@@ -485,7 +485,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary start-chat-confirm" data-dismiss="modal">Confirm</button>
+                        <button type="button" class="btn btn-secondary start-chat-confirm" data-dismiss="modal" disabled="true">Confirm</button>
                         <button type="button" class="btn btn-secondary " data-dismiss="modal">Close</button>
                     </div>
                 </div>
@@ -642,6 +642,7 @@
             methods: {
                 // 发起群聊多选框 checkbox
                 handleCheckChange(_ischeck, _uid, _photo, _name) {
+                    console.log($(".start-chat-confirm").attr("disabled"))
                     if(_ischeck) {
                         this.selectedTargets.push({"user_id":_uid, "photo":_photo, "name":_name})
                     } else {
@@ -650,6 +651,11 @@
                                 this.selectedTargets.splice($.inArray(this.selectedTargets[i],this.selectedTargets),1);
                             }
                         }
+                    }
+                    // 改变 发起聊天多选框 confirm按钮disabled状态
+                    if (this.selectedTargets.length == 0 ||(this.selectedTargets.length == 1 && this.selectedTargets[0]["user_id"] == this.currentChatUid) ) {
+                    } else {
+                        $(".start-chat-confirm").attr("disabled", false)
                     }
                 },
 
@@ -745,12 +751,13 @@
                 },
 
                 // 加载个人信息
-                loadTableDataSelfInfo: function () {
+                loadTableDataSelfInfo: function (_channel = "") {
                     this.loadingSelfInfo = true;
                     var _this = this;
                     $.ajax({
                         url: '/chat/self_info',
                         type: 'post',
+                        async: true,
                         data: {
                             user_id: this.selfId
                         },
@@ -774,6 +781,16 @@
                             //所有有关的channelid取得
                             console.log(_this.tableDataSelfInfo[0].channel)
                             chatPreviewCurrentUpdate()
+                            if(_channel != "") {
+                                for(var i = 0; i < frame.tableDataSelfInfo[0].channel.length; i++) {
+                                    if (frame.tableDataSelfInfo[0].channel[i]["channel_id"] == _channel) {
+                                        frame.targetPhoto = "/assets/group_default-8115c58d5ced7497e66b68b53f9b21b1b9a512966f267aa8e729ab16023c7591.jpg";
+                                        frame.targetNotedName = frame.tableDataSelfInfo[0].channel[i]["name"]
+                                    }
+                                }
+                                historyChatRecord(_channel)
+                                leftSelectMoveTop(_channel)
+                            }
                         },
                         error: function (err) {
                             _this.loadingSelfInfo = false
@@ -959,6 +976,7 @@
 
     // 维护chat preview 队列 --
     function handleGoeasyMsgBrief(channel_id, message = "") {
+        console.log("handleGoeasyMsgBrief")
         let _channel_id = channel_id
         let chat_brief = {}
         let msg_num = 1
@@ -967,6 +985,7 @@
         let sendTime = "";
         var name = frame.targetNotedName;
         var photo = frame.targetPhoto;
+
         if (message != "") {
             // 先取channel_id
             let index = message.content.lastIndexOf("|");
@@ -1012,7 +1031,7 @@
         }
         // chatPreview 追加这次新的
         frame.chatPreviewTableData.push(chat_brief)
-        // console.log(frame.chatPreviewTableData)
+        console.log(frame.chatPreviewTableData)
     }
 
     // 收到新消息之后，左边chatpreview追加选中项到顶部
@@ -1181,7 +1200,7 @@
         goeasy.subscribe({
             channel: _channel,
             onMessage: function (message) {
-                console.log("onMessage:"+message)
+                console.log("onMessage:"+message.content)
                 // message.content msg_content|msg_type|user_id
                 var arr = divideMsgIntoParts(message.content, 3)
                 var msg_content = arr[0]
@@ -1273,10 +1292,36 @@
                                         alert("Channel订阅失败, 错误编码：" + error.code + " 错误信息：" + error.content)
                                     }
                                 });
-
                             }
                         },
                     })
+                } else if (msg_type == "BeInvitedGroupChat"){
+                    console.log("onMessage:BeInvitedGroupChat")
+                    $("#currentChanel").val(user_id)
+                    // 追加监听
+                    console.log("追加监听");
+                    goeasy.subscribe({
+                        channel: user_id,
+                        onMessage: function (message) {
+                            handleGoeasyMsgBrief("", message)
+                            // 先取channel_id
+                            let index = message.content.lastIndexOf("|");
+                            var channel = message.content.substring(index + 1, message.content.length);
+                            var currentChannel = $("#currentChanel").val()
+                            if( channel == currentChannel ){
+                                // console.log("handleGoeasyMsg")
+                                handleGoeasyMsg(message)
+                            }
+                        },
+                        onSuccess: function () {
+                            // TODO 跳转到chat preview 添加到队列
+                            console.log("Channel订阅成功。")
+                            frame.loadTableDataSelfInfo(user_id)
+                        },
+                        onFailed: function (error) {
+                            alert("Channel订阅失败, 错误编码：" + error.code + " 错误信息：" + error.content)
+                        }
+                    });
                 }
             }
         });
@@ -1302,6 +1347,20 @@
             allow_dismiss: allow_dismiss,
             template: template,
         });
+    }
+
+    // 根据 group_id （channel）查找该群聊下的人员信息
+    function findGroupMember(channel){
+        $.ajax({
+            url: '/chat/find_group_member',
+            type: 'post',
+            data: {
+                channel: channel,
+            },
+            success: function (res) {
+
+            },
+        })
     }
 
     // 忽略添加好友
@@ -1331,7 +1390,6 @@
             },
             success: function (res) {
                 notify.close();
-
             },
         })
     });
@@ -1341,15 +1399,55 @@
         frame.memberInfoClickFlag == !frame.memberInfoClickFlag
         if(!frame.memberInfoClickFlag){
             var channel = $("#currentChanel").val()
-            frame.groupList = []
-            frame.groupList.push({"user_id":frame.currentChatUid, "photo":frame.targetPhoto, "name":frame.targetNotedName})
+            if(channel.substring(0,3) == "USR") {
+                frame.groupList = []
+                frame.groupList.push({"user_id":frame.currentChatUid, "photo":frame.targetPhoto, "name":frame.targetNotedName})
+            } else if(channel.substring(0,3) == "GRP") {
+                $.ajax({
+                    url: '/chat/find_group_member',
+                    type: 'post',
+                    data: {
+                        user_id: user_id,
+                    },
+                    success: function (res) {
+                        notify.close();
+                    },
+                })
+                frame.groupList = []
+            }
         }
     });
 
+    // 个人huo群聊天点击添加弹出发起群聊modal
     $(document).on("click", ".member-info-item-add", function () {
         $("#modalStartChat").modal()
         frame.selectedTargets = []
-        frame.selectedTargets.push({"user_id":frame.currentChatUid, "photo":frame.targetPhoto, "name":frame.targetNotedName})
+        var channel = $("#currentChanel").val()
+        if(channel.substring(0,3) == "USR"){
+            frame.selectedTargets.push({"user_id":frame.currentChatUid, "photo":frame.targetPhoto, "name":frame.targetNotedName})
+        } else if(channel.substring(0,3) == "GRP") {
+            for(var i = 0; i < frame.tableDataSelfInfo[0].channel.length; i++) {
+                if( frame.tableDataSelfInfo[0].channel[i]["channel_id"] == channel) {
+                    var arr_member_user_id = frame.tableDataSelfInfo[0].channel[i]["target_user_id"].split(",")
+                    var arr_member_name = frame.tableDataSelfInfo[0].channel[i]["name"].split(",,,")
+                    var arr_member_photo = frame.tableDataSelfInfo[0].channel[i]["photo"].split(",,,")
+                    break;
+                }
+            }
+            var arr_length = arr_member_user_id.length
+            if(arr_member_name.length == arr_length && arr_member_photo.length == arr_length) {
+                // frame.selectedTargets.push({"user_id":frame.selfId,
+                //                                 "photo":frame.tableDataSelfInfo[0].photo,
+                //                                 "name":frame.tableDataSelfInfo[0].nickname})
+                for(var j = 0; j < arr_length; j++){
+                    frame.selectedTargets.push({"user_id":arr_member_user_id[j],
+                                                "photo":arr_member_photo[j],
+                                                "name":arr_member_name[j]})
+                }
+            } else {
+                alert("保存不正确 length not fit")
+            }
+        }
         for(var i = 0; i < frame.tableDataPeople.length; i++){
             // console.log(frame.tableDataPeople[i])
             for(var j = 0; j < frame.tableDataPeople[i]["personList"].length; j++){
@@ -1360,16 +1458,33 @@
         }
     });
 
+
     $(document).on("click", ".start-chat-confirm", function () {
-        console.log("click")
         var str_member_list = ""
+        var str_member_photo = ""
+        var str_member_name = ""
         var chat_group_name = ""
+        frame.groupList = []
         for(var i = 0; i < frame.selectedTargets.length; i++){
             str_member_list = str_member_list + frame.selectedTargets[i]["user_id"] +","
+            str_member_photo = str_member_photo + frame.selectedTargets[i]["photo"] +",,,"
+            str_member_name = str_member_name + frame.selectedTargets[i]["name"] +",,,"
             chat_group_name = chat_group_name + frame.selectedTargets[i]["name"]+"、"
+            // 维护当前组的信息
+            frame.groupList.push({"user_id":frame.selectedTargets[i]["user_id"],
+                            "photo":frame.selectedTargets[i]["photo"],
+                            "name":frame.selectedTargets[i]["name"]})
         }
+        // 添加自己
+        // selectedTargets 不包括自己，但groupList 和 selfInfo 中包括自己
+        // groupList只有在点击箭头的时候才会把自己加进去，平常维护该数组时不包括自己
         str_member_list = str_member_list.substring(0,str_member_list.length-1)
-        chat_group_name = chat_group_name.substring(0,chat_group_name.length-1) + "的群聊"
+        str_member_photo = str_member_photo.substring(0,str_member_photo.length-3)
+        str_member_name = str_member_name.substring(0,str_member_name.length-3)
+        chat_group_name = chat_group_name.substring(0,chat_group_name.length-1) + "和我的群聊"
+        frame.targetNotedName = chat_group_name;
+        frame.targetPhoto = "/assets/group_default-8115c58d5ced7497e66b68b53f9b21b1b9a512966f267aa8e729ab16023c7591.jpg";
+
         $.ajax({
             url: '/chat/start_group_chat',
             type: 'post',
@@ -1377,9 +1492,10 @@
                 member_list: str_member_list,
             },
             success: function (res) {
-                console.log(res)
                 // 将该channelid 保存为当前channel
                 $("#currentChanel").val(res.channel)
+                // 组都以channelid 作为uid
+                frame.currentChatUid = res.channel
                 // 订阅该channel
                 var is_channel_exist = false;
                 if(frame.tableDataSelfInfo[0].channel.length > 0) {
@@ -1387,6 +1503,7 @@
                         if(res.channel_id == frame.tableDataSelfInfo[0].channel[i].channel_id) {
                             // 说明已经存在，不需要再被订阅
                             // 查找该频道的histroy chat record
+                            console.log("old")
                             is_channel_exist = true;
                             historyChatRecord(res.channel)
                             leftSelectMoveTop(res.channel)
@@ -1397,22 +1514,20 @@
 
                 // 新创建，要先订阅
                 if(!is_channel_exist) {
-                    var arr_member_user_id = []
-                    var arr_member_name = []
-                    var arr_member_photo = []
-                    for(var i = 0; i < frame.selectedTargets.length; i++){
-                        arr_member_user_id.push(frame.selectedTargets[i]["user_id"])
-                        arr_member_name.push(frame.selectedTargets[i]["name"])
-                        arr_member_photo.push(frame.selectedTargets[i]["photo"])
-                    }
+                    console.log("new")
                     frame.tableDataSelfInfo[0].channel.push({"channel_id":res.channel,
-                                                            "target_user_id": res.channel,
+                                                            "target_user_id": str_member_list,
                                                             "name": chat_group_name,
-                                                            "photo": "/assets/group_default-8115c58d5ced7497e66b68b53f9b21b1b9a512966f267aa8e729ab16023c7591.jpg"})
+                                                            "photo": frame.targetPhoto,
+                                                            "member_name": str_member_name,
+                                                            "member_photo": str_member_photo})
+                    console.log(frame.tableDataSelfInfo[0])
                     chatPreviewCurrentUpdate()
                     historyChatRecord(res.channel)
                     leftSelectMoveTop(res.channel)
                 }
+                $("#collapseOne").removeClass("show")
+                frame.selectedTargets = []
             },
         })
     });
