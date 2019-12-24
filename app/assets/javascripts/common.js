@@ -32,9 +32,11 @@ function timestamp2FormatDate(timestamp, fmt) {
     return res;
 }
 
-//数组内元素位置互换
-function swapArr(arr, index1, index2) {
-    arr[index1] = arr.splice(index2, 1, arr[index1])[0];
+//数组内元素位置调整
+function swapArr(arr, index) {
+    var tmp = arr[index]
+    arr.splice(index, 1);
+    arr.push(tmp)
     return arr;
 }
 

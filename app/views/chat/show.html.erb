@@ -696,8 +696,8 @@
                         }
                     }
                     var index = this.chatPreviewTableData.indexOf(this.chatPreviewTableData[i]);
-                    //上下互换（把点击的移动到最顶端）
-                    swapArr(this.chatPreviewTableData, index, this.chatPreviewTableData.length-1)
+                    //把点击的移动到最顶端
+                    // swapArr(this.chatPreviewTableData, index)
                     //右边的chat record 显示
                     $("#currentChanel").val(_channel_id)
                     this.targetNotedName = _name
@@ -1468,7 +1468,6 @@
         } else {
             str_member_list_include_self = str_member_list + "," + frame.selfId
         }
-
 
         $.ajax({
             url: '/chat/start_group_chat',
