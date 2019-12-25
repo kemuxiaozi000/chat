@@ -238,7 +238,7 @@
                         <div>
                             <span v-if="chatRec.photo == 'personal'" style="margin-bottom:4px">{{chatRec.time}}</span>
                             <span v-else style="margin-bottom:4px">{{chatRec.notedName}}&nbsp;&nbsp;{{chatRec.time}}</span>
-                            <p style="word-break:break-word;">{{chatRec.content}}</p>
+                            <p style="word-break:break-word;"><i v-if="chatRec.type=='file'" class="fas fa-download file-dl"></i>{{chatRec.content}}</p>
                         </div>
                     </li>
                     <li class="msg-sent" v-else-if="chatRec.dir == 'right'" v-for="item in tableDataSelfInfo">
@@ -247,7 +247,12 @@
                         <div>
                             <span v-if="chatRec.photo == 'personal'" style="margin-bottom:4px">{{chatRec.time}}</span>
                             <span v-else style="margin-bottom:4px">{{chatRec.time}}&nbsp;&nbsp;我</span>
-                            <p style="word-break:break-word;">{{chatRec.content}}</p>
+                            <p style="word-break:break-word;">
+                                <a v-if="chatRec.type=='file'" :href="'chat/attachment_download?filename='+chatRec.content">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                {{chatRec.content}}
+                            </p>
                         </div>
                     </li>
                 </ul>
@@ -255,6 +260,14 @@
             <div class="message-input" v-if="targetNotedName!='未选择聊天'">
                 <div class="wrap">
                     <input type="text" placeholder="Write your message..." />
+                     <el-upload hidden=true
+                            action="chat/attachment_upload"
+                            :on-success="attachSuccess"
+                            :limit="1"
+                            :file-list="fileList">
+                            <el-button id="attach_btn" size="small" type="primary">点击上传</el-button>
+                            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+                        </el-upload>
                     <i class="fa fa-paperclip attachment" aria-hidden="true"></i>
                     <button class="submit"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
                 </div>
@@ -621,6 +634,7 @@
                 searchTarget: "",
                 selectedTargets: [],
                 defaultGroupAvater: "/assets/group_default-8115c58d5ced7497e66b68b53f9b21b1b9a512966f267aa8e729ab16023c7591.jpg",
+                fileList: [],
             },
 
             computed: {
@@ -636,6 +650,24 @@
 
             // mounted
             methods: {
+                // 附件
+                // handleRemove(file, fileList) {
+                // },
+                // handlePreview(file) {
+                //     console.log(file);
+                // },
+                // handleExceed(files, fileList) {
+                //     this.$message.warning(`当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`);
+                // },
+                // beforeRemove(file, fileList) {
+                //     return this.$confirm(`确定移除 ${ file.name }？`);
+                // },
+                attachSuccess(response, file, fileList){
+                    console.log(fileList);
+                    // 传一个消息，和发信息一样
+                    publishMessage(fileList[0].name)
+                },
+
                 // 发起群聊多选框 checkbox
                 handleCheckChange(_ischeck, _uid, _photo, _name) {
                     if(_ischeck) {
@@ -692,15 +724,17 @@
                     if(this.chatPreviewTableData.length > 0) {
                         for (var i = 0; i < this.chatPreviewTableData.length; i++) {
                             if(_channel_id == this.chatPreviewTableData[i].channel_id ){
-                                index = this.chatPreviewTableData.indexOf(this.chatPreviewTableData[i]);
+                            index = this.chatPreviewTableData.indexOf(this.chatPreviewTableData[i]);
                                 break;
                             }
                         }
                     }
                     var index = this.chatPreviewTableData.indexOf(this.chatPreviewTableData[i]);
-                    //把点击的移动到最顶端
+                    // 把点击的移动到最顶端
                     this.chatPreviewTableData = swapArr(this.chatPreviewTableData, index)
-                    //右边的chat record 显示
+                    // 右边的chat record 显示
+                    // 箭头点开的框收起
+                    $("#collapseOne").removeClass("show")
                     $("#currentChanel").val(_channel_id)
                     this.targetNotedName = _name
                     this.targetPhoto = _photo
@@ -1070,6 +1104,7 @@
     function handleGoeasyMsg(message) {
         let chatRecord = {};
         var side;
+        var type = "msg";
         var photo = "personal"
         let current_nickname = frame.targetNotedName;
         //先取channel_id
@@ -1082,6 +1117,12 @@
         let msgContent = msgContentTmp.substring(0, index_1);
         var sendTime = timestamp2FormatDate(message.time,"yyyy/MM/dd hh:mm");
         side = (sendMsgUserId == frame.selfId) ? "right" : "left";
+        console.log("msgContent" + msgContent)
+        console.log("msgContent04" + msgContent[0,4])
+        if( msgContent.length>4 && msgContent.substring(0,4) == "/:fn") {
+            msgContent = msgContent.substring(5,msgContent.lengt)
+            type = "file"
+        }
         if(channel.substring(0,3) == "USR") {
 
         } else if(channel.substring(0,3) == "GRP") {
@@ -1103,18 +1144,24 @@
                     "notedName":current_nickname,
                     "time":sendTime,
                     "content":msgContent,
-                    "photo" : photo}
+                    "photo" : photo,
+                    "type" : type}
         frame.chatRecordTableData.push(chatRecord);
     }
 
     //点击发送按钮
-    function publishMessage() {
-        let message = $(".message-input input").val();
-        if ($.trim(message) == '') {
-            return false;
-        }
-        let publishMessage = "";
+    function publishMessage(filename="") {
+        var publishMessage = "";
+        var message = "";
         var currentChannel = $("#currentChanel").val()
+        if(filename != "") {
+            message = '/:fn='+ filename
+        } else{
+            message = $(".message-input input").val();
+            if ($.trim(message) == '') {
+                return false;
+            }
+        }
         publishMessage = message + "|" + selfId + "|" + currentChannel;
         console.log("message:"+publishMessage)
         goeasy.publish({
@@ -1516,6 +1563,25 @@
         })
     });
      //# sourceURL=pen.js
+
+    $(document).on("click", ".attachment", function () {
+        console.log("attachment")
+        $("#attach_btn").click()
+    });
+
+    // $(document).on("click", ".file-dl", function () {
+    //     var filename = $(this).parent().text()
+    //     $.ajax({
+    //         url: '/chat/attachment_download',
+    //         type: 'get',
+    //         data: {
+    //             filename: filename,
+    //         },
+    //         success: function (res) {
+
+    //         },
+    //     })
+    // });
     </script>
 </body>
 

@@ -28,6 +28,8 @@ Rails.application.routes.draw do
     post 'notename_revise', action: "notename_revise"
     post 'start_group_chat', action: "start_group_chat"
     post 'find_group_member', action: "find_group_member"
+    post 'attachment_upload', action: "attachment_upload"
+    get 'attachment_download', action: "attachment_download"
   end
 
   namespace :game do

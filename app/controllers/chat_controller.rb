@@ -501,6 +501,24 @@ class ChatController < ApplicationController
     end
     render json: res
   end
+
+  def attachment_upload
+    p params[:file]
+    uploadFile(params[:file])
+    unless request.get?
+      if filename=uploadFile(params[:file])
+        p "success"
+        render plain: filename
+      end
+    end
+  end
+
+  def attachment_download
+    p "attachment_download"
+    # downloadFile(params[:filename])
+    path = File.join Rails.root, 'public', 'tmpfile'
+    send_file(File.join(path, params[:filename]), :filename => params[:filename])
+  end
 end
 
 require 'net/http'

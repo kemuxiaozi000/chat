@@ -29,5 +29,21 @@ module Myapp
     # lib 以下もロードパスに追加
     # config.assets.prefix = "#{ENV['ACCESS_PASS']}/assets"
     config.autoload_paths += Dir["#{config.root}/lib/**/"]
+
+    def uploadFile(file)
+      if !file.original_filename.empty?
+        @filename=getFileName(file.original_filename)
+        File.open("#{RAILS_ROOT}/public/tmpfile/#{@filename}", "wb") do |f|
+          f.write(file.read)
+        end
+        return @filename
+      end
+    end
+
+    def getFileName(filename)
+      if !filename.nil?
+        return filename
+      end
+    end
   end
 end

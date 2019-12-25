@@ -9,10 +9,35 @@ class ApplicationController < ActionController::Base
   require 'uri'
   require 'json'
   private
-
+  RAILS_ROOT = ENV['RAILS_ROOT']
   # I18n.locale をセットする
   def set_locale
     I18n.locale = locale_in_params || locale_return_language || I18n.default_locale
+  end
+
+  def uploadFile(file)
+    if !file.original_filename.empty?
+      @filename=getFileName(file.original_filename)
+
+      path = File.join Rails.root, 'public', 'tmpfile'
+      FileUtils.mkdir_p(path) unless File.exist?(path)
+      File.open(File.join(path, "#{@filename}"), "wb") do |f|
+      # File.open("#{RAILS_ROOT}/public/images/#{@filename}", "wb") do |f|
+        f.write(file.read)
+      end
+      return @filename
+    end
+  end
+
+  def downloadFile(filename)
+    path = File.join Rails.root, 'public', 'tmpfile'
+    send_file(File.join(path, filename))
+  end
+
+  def getFileName(filename)
+    if !filename.nil?
+      return filename
+    end
   end
 
   # params の locale の値（優先すべき）
