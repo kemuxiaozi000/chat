@@ -34,10 +34,10 @@ function timestamp2FormatDate(timestamp, fmt) {
 
 //数组内元素位置调整
 function swapArr(arr, index) {
-    var tmp = arr[index]
-    arr.splice(index, 1);
-    arr.push(tmp)
-    return arr;
+    var tmp_arr = clone(arr);
+    tmp_arr.splice(index, 1);
+    tmp_arr.splice(0, 0, arr[index]);
+    return tmp_arr;
 }
 
 // 将msg按照｜分成3分
@@ -72,3 +72,20 @@ function blobToDataURI(blob, callback) {
     }
     reader.readAsDataURL(blob);
 }
+
+
+function clone(obj) {
+    if (obj === null) return null
+    if (typeof obj !== 'object') return obj;
+    if (obj.constructor === Date) return new Date(obj);
+    if (obj.constructor === RegExp) return new RegExp(obj);
+    var newObj = new obj.constructor(); //保持继承链
+    for (var key in obj) {    
+        if (obj.hasOwnProperty(key)) { //不遍历其原型链上的属性
+            var val = obj[key];
+            newObj[key] = typeof val === 'object' ? arguments.callee(val) : val; // 使用arguments.callee解除与函数名的耦合
+                
+        }
+    }
+    return newObj;
+};

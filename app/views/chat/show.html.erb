@@ -101,7 +101,8 @@
                 </ul>
                 <div class="tab-content" id="pills-tabContent">
                     <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
-                        <ul v-if="reverseData.length>0" v-for="chatPreview in reverseData">
+                        <!--<ul v-if="reverseData.length>0" v-for="chatPreview in reverseData">-->
+                        <ul v-if="chatPreviewTableData.length>0" v-for="chatPreview in chatPreviewTableData">
                             <li class="contact" @click="chatPreviewclick(chatPreview.channel_id,chatPreview.photo,chatPreview.name)">
                                 <div class="wrap">
                                     <span class="contact-status online"></span>
@@ -624,6 +625,7 @@
 
             computed: {
                 reverseData() {
+                    console.log("reverseData")
                     return this.chatPreviewTableData.reverse();
                 }
             },
@@ -697,7 +699,7 @@
                     }
                     var index = this.chatPreviewTableData.indexOf(this.chatPreviewTableData[i]);
                     //把点击的移动到最顶端
-                    // swapArr(this.chatPreviewTableData, index)
+                    this.chatPreviewTableData = swapArr(this.chatPreviewTableData, index)
                     //右边的chat record 显示
                     $("#currentChanel").val(_channel_id)
                     this.targetNotedName = _name
@@ -960,7 +962,7 @@
 
     // 维护chat preview 队列 --
     function handleGoeasyMsgBrief(channel_id, message = "") {
-        // console.log("handleGoeasyMsgBrief")
+        console.log("handleGoeasyMsgBrief")
         let _channel_id = channel_id
         let chat_brief = {}
         let msg_num = 1
@@ -1014,7 +1016,8 @@
             }
         }
         // chatPreview 追加这次新的
-        frame.chatPreviewTableData.push(chat_brief)
+        frame.chatPreviewTableData.splice(0,0,chat_brief)
+        // frame.chatPreviewTableData.push(chat_brief)
         // console.log(frame.chatPreviewTableData)
     }
 
