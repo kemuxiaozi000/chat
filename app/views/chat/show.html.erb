@@ -247,10 +247,21 @@
                         <div>
                             <span v-if="chatRec.photo == 'personal'" style="margin-bottom:4px">{{chatRec.time}}</span>
                             <span v-else style="margin-bottom:4px">{{chatRec.time}}&nbsp;&nbsp;我</span>
-                            <p style="word-break:break-word;">
-                                <a v-if="chatRec.type=='file'" :href="'chat/attachment_download?filename='+chatRec.content">
+                            <p v-if="chatRec.type=='file'" class="download-msg">
+                                <div class="download-msg-icon"><i class="fas fa-download"></i></div>
+                                <div class="download-msg-right">
+                                    <p>{{chatRec.content}}</p>
+                                    <p> {{chatRec.size}} &nbsp;|&nbsp;
+                                        <a :href="'chat/attachment_download?filename='+chatRec.content">
+                                            下载
+                                        </a>
+                                    </p>
+                                </div>
+                            </p>
+                            <p v-else style="word-break:break-word;">
+                                <!-- <a :href="'chat/attachment_download?filename='+chatRec.content">
                                     <i class="fas fa-download"></i>
-                                </a>
+                                </a> -->
                                 {{chatRec.content}}
                             </p>
                         </div>
@@ -1105,6 +1116,7 @@
         let chatRecord = {};
         var side;
         var type = "msg";
+        var size = "0";
         var photo = "personal"
         let current_nickname = frame.targetNotedName;
         //先取channel_id
@@ -1122,6 +1134,7 @@
         if( msgContent.length>4 && msgContent.substring(0,4) == "/:fn") {
             msgContent = msgContent.substring(5,msgContent.lengt)
             type = "file"
+            size = "1KB"
         }
         if(channel.substring(0,3) == "USR") {
 
@@ -1145,7 +1158,8 @@
                     "time":sendTime,
                     "content":msgContent,
                     "photo" : photo,
-                    "type" : type}
+                    "type" : type,
+                    "size": size}
         frame.chatRecordTableData.push(chatRecord);
     }
 
