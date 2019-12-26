@@ -505,7 +505,7 @@ class ChatController < ApplicationController
   def attachment_upload
     p params[:file]
     filename = uploadFile(params[:file])
-    arr = filename.split("&fileuid=")
+    arr = filename.split(":::fileuid:")
     fileuid = arr[-1]
     unless request.get?
       # if filename = res
@@ -518,7 +518,8 @@ class ChatController < ApplicationController
     p "attachment_download"
     # downloadFile(params[:filename])
     path = File.join Rails.root, 'public', 'tmpfile'
-    send_file(File.join(path, params[:filename]), :filename => params[:filename])
+    filename = params[:filename][0..(params[:filename].length-24)]
+    send_file(File.join(path, params[:filename]), :filename => filename)
   end
 end
 

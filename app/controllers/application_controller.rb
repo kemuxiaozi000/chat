@@ -17,7 +17,7 @@ class ApplicationController < ActionController::Base
 
   def uploadFile(file)
     if !file.original_filename.empty?
-      @filename=getFileName(file.original_filename) +"&fileuid=" +SecureRandom.hex(6)
+      @filename=getFileName(file.original_filename) +":::fileuid:" +SecureRandom.hex(6)
       path = File.join Rails.root, 'public', 'tmpfile'
       FileUtils.mkdir_p(path) unless File.exist?(path)
       File.open(File.join(path, "#{@filename}"), "wb") do |f|
