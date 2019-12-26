@@ -235,30 +235,45 @@
                         <img v-if="chatRec.photo == 'personal'" v-bind:src="targetPhoto" alt="" />
                         <img v-else :src="chatRec.photo" alt="no image"
                         onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'" />
-                        <div>
+                        <div class="msg-flex-end">
                             <span v-if="chatRec.photo == 'personal'" style="margin-bottom:4px">{{chatRec.time}}</span>
                             <span v-else style="margin-bottom:4px">{{chatRec.notedName}}&nbsp;&nbsp;{{chatRec.time}}</span>
-                            <p style="word-break:break-word;"><i v-if="chatRec.type=='file'" class="fas fa-download file-dl"></i>{{chatRec.content}}</p>
+                            <div v-if="chatRec.type!='msg'" class="download-msg">
+                                <div class="download-msg-icon">
+                                    <i :class="'fas fa-3x fa-'+chatRec.type" style="margin: 5px;"></i>
+                                </div>
+                                <div class="download-msg-right">
+                                    <p>{{chatRec.content}}</p>
+                                    <p> {{chatRec.size}} &nbsp;|&nbsp;
+                                         <a :href="'chat/attachment_download?filename='+ chatRec.content + '&fileuid=' + chatRec.fileuid">
+                                            下载
+                                        </a>
+                                    </p>
+                                </div>
+                            </div>
+                            <p v-else class="msg-p" style="word-break:break-word;">
+                                {{chatRec.content}}
+                            </p>
                         </div>
                     </li>
                     <li class="msg-sent" v-else-if="chatRec.dir == 'right'" v-for="item in tableDataSelfInfo">
                         <img v-bind:src="item.photo" alt="no image"
                         onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'" />
-                        <div>
+                        <div class="msg-flex-end">
                             <span v-if="chatRec.photo == 'personal'" style="margin-bottom:4px">{{chatRec.time}}</span>
                             <span v-else style="margin-bottom:4px">{{chatRec.time}}&nbsp;&nbsp;我</span>
-                            <p v-if="chatRec.type=='file'" class="download-msg">
-                                <div class="download-msg-icon"><i class="fas fa-download"></i></div>
+                            <div v-if="chatRec.type!='msg'" class="download-msg">
+                                <div class="download-msg-icon"><i :class="'fas fa-3x fa-'+chatRec.type" style="margin: 5px;"></i></div>
                                 <div class="download-msg-right">
                                     <p>{{chatRec.content}}</p>
                                     <p> {{chatRec.size}} &nbsp;|&nbsp;
-                                        <a :href="'chat/attachment_download?filename='+chatRec.content">
+                                        <a :href="'chat/attachment_download?filename='+ chatRec.content + '&fileuid=' + chatRec.fileuid">
                                             下载
                                         </a>
                                     </p>
                                 </div>
-                            </p>
-                            <p v-else style="word-break:break-word;">
+                            </div>
+                            <p v-else class="msg-p" style="word-break:break-word;">
                                 <!-- <a :href="'chat/attachment_download?filename='+chatRec.content">
                                     <i class="fas fa-download"></i>
                                 </a> -->
@@ -275,7 +290,8 @@
                             action="chat/attachment_upload"
                             :on-success="attachSuccess"
                             :limit="1"
-                            :file-list="fileList">
+                            :file-list="fileList"
+                            :before-upload="beforeUpload">
                             <el-button id="attach_btn" size="small" type="primary">点击上传</el-button>
                             <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
                         </el-upload>
@@ -662,21 +678,18 @@
             // mounted
             methods: {
                 // 附件
-                // handleRemove(file, fileList) {
-                // },
-                // handlePreview(file) {
-                //     console.log(file);
-                // },
-                // handleExceed(files, fileList) {
-                //     this.$message.warning(`当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`);
-                // },
-                // beforeRemove(file, fileList) {
-                //     return this.$confirm(`确定移除 ${ file.name }？`);
-                // },
                 attachSuccess(response, file, fileList){
-                    console.log(fileList);
+                    console.log("attachSuccess response");
+                    console.log(response);
                     // 传一个消息，和发信息一样
-                    publishMessage(fileList[0].name)
+                    publishMessage(fileList[0].name,fileList[0].size,response)
+                },
+                beforeUpload(file) {
+                    const isLt20M = file.size / 1024 / 1024 < 20     //这里做文件大小限制
+                    if (!isLt20M) {
+                        this.$message.error('附件大小不能超过 20MB!');
+                    }
+                    return isLt20M
                 },
 
                 // 发起群聊多选框 checkbox
@@ -1113,6 +1126,7 @@
 
     //把消息转成需要的json格式，并在右边的chat record 展示
     function handleGoeasyMsg(message) {
+        var fileuid = "";
         let chatRecord = {};
         var side;
         var type = "msg";
@@ -1129,12 +1143,13 @@
         let msgContent = msgContentTmp.substring(0, index_1);
         var sendTime = timestamp2FormatDate(message.time,"yyyy/MM/dd hh:mm");
         side = (sendMsgUserId == frame.selfId) ? "right" : "left";
-        console.log("msgContent" + msgContent)
-        console.log("msgContent04" + msgContent[0,4])
-        if( msgContent.length>4 && msgContent.substring(0,4) == "/:fn") {
-            msgContent = msgContent.substring(5,msgContent.lengt)
-            type = "file"
-            size = "1KB"
+        if( msgContent.length>5 && msgContent.substring(0,5) == "/:fn=") {
+            msgContent = msgContent.substring(5,msgContent.length)
+            var msg_obj = JSON.parse(msgContent)
+            type = judgeFileType(getExt(msg_obj.filename))
+            size = filesizeCalc(msg_obj.filesize)
+            msgContent = msg_obj.filename
+            fileuid = msg_obj.fileuid
         }
         if(channel.substring(0,3) == "USR") {
 
@@ -1159,17 +1174,19 @@
                     "content":msgContent,
                     "photo" : photo,
                     "type" : type,
-                    "size": size}
+                    "size": size,
+                    "fileuid": fileuid}
         frame.chatRecordTableData.push(chatRecord);
     }
 
     //点击发送按钮
-    function publishMessage(filename="") {
+    function publishMessage(filename="",filesize="",fileuid="") {
         var publishMessage = "";
         var message = "";
         var currentChannel = $("#currentChanel").val()
         if(filename != "") {
-            message = '/:fn='+ filename
+            var obj = { "filename":filename, "filesize":filesize, "fileuid":fileuid};
+            message = '/:fn='+ JSON.stringify(obj)
         } else{
             message = $(".message-input input").val();
             if ($.trim(message) == '') {
@@ -1582,20 +1599,6 @@
         console.log("attachment")
         $("#attach_btn").click()
     });
-
-    // $(document).on("click", ".file-dl", function () {
-    //     var filename = $(this).parent().text()
-    //     $.ajax({
-    //         url: '/chat/attachment_download',
-    //         type: 'get',
-    //         data: {
-    //             filename: filename,
-    //         },
-    //         success: function (res) {
-
-    //         },
-    //     })
-    // });
     </script>
 </body>
 

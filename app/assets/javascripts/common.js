@@ -89,3 +89,55 @@ function clone(obj) {
     }
     return newObj;
 };
+
+// 根据后缀名判断文件类型
+function judgeFileType(ext) {
+    var type = "file";
+    if (['png', 'jpg', 'jpeg', 'bmp', 'gif', 'webp', 'psd', 'svg', 'tiff'].indexOf(ext.toLowerCase()) != -1) {
+        type = "file-image"
+    }
+    if (['doc', 'docx'].indexOf(ext.toLowerCase()) != -1) {
+        type = "file-word"
+    }
+    if (['avi', 'mov', 'rmvb', 'rm', 'flv', 'mp4', '3gp', 'mkv', 'mpg', 'mpeg'].indexOf(ext.toLowerCase()) != -1) {
+        type = "file-video"
+    }
+    if (['ppt', 'pptx'].indexOf(ext.toLowerCase()) != -1) {
+        type = "file-powerpoint"
+    }
+    if (['pdf'].indexOf(ext.toLowerCase()) != -1) {
+        type = "file-pdf"
+    }
+    if (['xls', 'xlsx'].indexOf(ext.toLowerCase()) != -1) {
+        type = "file-excel"
+    }
+    if (['mp3', 'wav', 'cda', 'mp3', 'wma', 'ra', 'midi', 'ogg', 'ape', 'flac', 'aac'].indexOf(ext.toLowerCase()) != -1) {
+        type = "file-audio"
+    }
+    if (['java', 'c', 'h', 'cpp', 'cs', 'asp', 'aspx', 'php', 'jsp', 'js', 'rb', 'py'].indexOf(ext.toLowerCase()) != -1) {
+        type = "file-code"
+    }
+    return type
+}
+
+// 文件后缀名获取
+function getExt(filePath) {
+    var index = filePath.lastIndexOf(".");
+    var ext = filePath.substr(index + 1);
+    return ext;
+}
+
+// 文件大小计算(换成合适的单位)
+function filesizeCalc(b_size) {
+    var res;
+    if (b_size / 1024 < 1) {
+        res = "" + b_size + "B"
+    } else {
+        if (b_size / 1024 / 1024 < 1) {
+            res = "" + (b_size / 1024).toFixed(1) + "K"
+        } else {
+            res = "" + (b_size / 1024 / 1024).toFixed(1) + "M"
+        }
+    }
+    return res;
+}

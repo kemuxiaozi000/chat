@@ -504,12 +504,13 @@ class ChatController < ApplicationController
 
   def attachment_upload
     p params[:file]
-    uploadFile(params[:file])
+    filename = uploadFile(params[:file])
+    arr = filename.split("&fileuid=")
+    fileuid = arr[-1]
     unless request.get?
-      if filename=uploadFile(params[:file])
-        p "success"
-        render plain: filename
-      end
+      # if filename = res
+        render plain: fileuid
+      # end
     end
   end
 
