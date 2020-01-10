@@ -293,8 +293,9 @@ class ChatController < ApplicationController
       res_ele = {}
       user = User.find_by_id(params[:kw])
       user_manage = UserManagement.find_by_user_id(params[:kw])
+      # p user_manage
       user_relation = UserRelation.where('user_relations.user_id_1 = ? and user_relations.user_id_2 = ?', current_user.id, params[:kw])
-      if user_relation.present?
+      if user_manage.present?
         res_ele["photo"] = user_manage.photo
       else
         res_ele["photo"] = ""
