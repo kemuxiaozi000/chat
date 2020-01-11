@@ -432,11 +432,20 @@
         }
     }
 
-    #frame #sidepanel #contacts ul li.contact:hover {
+    #frame #sidepanel #contacts ul li.recent-contact:hover {
         background: #32465a;
     }
 
-    #frame #sidepanel #contacts ul li.contact.active {
+    #frame #sidepanel #contacts ul li.recent-contact.active {
+        background: #32465a;
+        border-right: 5px solid #435f7a;
+    }
+
+    #frame #sidepanel #contacts ul li.contact .addrbook-contact:hover {
+        background: #32465a;
+    }
+
+    #frame #sidepanel #contacts ul li.contact .addrbook-contact.active {
         background: #32465a;
         border-right: 5px solid #435f7a;
     }
@@ -1064,5 +1073,14 @@
         overflow: hidden;
         text-overflow:ellipsis;
         white-space: nowrap;
+    }
+
+    /* #frame .member-info-item-add.active {
+        background: #32465a;
+        border-right: 5px solid #dae3ecc7;
     } */
+
+    #frame .member-info-item-add:hover {
+        background: #dae3ecc7;
+    }
 </style>

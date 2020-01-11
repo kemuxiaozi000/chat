@@ -30,6 +30,7 @@ Rails.application.routes.draw do
     post 'find_group_member', action: "find_group_member"
     post 'attachment_upload', action: "attachment_upload"
     get 'attachment_download', action: "attachment_download"
+    post 'search_uid_by_channel', action: "search_uid_by_channel"
   end
 
   namespace :game do

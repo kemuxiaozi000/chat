@@ -50,7 +50,7 @@ class ChatController < ApplicationController
         member_list_except_self = arr_member_list.join(",")
         tmp["target_user_id"] = member_list_except_self
         tmp["photo"] = ""
-        tmp["name"] = "xxx group chat"
+        tmp["name"] = item.group_name
         tmp["member_photo"] = ""
         tmp["member_name"] = ""
         channel_ids_and_notename.push(tmp)
@@ -159,6 +159,7 @@ class ChatController < ApplicationController
   def address_book
     p "address_book"
     res = []
+    res_sort_by_notename = []
 
     user_tmp = User.joins('left join user_relations on user_relations.user_id_2 = users.id ').
                     joins('left join user_managements on users.id = user_managements.user_id ').
@@ -176,6 +177,7 @@ class ChatController < ApplicationController
         res.push(hash)
       end
     end
+    # 按照备注姓名排序
     render json: res
   end
 
@@ -282,7 +284,8 @@ class ChatController < ApplicationController
 
   # 将下线前的chat_preview的顺序以数组存入db
   def chat_preview
-
+    p "chat_preview"
+    UserManagement.update("title=#{params[:chat_preview_list]}","user_id=#{current_user.id}")
   end
 
   # 搜索匹配的用户
@@ -449,27 +452,20 @@ class ChatController < ApplicationController
     arr = params[:member_list].to_s.split(',')
     arr.sort!
     sorted_arr = arr.join(",")
-    group_info = GroupInfo.find_by_member_list(sorted_arr)
+    # group_info = GroupInfo.find_by_member_list(sorted_arr)
     arr_group_info_json = []
     res_channel = ""
-    if group_info.blank?
-      # 如果不存在，新纪录插入数据库
-      # 创建group_channel_id
-      group_chat_uid = GroupChatRecord.new.make_rc_uuid
-      for item in arr
-        group_info_json = {'group_id': group_chat_uid,
-                           'member_list': sorted_arr,
-                           'group_creator': current_user.id,
-                           'member': item}
-        arr_group_info_json.push(group_info_json)
-      end
-      GroupInfo.create(arr_group_info_json)
-      res_channel = group_chat_uid
-    else
-      # 如果存在，读取channel_id并返回
-      res_channel = group_info.group_id
-      p res_channel
+    group_chat_uid = GroupChatRecord.new.make_rc_uuid
+    for item in arr
+      group_info_json = {'group_id': group_chat_uid,
+                          'member_list': sorted_arr,
+                          'group_creator': current_user.id,
+                          'member': item,
+                          'group_name': params[:group_chat_name]}
+      arr_group_info_json.push(group_info_json)
     end
+    GroupInfo.create(arr_group_info_json)
+    res_channel = group_chat_uid
 
     # 让对方知道你邀请他进入群聊，通过固有channel
     for item in arr
@@ -522,6 +518,12 @@ class ChatController < ApplicationController
     filename = params[:filename][0..(params[:filename].length-24)]
     send_file(File.join(path, params[:filename]), :filename => filename)
   end
+
+  def search_uid_by_channel
+    p "search_uid_by_channel"
+    uid = UserRelation.where('user_id_1 = ? and channel_id = ?', current_user.id, params[:channel])[0].user_id_2
+    render json: uid
+  end
 end
 
 require 'net/http'
@@ -532,4 +534,41 @@ class GoEasyClient
       {appkey: "BC-242425a937724e418b4f51105a138e3b", channel: channel, content: content})
     }
   end
+end
+
+def partition(arr, left, right)
+  # 1.从数列中挑出一个元素，称为 "基准"（pivot）;
+  # 2.重新排序数列，所有元素比基准值小的摆放在基准前面，所有元素比基准值大的摆在基准的后面（相同的数可以到任一边）。
+  #   在这个分区退出之后，该基准就处于数列的中间位置。这个称为分区（partition）操作；
+  # :param arr: 列表
+  # :param left: 挑出元素的index
+  # :param right: 列表最大index
+  # :return:
+  pivot = arr[left]
+  while left < right                                  # 列表最少存在2个元素
+      while left < right && arr[right] >= pivot       # 找到右边比pivot小的元素
+          right -= 1
+      end
+      arr[left] = arr[right]                          # 将在此元素放在left的位置
+      while left < right && arr[left] <= pivot        # 找到左边比pivot大的元素
+          left += 1
+      end
+      arr[right] = arr[left]
+  end                                                 # 将此元素放在right的位置
+  arr[left] = pivot                                   # left=right,此元素已经归位
+  left
+end
+
+def quick_sort(arr, left, right)
+  # 3.递归地（recursive）把小于基准值元素的子数列和大于基准值元素的子数列排序；
+  # :param arr:
+  # :param left:
+  # :param right:
+  # :return:
+  if left < right                                    # 列表最少存在2个元素
+      mid = partition(arr, left, right)
+      quick_sort(arr, left, mid - 1)
+      quick_sort(arr, mid + 1, right)
+  end
+  arr
 end

@@ -67,7 +67,7 @@ function divideMsgIntoParts(msg, num_of_parts) {
 
 function blobToDataURI(blob, callback) {
     var reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = function (e) {
         callback(e.target.result);
     }
     reader.readAsDataURL(blob);
@@ -80,11 +80,11 @@ function clone(obj) {
     if (obj.constructor === Date) return new Date(obj);
     if (obj.constructor === RegExp) return new RegExp(obj);
     var newObj = new obj.constructor(); //保持继承链
-    for (var key in obj) {    
+    for (var key in obj) {
         if (obj.hasOwnProperty(key)) { //不遍历其原型链上的属性
             var val = obj[key];
             newObj[key] = typeof val === 'object' ? arguments.callee(val) : val; // 使用arguments.callee解除与函数名的耦合
-                
+
         }
     }
     return newObj;
@@ -140,4 +140,19 @@ function filesizeCalc(b_size) {
         }
     }
     return res;
+}
+
+function sortChinese(arr, dataLeven) { // 参数：arr 排序的数组; dataLeven 数组内的需要比较的元素属性
+    /* 获取数组元素内需要比较的值 */
+    function getValue(option) { // 参数： option 数组元素
+        if (!dataLeven) return option
+        var data = option
+        dataLeven.split('.').filter(function (item) {
+            data = data[item]
+        })
+        return data + ''
+    }
+    arr.sort(function (item1, item2) {
+        return getValue(item1).localeCompare(getValue(item2), 'zh-CN');
+    })
 }
