@@ -23,6 +23,7 @@ class ChatController < ApplicationController
     res_tmp = {}
     res = []
     channel_ids_and_notename = []
+    chat_preview_list = []
 
     # 需要监听的channel 取得，包括交谈的备注名和uid
     user_relation = UserRelation.where(user_id_1: current_user.id)
@@ -57,6 +58,35 @@ class ChatController < ApplicationController
       end
     end
     res_tmp["channel"] = channel_ids_and_notename
+
+    # chat_preview_table data 作成
+    chat_preview_str = user.chat_preview
+    p "chat_preview_str"
+    if chat_preview_str.present?
+      chat_preview_arr = chat_preview_str.split(",")
+      p "chat_preview_arr: #{chat_preview_arr}"
+      for item in chat_preview_arr
+        tmp = {}
+        tmp["channel_id"] = item
+        if item.start_with?("USR")
+          uid = common_search_uid_by_channel(item)
+          tmp_user = NameNote.where('name_notes.user_id = ? and name_notes.noted_id = ? ', current_user.id, uid)[0]
+          tmp_photo = UserManagement.find_by_user_id(uid)
+          tmp["name"] = tmp_user.present? ? tmp_user.note_name : User.find_by_id(uid).nickname
+          tmp["photo"] = tmp_photo.present? ? tmp_photo.photo : ""
+        else
+          tmp["name"] = GroupInfo.find_by_group_id(item).group_name
+          tmp["photo"] = ""
+        end
+        tmp["msg_num"] = ""
+        tmp["latest_msg_brief"] = ""
+        tmp["latest_msg_time"] = ""
+        tmp["is_block"] = false
+        chat_preview_list.push(tmp)
+      end
+    end
+    p "chat_preview_list: #{chat_preview_list}"
+    res_tmp["chat_preview"] = chat_preview_list
 
     # 个人信息
     res_tmp["email"] = current_user.email
@@ -136,17 +166,6 @@ class ChatController < ApplicationController
     render json: res
   end
 
-  # 加载左下角个人聊天的群（包含信息）
-  # timing 首次需要加载，有新的聊天需要局部刷新，(包括上下顺序调整)
-  # in
-  # out [{ name: "好友", msg_num: "4", latest_msg_brief: "王铭铭-换尿布...", latest_msg_time: "22:20" },
-  #       { name: "Dota小分队", msg_num: "2", latest_msg_brief: "今晚干...", latest_msg_time: "08:10", is_block: "false" },
-  #       { name: "电装", msg_num: "5", latest_msg_brief: "今天加班吗...", latest_msg_time: "21:20", is_block: "true" }
-  #      ] 群没有自己修改的名称，个人可以
-  def chat_brief
-
-  end
-
   # 加载tab2 所有 个人(包含群),按字母排序
   # timing 点击tab2人物icon
   # in params[:user_id]
@@ -180,43 +199,6 @@ class ChatController < ApplicationController
     # 按照备注姓名排序
     render json: res
   end
-
-  # 指定个人或群的成员列表
-  # timing 鼠标hover在聊天记录框上方群名或个人名字上
-  # in params[:user_id] 自己
-  #    params[:u_id] 群或个人
-  # out [{note_name:"",photo:"",id:""}...]
-  # def member_info_brief
-  #   res = []
-  #   if params[:u_id].to_s.start_with?("GRP")
-  #     members = GroupInfo.find_by_group_id(params[:u_id]).member_list
-  #     arr_members = members.to_s.split(",")
-  #     tmp_user = UserManagement.joins('inner join name_notes on user_managements.user_id = name_notes.noted_id').
-  #                               select('user_managements.user_id,user_managements.photo, name_notes.note_name, name_notes.noted_id').
-  #                               where('name_notes.user_id = ? and user_managements.user_id IN(?) ', params[:user_id], arr_members)
-  #     self_info = UserManagement.find_by_user_id(params[:user_id])
-  #     self_hash = {}
-  #     self_hash["user_note_name"] = "我"
-  #     self_hash["photo"] = self_info.photo
-  #     res.push(self_hash)
-  #   else
-  #     # tmp_user = UserManagement.joins('inner join name_notes on user_managements.user_id = name_notes.noted_id').
-  #     #                           select('user_managements.user_id,user_managements.photo, name_notes.note_name, name_notes.noted_id').
-  #     #                           where('name_notes.user_id = ?  and user_managements.user_id = ? ', params[:user_id], params[:u_id])
-  #     tmp_user = User.joins('left join user_managements on users.id = user_managements.user_id ').
-  #                     joins('left join name_notes on users.id = name_notes.noted_id').
-  #                     select('users.id, users.nickname, user_managements.photo, name_notes.note_name, name_notes.user_id').
-  #                     where('name_notes.user_id = ? or name_notes.user_id IS NULL', current_user.id)
-  #   end
-  #   for i in tmp_user
-  #     hash = {}
-  #     hash["user_note_name"] = i.note_name
-  #     hash["photo"] = i.photo
-  #     hash["noted_id"] = i.noted_id
-  #     res.push(hash)
-  #   end
-  #   render json: res
-  # end
 
   # 聊天记录
   # timing 点击addrbook列表个人聊天
@@ -278,14 +260,11 @@ class ChatController < ApplicationController
     end
   end
 
-  def show_msg
-
-  end
-
   # 将下线前的chat_preview的顺序以数组存入db
   def chat_preview
     p "chat_preview"
-    UserManagement.update("title=#{params[:chat_preview_list]}","user_id=#{current_user.id}")
+    person = UserManagement.find_by_user_id(current_user.id)
+    person.update_attributes(:chat_preview => params[:chat_preview_list].to_s.chop)
   end
 
   # 搜索匹配的用户
@@ -534,6 +513,10 @@ class GoEasyClient
       {appkey: "BC-242425a937724e418b4f51105a138e3b", channel: channel, content: content})
     }
   end
+end
+
+def common_search_uid_by_channel(channel)
+  uid = UserRelation.where('user_id_1 = ? and channel_id = ?', current_user.id, channel)[0].user_id_2
 end
 
 def partition(arr, left, right)

@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
-  devise_for :users
+  devise_for :users, controllers: {
+    sessions: 'users/sessions'
+  }
   # namespace :rooms do
   #   get '/', action: 'show'
   # end
@@ -12,11 +14,8 @@ Rails.application.routes.draw do
     get 'show', action: 'show'
     post 'self_info', action: 'self_info'
     post 'search_user', action: 'search_user'
-    post 'chat_brief', action: "chat_brief"
-    post 'member_info_brief', action: "member_info_brief"
     post 'show_chat_record', action: "show_chat_record"
     post 'send_msg', action: "send_msg"
-    post 'show_msg', action: "show_msg"
     post 'address_book', action: "address_book"
     get 'add_contact_search', action: "add_contact_search"
     post 'add_friend', action: "add_friend"
@@ -31,6 +30,7 @@ Rails.application.routes.draw do
     post 'attachment_upload', action: "attachment_upload"
     get 'attachment_download', action: "attachment_download"
     post 'search_uid_by_channel', action: "search_uid_by_channel"
+    post 'chat_preview', action: "chat_preview"
   end
 
   namespace :game do
