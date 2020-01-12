@@ -84,8 +84,18 @@
                 </div>
             </div>
             <div id="search">
-                <label for=""><i class="fa fa-search" aria-hidden="true"></i></label>
-                <input type="text" placeholder="Search contacts..." />
+                <div class="dropdown">
+                    <label for=""><i class="fa fa-search" aria-hidden="true"></i></label>
+                    <input v-model="searchAll" @input="inputFn" @click="hideSearchDropdown" type="text" class="dropdown-search" data-toggle="dropdown" placeholder="Search contacts..."/>
+                    <div class="dropdown-menu">
+                        <h5 class="dropdown-header">Dropdown header</h5>
+                        <a class="dropdown-item" href="#">Link 1</a>
+                        <a class="dropdown-item" href="#">Link 2</a>
+                        <a class="dropdown-item" href="#">Link 3</a>
+                        <h5 class="dropdown-header">Dropdown header</h5>
+                        <a class="dropdown-item" href="#">Another link</a>
+                    </div>
+                </div>
             </div>
             <div id="contacts">
                 <ul class="nav nav-pills m-2" id="pills-tab" role="tablist">
@@ -674,6 +684,7 @@
                 defaultGroupAvater: "/assets/group_default-8115c58d5ced7497e66b68b53f9b21b1b9a512966f267aa8e729ab16023c7591.jpg",
                 fileList: [],
                 groupChatName: "",
+                searchAll: "",
             },
 
             computed: {
@@ -689,6 +700,28 @@
 
             // mounted
             methods: {
+                inputFn(){
+                    var _this = this
+                    console.log("inputFn")
+                    $.ajax({
+                        url: '/chat/search_user',
+                        type: 'post',
+                        data: {
+                            keyword: _this.searchAll,
+                        },
+                        success: function (res) {
+                            if(res.length > 0) {
+
+                            }
+                            $('.dropdown-search').dropdown("toggle")
+                        },
+                        error: function (err) {
+                        }
+                    })
+                },
+                hideSearchDropdown(){
+                    $('.dropdown-search').dropdown("toggle")
+                },
                 // 附件
                 attachSuccess(response, file, fileList){
                     console.log("attachSuccess response");

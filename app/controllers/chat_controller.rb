@@ -104,59 +104,76 @@ class ChatController < ApplicationController
   # 模糊查找好友nickname和备注 OR 所在的群的群名或者群成员nickname和备注
   # timing 查找框检测到输入
   # in params[:keyword] params[:user_id]
-  # out {["user_list":{{user_note_name:"",photo:""}...],
-  #      ["group_list":{group_note_name:"",photo:""}..] }
+  # out {"user_list":[{user_id: "", user_note_name:"", photo:"", include:"昵称：hahaha"}...],
+  #      "group_list":[{group_id: "", group_name:"",photo:"", include:"包含：hahaha"}..}
   def search_user
-    # 根据自己的user_id，查找自己好友或所属群的备注有相似的
-    user_or_group_note = NameNote.where("name_notes.user_id = ? and name_notes.note_name like ?", params[:user_id], "%"+params[:keyword]+"%")
-    # 根据自己的user_id, 查找关系为1(好友), nickname相似的
-    user_nickname = UserManagement.joins('inner join user_relations on user_managements.user_id = user_relations.user_id_1').
-                    where("user_managements.user_id = ? and user_relations.relation = ? and user_managements.nickname like ?", params[:user_id], "1", "%"+params[:keyword]+"%")
-    arr_person_uid = []
-    arr_group_uid = []
-    # 按照noted_id把它区分个人和群，放到两个arr里
-    for item in user_or_group_note
-      if item.noted_id.to_s.start_with?(USR)
-        if arr_person_uid.count(item.noted_id) == 0
-          arr_person_uid.push(item.noted_id)
-        end
-      elsif item.noted_id.to_s.start_with?(GRP)
-        if arr_group_uid.count(item.noted_id) == 0
-          arr_group_uid.push(item.noted_id)
-        end
-      end
-    end
-    for item in user_nickname
-      if arr_group_uid
-        arr_person_uid.push(item.user_id)
-      end
-    end
-    # tmp_user_notename = NameNote.where('name_notes.user_id = ? and name_notes.noted_id IN(?) ', params[:user_id], arr_person_uid).
-    #                             order("name_notes.noted_id ASC")
+    p "search_user"
 
-    tmp_user = UserManagement.joins('inner join name_notes on user_managements.user_id = name_notes.noted_id').
-                              where('name_notes.user_id = ? and user_managements.user_id IN(?) ', params[:user_id], arr_person_uid).
-                              order("user_managements.user_id ASC")
-    # TODO
-    tmp_group = NameNote.where('name_notes.user_id = ? and name_notes.noted_id IN(?) ', params[:user_id], arr_group_uid).
-                                  order("name_notes.noted_id ASC")
-    res_user = []
-    res_group = []
     res = {}
-    for i in tmp_user
-      hash = {}
-      hash["user_note_name"] = i.note_name
-      hash["photo"] = i.photo
-      res_user.push(hash)
+    arr_user_list = []
+    arr_group_list = []
+    # 根据自己的user_id，查找自己好友备注有相似的
+    user_note = NameNote.where("name_notes.user_id = ? and name_notes.note_name like ?", current_user.id, "%"+params[:keyword]+"%")
+    p user_note
+    if user_note.present?
+      for item in user_or_group_note
+        tmp_user = {}
+        tmp_user["user_id"] = item.noted_id
+        tmp_user["user_note_name"] = item.name_notes
+        tmp_photo = UserManagement.find_by_user_id(item.noted_id)
+        tmp_user["photo"] = tmp_photo.present? ? tmp_photo.photo : ""
+        tmp_user["include"] = ""
+        arr_user_list.push(tmp_user)
+      end
     end
-    for i in tmp_group
-      hash = {}
-      hash["user_note_name"] = i.note_name
-      hash["photo"] = ""
-      res_group.push(hash)
+    # 根据自己的user_id, 查找关系为1(好友), nickname相似的
+    user_nickname = User.joins('inner join user_relations on users.id = user_relations.user_id_2').
+                        joins('inner join user_managements on users.id = user_managements.user_id').
+                        select('users.id, users.nickname, user_managements.photo').
+                        where("user_relations.user_id_1 = ? and user_relations.relation = ? and users.nickname like ?",
+                                        current_user.id, "1", "%"+params[:keyword]+"%")
+    p user_nickname
+    if user_nickname.present?
+      flag  = false
+      for item in user_nickname
+        if arr_user_list.present?
+          for i in arr_user_list
+            if i["user_id"] == item.id then
+              break
+            end
+            flag = true
+          end
+        else
+          flag = true
+        end
+        if flag
+          tmp_user = {}
+          tmp_user["user_id"] = item.id
+          item_tmp = NameNote.where('name_notes.user_id = ? and name_notes.noted_id = ?', current_user.id, item.id)
+          tmp_user["user_note_name"] = item_tmp.blank? ? item.nickname : item_tmp[0].note_name
+          tmp_photo = UserManagement.find_by_user_id(item.id)
+          tmp_user["photo"] = tmp_photo.present? ? tmp_photo.photo : ""
+          tmp_user["include"] = "昵称："+ item.nickname
+          arr_user_list.push(tmp_user)
+        end
+      end
     end
-    res["user_list"] = res_user
-    res["group_list"] = res_group
+    # 查找自己所在群名相似的
+    group = GroupInfo.where('member = ? and group_name like ?',current_user.id, "%"+params[:keyword]+"%")
+    if group.present?
+      for item in group
+        tmp_group = {}
+        tmp_group["group_id"] = item.group_id
+        tmp_group["group_name"] = item.group_name
+        tmp_group["photo"] = ""
+        tmp_group["include"] = ""
+        arr_group_list.push(tmp_group)
+      end
+    end
+    # TODO 查找群成员是否包含
+
+    res["user_list"] = arr_user_list
+    res["group_list"] = arr_group_list
     render json: res
   end
 
