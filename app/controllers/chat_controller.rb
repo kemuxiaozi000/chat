@@ -8,10 +8,7 @@ class ChatController < ApplicationController
   end
 
   def show
-    # p "show"
-    # @image = UserManagement.find_by_user_id(current_user.id)
-    # p @image.avatar.class
-    # send_data @image.avatar, :type => 'image/jpeg', :disposition => 'inline'
+
   end
 
   # 加载个人数据（左上角）头像，昵称 add channel_id
@@ -61,10 +58,8 @@ class ChatController < ApplicationController
 
     # chat_preview_table data 作成
     chat_preview_str = user.chat_preview
-    p "chat_preview_str"
     if chat_preview_str.present?
       chat_preview_arr = chat_preview_str.split(",")
-      p "chat_preview_arr: #{chat_preview_arr}"
       for item in chat_preview_arr
         tmp = {}
         tmp["channel_id"] = item
@@ -85,7 +80,6 @@ class ChatController < ApplicationController
         chat_preview_list.push(tmp)
       end
     end
-    p "chat_preview_list: #{chat_preview_list}"
     res_tmp["chat_preview"] = chat_preview_list
 
     # 个人信息

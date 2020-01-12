@@ -106,7 +106,8 @@
                             <li class="contact recent-contact" @click="chatPreviewclick(chatPreview.channel_id,chatPreview.photo,chatPreview.name)">
                                 <div class="wrap">
                                     <span class="contact-status online"></span>
-                                    <img v-bind:src="chatPreview.photo" alt="" />
+                                    <img v-if="chatPreview.photo == '' && chatPreview.channel_id.substring(0,3)=='GRP'" src="/assets/group_default-8115c58d5ced7497e66b68b53f9b21b1b9a512966f267aa8e729ab16023c7591.jpg" />
+                                    <img v-else v-bind:src="chatPreview.photo" alt="" />
                                     <div class="meta">
                                         <p class="name text-ellipsis">{{chatPreview.name}}</p>
                                         <p class="preview">
@@ -173,7 +174,7 @@
                     </div>
                     <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">
                         <ul v-if="tableDataGame.length>0" v-loading="loadingGame" element-loading-text="loading...">
-                            <li class="contact" v-for="item in tableDataGame">
+                            <li class="contact" v-for="item in tableDataGame" @click="selectGame(item.game_id, item.href)">
                                 <div class="wrap">
                                     <img v-bind:src="item.cover" alt="" />
                                     <div class="meta">
@@ -531,7 +532,7 @@
                             <ul v-if="tableDataPeople.length>0" v-loading="loadingPeople" element-loading-text="loading..." v-for="item in tableDataPeople">
                                 <li>{{item.index}}</li>
                                 <template v-for="person in item.personList">
-                                    <el-checkbox v-model="person.ischeck" class="checkbox-inline" @change="handleCheckChange(person.ischeck, person.uid, person.photo, person.name)">
+                                    <el-checkbox v-model="person.ischeck" class="checkbox-inline" :disabled="person.isDisabled" @change="handleCheckChange(person.ischeck, person.uid, person.photo, person.name)">
                                         <img v-bind:src="person.photo" class="start-group-chat-img" alt="no image"
                                         onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'" />
                                         <div class="ml-3">{{person.name}}</div>
@@ -771,10 +772,13 @@
                     $("#collapseOne").removeClass("show")
                     $("#currentChanel").val(_channel_id)
                     this.targetNotedName = _name
-                    this.targetPhoto = _photo
                     this.chatRecordTableData = []
                     var _this = this
-                    //维护currentChatUid（如果当前是群，则为channelid，如果是个人，则为user_id）
+
+                    // 将顺序存入db 防止直接刷新页面导致新开的群聊丢失
+                    chatPreviewSaveDB()
+
+                    // 维护currentChatUid（如果当前是群，则为channelid，如果是个人，则为user_id）
                     if (_channel_id.substring(0,8) == "USR_CHAT") {
                         $.ajax({
                             url: '/chat/search_uid_by_channel',
@@ -784,14 +788,36 @@
                             },
                             success: function (res) {
                                 _this.currentChatUid = res
+                                historyChatRecord(_channel_id)
                             },
                             error: function (err) {
                             }
                         })
+                        this.targetPhoto = _photo
                     } else {
                         this.currentChatUid = _channel_id
+                        if(_photo == "") {
+                            this.targetPhoto = this.defaultGroupAvater
+                        } else {
+                            this.targetPhoto = _photo
+                        }
+                        //如果是群，先维护GroupList
+                        $.ajax({
+                            url: '/chat/find_group_member',
+                            type: 'post',
+                            // asyn: false,
+                            data: {
+                                channel: _channel_id,
+                                except_self: false,
+                            },
+                            success: function (res) {
+                                console.log(res)
+                                _this.groupList = []
+                                _this.groupList = res
+                                historyChatRecord(_channel_id)
+                            },
+                        })
                     }
-                    historyChatRecord(_channel_id)
                 },
 
                 // 通讯录点击个人
@@ -858,6 +884,7 @@
                             }
                             // 上次退出保存的最近聊天（chatpreview）
                             _this.chatPreviewTableData = _this.tableDataSelfInfo[0].chat_preview
+                            _this.loadTableDataAddressBook()
                             //所有有关的channelid取得
                             chatPreviewCurrentUpdate()
                             if(_channel != "") {
@@ -878,7 +905,7 @@
                     })
                 },
 
-                // 加载tab2的所有好友
+                // 加载通讯录tab2的所有好友
                 loadTableDataAddressBook: function () {
                     console.log("loadTableDataAddressBook")
                     this.loadingAddressBook = true;
@@ -911,6 +938,7 @@
                                             obj_tmp["name"] = val.name
                                             obj_tmp["photo"] = val.photo
                                             obj_tmp["ischeck"] = false
+                                            obj_tmp["isDisabled"] = false
                                             tmp["personList"].push(obj_tmp)
                                         }
                                     });
@@ -996,6 +1024,10 @@
                             alert("save profile failed")
                         }
                     })
+                },
+
+                selectGame(game_id, game_href) {
+                    window.location.href = '/game/' + game_href;
                 }
             },
     });
@@ -1084,6 +1116,7 @@
         }
         // chatPreview 追加这次新的
         frame.chatPreviewTableData.splice(0,0,chat_brief)
+        chatPreviewSaveDB()
         // frame.chatPreviewTableData.push(chat_brief)
         // console.log(frame.chatPreviewTableData)
     }
@@ -1432,7 +1465,6 @@
 
     // 根据 group_id （channel）查找该群聊下的人员信息
     function findGroupMember(channel, flag=false){
-        console.log("findGroupMember--" + flag)
         $.ajax({
             url: '/chat/find_group_member',
             type: 'post',
@@ -1444,6 +1476,16 @@
                 if(flag) {
                     frame.selectedTargets = []
                     frame.selectedTargets = res
+                    for(var i = 0; i < frame.tableDataPeople.length; i++){
+                        for(var j = 0; j < frame.tableDataPeople[i]["personList"].length; j++){
+                            for(var k = 0; k < frame.selectedTargets.length; k++) {
+                                if(frame.tableDataPeople[i]["personList"][j]["uid"] == frame.selectedTargets[k]["user_id"]) {
+                                    frame.tableDataPeople[i]["personList"][j]["ischeck"] = true
+                                    frame.tableDataPeople[i]["personList"][j]["isDisabled"] = true
+                                }
+                            }
+                        }
+                    }
                 } else{
                     frame.groupList = []
                     frame.groupList = res
@@ -1508,27 +1550,34 @@
         var arr_member_photo
         if(channel.substring(0,3) == "USR"){
             frame.selectedTargets.push({"user_id":frame.currentChatUid, "photo":frame.targetPhoto, "name":frame.targetNotedName})
-        } else if(channel.substring(0,3) == "GRP") {
-            findGroupMember(channel, true)
-        }
-        for(var i = 0; i < frame.tableDataPeople.length; i++){
-            for(var j = 0; j < frame.tableDataPeople[i]["personList"].length; j++){
-                if(frame.tableDataPeople[i]["personList"][j]["uid"] == frame.currentChatUid) {
-                    frame.tableDataPeople[i]["personList"][j]["ischeck"] = true
+            for(var i = 0; i < frame.tableDataPeople.length; i++){
+                for(var j = 0; j < frame.tableDataPeople[i]["personList"].length; j++){
+                    if(frame.tableDataPeople[i]["personList"][j]["uid"] == frame.currentChatUid) {
+                        frame.tableDataPeople[i]["personList"][j]["ischeck"] = true
+                        frame.tableDataPeople[i]["personList"][j]["isDisabled"] = true
+                    }
                 }
             }
+        } else if(channel.substring(0,3) == "GRP") {
+            console.log("GRP")
+            console.log(frame.selectedTargets)
+            findGroupMember(channel, true)
         }
+
     });
 
+    // 点击 开始群聊modal的取消按钮，将原来的checkbox状态清空
     $(document).on("click", ".start-chat-close", function () {
         frame.selectedTargets = []
         for(var i = 0; i < frame.tableDataPeople.length; i++){
             for(var j = 0; j < frame.tableDataPeople[i]["personList"].length; j++){
                 frame.tableDataPeople[i]["personList"][j]["ischeck"] = false
+                frame.tableDataPeople[i]["personList"][j]["isDisabled"] = false
             }
         }
     });
 
+    // 点击 开始群聊modal的确认按钮，创建群聊
     $(document).on("click", ".start-chat-confirm", function () {
         if(frame.groupChatName == "") {
             // alert("11")
@@ -1581,18 +1630,23 @@
                     historyChatRecord(res.channel)
                     leftSelectMoveTop(res.channel)
                     $("#collapseOne").removeClass("show")
+                    // 清空相关临时数据
                     frame.selectedTargets = []
+                    frame.groupChatName =  ""
+
                 },
             })
         }
     });
      //# sourceURL=pen.js
 
+    // 模拟点击附件
     $(document).on("click", ".attachment", function () {
         console.log("attachment")
         $("#attach_btn").click()
     });
 
+    // 点击退出按钮，保存最近的聊天对象（chat_preview_table_data）
     function chatPreviewSaveDB() {
         // chat preview的channel_id做成字符串存db
         var chat_preview_list = "";
