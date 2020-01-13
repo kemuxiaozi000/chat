@@ -84,16 +84,34 @@
                 </div>
             </div>
             <div id="search">
-                <div class="dropdown">
+                <div id="dropdown-wrapper">
                     <label for=""><i class="fa fa-search" aria-hidden="true"></i></label>
-                    <input v-model="searchAll" @input="inputFn" @click="hideSearchDropdown" type="text" class="dropdown-search" data-toggle="dropdown" placeholder="Search contacts..."/>
-                    <div class="dropdown-menu">
-                        <h5 class="dropdown-header">Dropdown header</h5>
-                        <a class="dropdown-item" href="#">Link 1</a>
-                        <a class="dropdown-item" href="#">Link 2</a>
-                        <a class="dropdown-item" href="#">Link 3</a>
-                        <h5 class="dropdown-header">Dropdown header</h5>
-                        <a class="dropdown-item" href="#">Another link</a>
+                    <input v-model="searchAll" @input="inputFn" @click="hideSearchDropdown" type="text" class="dropdown-search" aria-expanded="true" placeholder="Search contacts..."/>
+                    <div class="dropdown-menu dropdown-menu-search" x-placement="bottom-start" style="width: 280px;position: absolute; transform: translate3d(0px, 151px, 0px); top: 0px; left: 0px; will-change: transform;">
+                        <h5 class="dropdown-header" style="font-size:8px; float:left">联系人</h5>
+                        <a class="dropdown-item" href="#" v-for="item in searchList.user_list">
+                            <div class="wrap">
+                                <span class="contact-status online"></span>
+                                <img v-if="item.photo == ''" src="/assets/group_default-8115c58d5ced7497e66b68b53f9b21b1b9a512966f267aa8e729ab16023c7591.jpg" />
+                                <img v-else v-bind:src="item.photo" alt="" />
+                                <div class="meta ml-2">
+                                    <p class="name text-ellipsis">{{item.user_note_name}}</p>
+                                    <p class="name text-ellipsis">{{item.include}}</p>
+                                </div>
+                            </div>
+                        </a>
+                        <h5 class="dropdown-header" style="font-size:8px; float:left">群聊</h5>
+                        <a class="dropdown-item" href="#" v-for="item in searchList.group_list">
+                            <div class="wrap">
+                                <span class="contact-status online"></span>
+                                <img v-if="item.photo == ''" src="/assets/group_default-8115c58d5ced7497e66b68b53f9b21b1b9a512966f267aa8e729ab16023c7591.jpg" />
+                                <img v-else v-bind:src="item.photo" alt="" />
+                                <div class="meta">
+                                    <div class="name text-ellipsis" style="font-size:12px;">{{item.group_name}}</p>
+                                    <div class="name text-ellipsis" style="font-size:6px;">{{item.include}}</p>
+                                </div>
+                            </div>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -648,6 +666,9 @@
         //         return false;
         //     }
         // });
+        // $('#dropdown-wrapper').on('shown.bs.dropdown', function showDropdown() {
+        //     console.log('Dropdown is showed!');
+        // });
 
         var frame = new Vue({
             el: "#frame",
@@ -685,6 +706,7 @@
                 fileList: [],
                 groupChatName: "",
                 searchAll: "",
+                searchList: {},
             },
 
             computed: {
@@ -703,24 +725,37 @@
                 inputFn(){
                     var _this = this
                     console.log("inputFn")
-                    $.ajax({
-                        url: '/chat/search_user',
-                        type: 'post',
-                        data: {
-                            keyword: _this.searchAll,
-                        },
-                        success: function (res) {
-                            if(res.length > 0) {
-
+                    if(this.searchAll == "") {
+                        $('#dropdown-wrapper').removeClass("show")
+                        $('.dropdown-menu-search').removeClass("show")
+                        $('.dropdown-menu-search').attr("aria-expanded",false)
+                    } else {
+                        $.ajax({
+                            url: '/chat/search_user',
+                            type: 'post',
+                            data: {
+                                keyword: _this.searchAll,
+                            },
+                            success: function (res) {
+                                _this.searchList = res
+                                $('#dropdown-wrapper').addClass("show")
+                                $('.dropdown-menu-search').addClass("show")
+                                $('.dropdown-menu-search').attr("aria-expanded",true)
+                            },
+                            error: function (err) {
                             }
-                            $('.dropdown-search').dropdown("toggle")
-                        },
-                        error: function (err) {
-                        }
-                    })
+                        })
+                    }
                 },
                 hideSearchDropdown(){
-                    $('.dropdown-search').dropdown("toggle")
+                    console.log("click")
+                    // $('.dropdown.show .dropdown-search').dropdown('toggle');
+                    // $('#dropdown-wapper').removeClass("show")
+                    // if($('#dropdown-wapper').hasClass("show") == true) {
+                    // setTimeout("$('#dropdown-wapper').removeClass('show')", 100 )
+
+                    // }
+
                 },
                 // 附件
                 attachSuccess(response, file, fileList){
@@ -1063,643 +1098,662 @@
                     window.location.href = '/game/' + game_href;
                 }
             },
-    });
-
-    // 点击退出登录按钮，将chat preview 里的chanel 数组顺序保存
-    //TODO
-
-    //点击tab 加载通讯录
-    $("#pills-profile-tab").on("click", function(){
-        frame.loadTableDataAddressBook();
-    });
-
-    // 从通讯录点击目标人物之后，左边chatpreview追加选中项到顶部
-    function leftSelectMoveTop(channel_id) {
-        // 取得target 的 id，去搜索最后的未读信息，得到未读的msg_num，最后一条消息和时间，取得是否屏蔽的状态
-        goeasy.history({
-            channel: channel_id, //必需项
-            limit: 1 //可选项，返回的消息条数，默认为100条，最多1000条
-        },
-        function(response){
-            // console.log("收到历史消息: "+ JSON.stringify(response));
-            if(response.content.messages.length > 0) {
-                for (let item of response.content.messages) {
-                    handleGoeasyMsgBrief(channel_id, item)
-                }
-            } else {
-                handleGoeasyMsgBrief(channel_id)
-            }
         });
-    }
 
-    // 维护chat preview 队列 --
-    function handleGoeasyMsgBrief(channel_id, message = "") {
-        console.log("handleGoeasyMsgBrief")
-        let _channel_id = channel_id
-        let chat_brief = {}
-        let msg_num = 1
-        let is_block = false
-        let msgContent = "";
-        let sendTime = "";
-        var name = frame.targetNotedName;
-        var photo = frame.targetPhoto;
+        // 点击退出登录按钮，将chat preview 里的chanel 数组顺序保存
+        //TODO
 
-        if (message != "") {
-            // 先取channel_id
-            let index = message.content.lastIndexOf("|");
-            var channel = message.content.substring(index + 1, message.content.length);
-            let msgContentTmp = message.content.substring(0, index);
-            // 再取sendMsgUserId
-            let index_1 = msgContentTmp.lastIndexOf("|");
-            msgContent = msgContentTmp.substring(0, index_1);
-            sendTime = timestamp2FormatDate(message.time,"hh:mm")
+        //点击tab 加载通讯录
+        $("#pills-profile-tab").on("click", function(){
+            frame.loadTableDataAddressBook();
+        });
+
+        // 从通讯录点击目标人物之后，左边chatpreview追加选中项到顶部
+        function leftSelectMoveTop(channel_id) {
+            // 取得target 的 id，去搜索最后的未读信息，得到未读的msg_num，最后一条消息和时间，取得是否屏蔽的状态
+            goeasy.history({
+                channel: channel_id, //必需项
+                limit: 1 //可选项，返回的消息条数，默认为100条，最多1000条
+            },
+            function(response){
+                // console.log("收到历史消息: "+ JSON.stringify(response));
+                if(response.content.messages.length > 0) {
+                    for (let item of response.content.messages) {
+                        handleGoeasyMsgBrief(channel_id, item)
+                    }
+                } else {
+                    handleGoeasyMsgBrief(channel_id)
+                }
+            });
         }
-        if(_channel_id == "") {
-            _channel_id = channel
+
+        // 维护chat preview 队列 --
+        function handleGoeasyMsgBrief(channel_id, message = "") {
+            console.log("handleGoeasyMsgBrief")
+            let _channel_id = channel_id
+            let chat_brief = {}
+            let msg_num = 1
+            let is_block = false
+            let msgContent = "";
+            let sendTime = "";
+            var name = frame.targetNotedName;
+            var photo = frame.targetPhoto;
+
+            if (message != "") {
+                // 先取channel_id
+                let index = message.content.lastIndexOf("|");
+                var channel = message.content.substring(index + 1, message.content.length);
+                let msgContentTmp = message.content.substring(0, index);
+                // 再取sendMsgUserId
+                let index_1 = msgContentTmp.lastIndexOf("|");
+                msgContent = msgContentTmp.substring(0, index_1);
+                sendTime = timestamp2FormatDate(message.time,"hh:mm")
+            }
+            if(_channel_id == "") {
+                _channel_id = channel
+                if(frame.tableDataSelfInfo[0].channel.length > 0) {
+                    for(var i = 0; i <frame.tableDataSelfInfo[0].channel.length; i++) {
+                        if(_channel_id == frame.tableDataSelfInfo[0].channel[i].channel_id) {
+                            if (_channel_id.substring(0,3) == "GRP") {
+                                photo = frame.defaultGroupAvater
+                            } else if(_channel_id.substring(0,3) == "USR"){
+                                photo = frame.tableDataSelfInfo[0].channel[i].photo
+                            }
+                            name = frame.tableDataSelfInfo[0].channel[i].name
+                        }
+                    }
+                }
+            }
+            chat_brief = { "channel_id":_channel_id,
+                                "name":name,
+                                "photo":photo,
+                                "msg_num":msg_num,
+                                "latest_msg_brief":msgContent,
+                                "latest_msg_time":sendTime,
+                                "is_block":is_block}
+
+            // chatPreview有重复，删除原来的
+            if(frame.chatPreviewTableData.length > 0) {
+                for (var i = 0; i < frame.chatPreviewTableData.length; i++) {
+                    if(_channel_id == frame.chatPreviewTableData[i].channel_id ){
+                        var index_2 = frame.chatPreviewTableData.indexOf(frame.chatPreviewTableData[i]);
+                        frame.chatPreviewTableData.splice(index_2,1)
+                        break;
+                    }
+                }
+            }
+            // chatPreview 追加这次新的
+            frame.chatPreviewTableData.splice(0,0,chat_brief)
+            chatPreviewSaveDB()
+            // frame.chatPreviewTableData.push(chat_brief)
+            // console.log(frame.chatPreviewTableData)
+        }
+
+        // 收到新消息之后，左边chatpreview追加选中项到顶部
+        function chatPreviewCurrentUpdate(){
+            console.log("chatPreviewCurrentUpdate")
+            // 获取到当前左边所有的channel id
             if(frame.tableDataSelfInfo[0].channel.length > 0) {
                 for(var i = 0; i <frame.tableDataSelfInfo[0].channel.length; i++) {
-                    if(_channel_id == frame.tableDataSelfInfo[0].channel[i].channel_id) {
-                        if (_channel_id.substring(0,3) == "GRP") {
-                            photo = frame.defaultGroupAvater
-                        } else if(_channel_id.substring(0,3) == "USR"){
-                            photo = frame.tableDataSelfInfo[0].channel[i].photo
-                        }
-                        name = frame.tableDataSelfInfo[0].channel[i].name
-                    }
-                }
-            }
-        }
-        chat_brief = { "channel_id":_channel_id,
-                            "name":name,
-                            "photo":photo,
-                            "msg_num":msg_num,
-                            "latest_msg_brief":msgContent,
-                            "latest_msg_time":sendTime,
-                            "is_block":is_block}
-
-        // chatPreview有重复，删除原来的
-        if(frame.chatPreviewTableData.length > 0) {
-            for (var i = 0; i < frame.chatPreviewTableData.length; i++) {
-                if(_channel_id == frame.chatPreviewTableData[i].channel_id ){
-                    var index_2 = frame.chatPreviewTableData.indexOf(frame.chatPreviewTableData[i]);
-                    frame.chatPreviewTableData.splice(index_2,1)
-                    break;
-                }
-            }
-        }
-        // chatPreview 追加这次新的
-        frame.chatPreviewTableData.splice(0,0,chat_brief)
-        chatPreviewSaveDB()
-        // frame.chatPreviewTableData.push(chat_brief)
-        // console.log(frame.chatPreviewTableData)
-    }
-
-    // 收到新消息之后，左边chatpreview追加选中项到顶部
-    function chatPreviewCurrentUpdate(){
-        console.log("chatPreviewCurrentUpdate")
-        // 获取到当前左边所有的channel id
-        if(frame.tableDataSelfInfo[0].channel.length > 0) {
-            for(var i = 0; i <frame.tableDataSelfInfo[0].channel.length; i++) {
-                _channel = frame.tableDataSelfInfo[0].channel[i].channel_id
-                goeasy.subscribe({
-                    channel: _channel,
-                    onMessage: function (message) {
-                        // chat preview 显示
-                        handleGoeasyMsgBrief("", message)
-                        // 先取channel_id
-                        let index = message.content.lastIndexOf("|");
-                        var channel = message.content.substring(index + 1, message.content.length);
-                        var currentChannel = $("#currentChanel").val()
-                        // 如果是点击或者会话中的channel, 则右边的chat record 需要更新
-                        if( channel == currentChannel ){
-                            handleGoeasyMsg(message)
-                        }
-                    }
-                });
-            }
-        }
-    }
-
-    //显示以前的订阅消息
-    function historyChatRecord(channel_id) {
-        goeasy.history({
-            channel: channel_id, //必需项
-            // start: start_time, //可选项，开始时间
-            // end: end_time, //可选项，结束时间
-            limit: 40 //可选项，返回的消息条数，默认为100条，最多1000条
-        },
-        function(response){
-            // console.log("收到历史消息: "+ JSON.stringify(response));
-            for (let item of response.content.messages) {
-                handleGoeasyMsg(item)
-            }
-            $(".messages").animate({
-                scrollTop: 9999
-            }, "fast");
-        });
-    }
-
-    //把消息转成需要的json格式，并在右边的chat record 展示
-    function handleGoeasyMsg(message) {
-        var fileuid = "";
-        let chatRecord = {};
-        var side;
-        var type = "msg";
-        var size = "0";
-        var photo = "personal"
-        let current_nickname = frame.targetNotedName;
-        //先取channel_id
-        let index = message.content.lastIndexOf("|");
-        var channel = message.content.substring(index + 1, message.content.length);
-        let msgContentTmp = message.content.substring(0, index);
-        //再取sendMsgUserId
-        let index_1 = msgContentTmp.lastIndexOf("|");
-        var sendMsgUserId = msgContentTmp.substring(index_1 + 1, msgContentTmp.length);
-        let msgContent = msgContentTmp.substring(0, index_1);
-        var sendTime = timestamp2FormatDate(message.time,"yyyy/MM/dd hh:mm");
-        side = (sendMsgUserId == frame.selfId) ? "right" : "left";
-        if( msgContent.length>5 && msgContent.substring(0,5) == "/:fn=") {
-            msgContent = msgContent.substring(5,msgContent.length)
-            var msg_obj = JSON.parse(msgContent)
-            type = judgeFileType(getExt(msg_obj.filename))
-            size = filesizeCalc(msg_obj.filesize)
-            msgContent = msg_obj.filename
-            fileuid = msg_obj.fileuid
-        }
-        if(channel.substring(0,3) == "USR") {
-
-        } else if(channel.substring(0,3) == "GRP") {
-            if( frame.groupList.length == 0) {
-                alert("groupList is empty")
-            } else {
-                for( var i = 0; i < frame.groupList.length; i++) {
-                    if(frame.groupList[i]["user_id"] == sendMsgUserId) {
-                        current_nickname = frame.groupList[i]["name"]
-                        photo = frame.groupList[i]["photo"]
-                    }
-                }
-            }
-        } else {
-            alert("channel define err, not start with USR/GRP")
-        }
-
-        chatRecord = {"dir":side,
-                    "notedName":current_nickname,
-                    "time":sendTime,
-                    "content":msgContent,
-                    "photo" : photo,
-                    "type" : type,
-                    "size": size,
-                    "fileuid": fileuid}
-        frame.chatRecordTableData.push(chatRecord);
-    }
-
-    //点击发送按钮
-    function publishMessage(filename="",filesize="",fileuid="") {
-        var publishMessage = "";
-        var message = "";
-        var currentChannel = $("#currentChanel").val()
-        if(filename != "") {
-            var obj = { "filename":filename, "filesize":filesize, "fileuid":fileuid};
-            message = '/:fn='+ JSON.stringify(obj)
-        } else{
-            message = $(".message-input input").val();
-            if ($.trim(message) == '') {
-                return false;
-            }
-        }
-        publishMessage = message + "|" + selfId + "|" + currentChannel;
-        console.log("message:"+publishMessage)
-        goeasy.publish({
-            channel: currentChannel,
-            message: publishMessage,
-            onFailed: function (error) {
-                alert(error.code + " : " + error.content);
-            },
-            onSuccess: function () {
-                $(".message-input input").val("")
-                //滚动到底部
-                $(".messages").animate({
-                    scrollTop: 9999
-                }, "fast");
-            }
-        });
-    }
-
-    // add contact点击搜索
-    $(document).on("click", ".btn-user-search", function () {
-        var type
-        var search_content
-        if(this.id == "button-addon2") {
-            type = "by_id"
-            search_content = $("#add-contact-search-id").val()
-        } else if(this.id == "button-addon3") {
-            type = "by_name"
-            search_content = $("#add-contact-search-name").val()
-        }
-        $.ajax({
-            url: '/chat/add_contact_search',
-            type: 'get',
-            data: {
-                type: type,
-                kw: search_content,
-            },
-            success: function (res) {
-                frame.loadingAddContactSearchRes = false;
-                if (res.count !== 0) {
-                    frame.tableDataAddContactSearchRes = res
-                } else {
-                    frame.tableDataAddContactSearchRes = []
-                }
-            },
-            error: function (err) {
-                frame.loadingAddContactSearchRes = false
-                frame.tableDataAddContactSearchRes = []
-            },
-            complete: function(){
-                $("#add-contact-search-id").val("");
-                $("#add-contact-search-name").val("");
-            }
-        })
-    });
-
-    // 修改备注确认按钮点击
-    $(document).on("click", ".notename-revise-confirm", function () {
-        console.log("reviseNotenameConfirm")
-        if( $('#revise-name').val() != $('#revise-name').attr("beforeRevise")) {
-            var target_id = $('#revise-name').attr("selectId")
-            var new_notename = $('#revise-name').val()
-            $.ajax({
-                url: '/chat/notename_revise',
-                type: 'post',
-                data: {
-                    target_id: target_id,
-                    new_notename: new_notename,
-                },
-                success: function (res) {
-                    // 更新
-                    frame.loadingAddressBook = false
-                    frame.tableDataPeople = []
-                    frame.loadTableDataAddressBook()
-                },
-                error: function (err) {
-                }
-            })
-        }
-    });
-
-    //一登陆就添加订阅一个临时channel， 方便推送
-    function addSelfAndServerChannel(_channel){
-        console.log("addSelfAndServerChannel:"+_channel)
-        goeasy.subscribe({
-            channel: _channel,
-            onMessage: function (message) {
-                console.log("onMessage:"+message.content)
-                // message.content msg_content|msg_type|user_id
-                var arr = divideMsgIntoParts(message.content, 3)
-                var msg_content = arr[0]
-                var msg_type = arr[1]
-                var user_id = arr[2]
-                if(msg_type == "AddFriend") {
-                    // 根据user_id 查photo 和nickname
-                    $.ajax({
-                        url: '/chat/find_user',
-                        type: 'post',
-                        data: {
-                            user_id: user_id,
-                        },
-                        success: function (res) {
-                            var template
-                            var msg
-                            if(msg_content == "Request") {
-                                template ='<div data-notify="container" class="col-xs-11 col-sm-3 alert alert-{0}" role="alert">' +
-                                            '<button type="button" aria-hidden="true" class="close" data-notify="dismiss">×</button>' +
-                                            '<span data-notify="icon"></span> ' +
-                                            '<span data-notify="title">{1}</span> ' +
-                                            '<span data-notify="message">{2}</span>' +
-                                            '<div><button type="button" class="btn btn-warning btn-sm m-2 add-friend-ignore" value="'+ user_id + '">忽略</button>' +
-                                            '<button type="button" class="btn btn-warning btn-sm m-2 add-friend-accept" value="'+ user_id + '">接受</button></div>' +
-                                        '</div>'
-                                msg = `<img src="`+
-                                        res.photo +
-                                        `" alt="no image"` +
-                                        `style="width: 30px;border-radius: 50%;padding: 1px;border: 1px solid #2ecc71;height: auto;"`+
-                                        `onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'" />`+
-                                        res.nickname +
-                                        '请求添加您为好友'
-                                createNotify("", '好友添加', msg, template)
-                            } else if(msg_content == "Refuse"){
-                                template =  '<div data-notify="container" class="col-xs-11 col-sm-3 alert alert-{0}" role="alert">' +
-                                                    '<button type="button" aria-hidden="true" class="close" data-notify="dismiss">×</button>' +
-                                                    '<span data-notify="icon"></span> ' +
-                                                    '<span data-notify="title">{1}</span> ' +
-                                                    '<span data-notify="message">{2}</span>' +
-                                                '</div>'
-                                msg = `<img src="`+
-                                        res.photo +
-                                        `" alt="no image"` +
-                                        `style="width: 30px;border-radius: 50%;padding: 1px;border: 1px solid #2ecc71;height: auto;"`+
-                                        `onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'" />`+
-                                        res.nickname +
-                                        '拒绝了您的添加请求'
-                                createNotify("", '好友添加',msg, template, true)
-                            } else if(msg_content == "Accept"){
-                                template =  '<div data-notify="container" class="col-xs-11 col-sm-3 alert alert-{0}" role="alert">' +
-                                                    '<button type="button" aria-hidden="true" class="close" data-notify="dismiss">×</button>' +
-                                                    '<span data-notify="icon"></span> ' +
-                                                    '<span data-notify="title">{1}</span> ' +
-                                                    '<span data-notify="message">{2}</span>' +
-                                                '</div>'
-                                msg = `<img src="`+
-                                        res.photo +
-                                        `" alt="no image"` +
-                                        `style="width: 30px;border-radius: 50%;padding: 1px;border: 1px solid #2ecc71;height: auto;"`+
-                                        `onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'" />`+
-                                        res.nickname +
-                                        '接受了您的添加请求，你们已经是好友啦'
-                                createNotify("", '好友添加', msg, template, true)
-                                $("#currentChanel").val(res.channel)
-                                goeasy.subscribe({
-                                    channel: res.channel,
-                                    onMessage: function (message) {
-                                        handleGoeasyMsgBrief("", message)
-                                        // 先取channel_id
-                                        let index = message.content.lastIndexOf("|");
-                                        var channel = message.content.substring(index + 1, message.content.length);
-                                        var currentChannel = $("#currentChanel").val()
-                                        if( channel == currentChannel ){
-                                            // console.log("handleGoeasyMsg")
-                                            handleGoeasyMsg(message)
-                                        }
-                                    },
-                                    onSuccess: function () {
-                                        // TODO 跳转到chat preview 添加到队列
-                                        // 追加好友列表
-                                        frame.loadTableDataAddressBook()
-                                        frame.loadTableDataSelfInfo()
-                                    },
-                                    onFailed: function (error) {
-                                        alert("Channel订阅失败, 错误编码：" + error.code + " 错误信息：" + error.content)
-                                    }
-                                });
-                            }
-                        },
-                    })
-                } else if (msg_type == "BeInvitedGroupChat"){
-                    $("#currentChanel").val(user_id)
-                    // 追加监听
+                    _channel = frame.tableDataSelfInfo[0].channel[i].channel_id
                     goeasy.subscribe({
-                        channel: user_id,
+                        channel: _channel,
                         onMessage: function (message) {
+                            // chat preview 显示
                             handleGoeasyMsgBrief("", message)
                             // 先取channel_id
                             let index = message.content.lastIndexOf("|");
                             var channel = message.content.substring(index + 1, message.content.length);
                             var currentChannel = $("#currentChanel").val()
+                            // 如果是点击或者会话中的channel, 则右边的chat record 需要更新
                             if( channel == currentChannel ){
                                 handleGoeasyMsg(message)
                             }
-                        },
-                        onSuccess: function () {
-                            // TODO 跳转到chat preview 添加到队列
-                            findGroupMember(user_id)
-                            frame.loadTableDataSelfInfo(user_id)
-                        },
-                        onFailed: function (error) {
-                            alert("Channel订阅失败, 错误编码：" + error.code + " 错误信息：" + error.content)
                         }
                     });
                 }
             }
-        });
-    }
+        }
 
-    // 创建通知对象
-    function createNotify(icon, title, message, template, allow_dismiss=false){
-        notify = $.notify({
-            // options
-            icon: icon,
-            title: title,
-            message: message,
-        },{
-            // settings
-            type: 'pastel-info',
-            placement: {
-                from: "bottom",
-                align: "right"
+        //显示以前的订阅消息
+        function historyChatRecord(channel_id) {
+            goeasy.history({
+                channel: channel_id, //必需项
+                // start: start_time, //可选项，开始时间
+                // end: end_time, //可选项，结束时间
+                limit: 40 //可选项，返回的消息条数，默认为100条，最多1000条
             },
-            delay: 0,
-            icon_type: 'image',
-            newest_on_top: true,
-            allow_dismiss: allow_dismiss,
-            template: template,
-        });
-    }
+            function(response){
+                // console.log("收到历史消息: "+ JSON.stringify(response));
+                for (let item of response.content.messages) {
+                    handleGoeasyMsg(item)
+                }
+                $(".messages").animate({
+                    scrollTop: 9999
+                }, "fast");
+            });
+        }
 
-    // 根据 group_id （channel）查找该群聊下的人员信息
-    function findGroupMember(channel, flag=false){
-        $.ajax({
-            url: '/chat/find_group_member',
-            type: 'post',
-            data: {
-                channel: channel,
-                except_self: flag,
-            },
-            success: function (res) {
-                if(flag) {
-                    frame.selectedTargets = []
-                    frame.selectedTargets = res
-                    for(var i = 0; i < frame.tableDataPeople.length; i++){
-                        for(var j = 0; j < frame.tableDataPeople[i]["personList"].length; j++){
-                            for(var k = 0; k < frame.selectedTargets.length; k++) {
-                                if(frame.tableDataPeople[i]["personList"][j]["uid"] == frame.selectedTargets[k]["user_id"]) {
-                                    frame.tableDataPeople[i]["personList"][j]["ischeck"] = true
-                                    frame.tableDataPeople[i]["personList"][j]["isDisabled"] = true
+        //把消息转成需要的json格式，并在右边的chat record 展示
+        function handleGoeasyMsg(message) {
+            var fileuid = "";
+            let chatRecord = {};
+            var side;
+            var type = "msg";
+            var size = "0";
+            var photo = "personal"
+            let current_nickname = frame.targetNotedName;
+            //先取channel_id
+            let index = message.content.lastIndexOf("|");
+            var channel = message.content.substring(index + 1, message.content.length);
+            let msgContentTmp = message.content.substring(0, index);
+            //再取sendMsgUserId
+            let index_1 = msgContentTmp.lastIndexOf("|");
+            var sendMsgUserId = msgContentTmp.substring(index_1 + 1, msgContentTmp.length);
+            let msgContent = msgContentTmp.substring(0, index_1);
+            var sendTime = timestamp2FormatDate(message.time,"yyyy/MM/dd hh:mm");
+            side = (sendMsgUserId == frame.selfId) ? "right" : "left";
+            if( msgContent.length>5 && msgContent.substring(0,5) == "/:fn=") {
+                msgContent = msgContent.substring(5,msgContent.length)
+                var msg_obj = JSON.parse(msgContent)
+                type = judgeFileType(getExt(msg_obj.filename))
+                size = filesizeCalc(msg_obj.filesize)
+                msgContent = msg_obj.filename
+                fileuid = msg_obj.fileuid
+            }
+            if(channel.substring(0,3) == "USR") {
+
+            } else if(channel.substring(0,3) == "GRP") {
+                if( frame.groupList.length == 0) {
+                    alert("groupList is empty")
+                } else {
+                    for( var i = 0; i < frame.groupList.length; i++) {
+                        if(frame.groupList[i]["user_id"] == sendMsgUserId) {
+                            current_nickname = frame.groupList[i]["name"]
+                            photo = frame.groupList[i]["photo"]
+                        }
+                    }
+                }
+            } else {
+                alert("channel define err, not start with USR/GRP")
+            }
+
+            chatRecord = {"dir":side,
+                        "notedName":current_nickname,
+                        "time":sendTime,
+                        "content":msgContent,
+                        "photo" : photo,
+                        "type" : type,
+                        "size": size,
+                        "fileuid": fileuid}
+            frame.chatRecordTableData.push(chatRecord);
+        }
+
+        //点击发送按钮
+        function publishMessage(filename="",filesize="",fileuid="") {
+            var publishMessage = "";
+            var message = "";
+            var currentChannel = $("#currentChanel").val()
+            if(filename != "") {
+                var obj = { "filename":filename, "filesize":filesize, "fileuid":fileuid};
+                message = '/:fn='+ JSON.stringify(obj)
+            } else{
+                message = $(".message-input input").val();
+                if ($.trim(message) == '') {
+                    return false;
+                }
+            }
+            publishMessage = message + "|" + selfId + "|" + currentChannel;
+            console.log("message:"+publishMessage)
+            goeasy.publish({
+                channel: currentChannel,
+                message: publishMessage,
+                onFailed: function (error) {
+                    alert(error.code + " : " + error.content);
+                },
+                onSuccess: function () {
+                    $(".message-input input").val("")
+                    //滚动到底部
+                    $(".messages").animate({
+                        scrollTop: 9999
+                    }, "fast");
+                }
+            });
+        }
+
+        // add contact点击搜索
+        $(document).on("click", ".btn-user-search", function () {
+            var type
+            var search_content
+            if(this.id == "button-addon2") {
+                type = "by_id"
+                search_content = $("#add-contact-search-id").val()
+            } else if(this.id == "button-addon3") {
+                type = "by_name"
+                search_content = $("#add-contact-search-name").val()
+            }
+            $.ajax({
+                url: '/chat/add_contact_search',
+                type: 'get',
+                data: {
+                    type: type,
+                    kw: search_content,
+                },
+                success: function (res) {
+                    frame.loadingAddContactSearchRes = false;
+                    if (res.count !== 0) {
+                        frame.tableDataAddContactSearchRes = res
+                    } else {
+                        frame.tableDataAddContactSearchRes = []
+                    }
+                },
+                error: function (err) {
+                    frame.loadingAddContactSearchRes = false
+                    frame.tableDataAddContactSearchRes = []
+                },
+                complete: function(){
+                    $("#add-contact-search-id").val("");
+                    $("#add-contact-search-name").val("");
+                }
+            })
+        });
+
+        // 修改备注确认按钮点击
+        $(document).on("click", ".notename-revise-confirm", function () {
+            console.log("reviseNotenameConfirm")
+            if( $('#revise-name').val() != $('#revise-name').attr("beforeRevise")) {
+                var target_id = $('#revise-name').attr("selectId")
+                var new_notename = $('#revise-name').val()
+                $.ajax({
+                    url: '/chat/notename_revise',
+                    type: 'post',
+                    data: {
+                        target_id: target_id,
+                        new_notename: new_notename,
+                    },
+                    success: function (res) {
+                        // 更新
+                        frame.loadingAddressBook = false
+                        frame.tableDataPeople = []
+                        frame.loadTableDataAddressBook()
+                    },
+                    error: function (err) {
+                    }
+                })
+            }
+        });
+
+        //一登陆就添加订阅一个临时channel， 方便推送
+        function addSelfAndServerChannel(_channel){
+            console.log("addSelfAndServerChannel:"+_channel)
+            goeasy.subscribe({
+                channel: _channel,
+                onMessage: function (message) {
+                    console.log("onMessage:"+message.content)
+                    // message.content msg_content|msg_type|user_id
+                    var arr = divideMsgIntoParts(message.content, 3)
+                    var msg_content = arr[0]
+                    var msg_type = arr[1]
+                    var user_id = arr[2]
+                    if(msg_type == "AddFriend") {
+                        // 根据user_id 查photo 和nickname
+                        $.ajax({
+                            url: '/chat/find_user',
+                            type: 'post',
+                            data: {
+                                user_id: user_id,
+                            },
+                            success: function (res) {
+                                var template
+                                var msg
+                                if(msg_content == "Request") {
+                                    template ='<div data-notify="container" class="col-xs-11 col-sm-3 alert alert-{0}" role="alert">' +
+                                                '<button type="button" aria-hidden="true" class="close" data-notify="dismiss">×</button>' +
+                                                '<span data-notify="icon"></span> ' +
+                                                '<span data-notify="title">{1}</span> ' +
+                                                '<span data-notify="message">{2}</span>' +
+                                                '<div><button type="button" class="btn btn-warning btn-sm m-2 add-friend-ignore" value="'+ user_id + '">忽略</button>' +
+                                                '<button type="button" class="btn btn-warning btn-sm m-2 add-friend-accept" value="'+ user_id + '">接受</button></div>' +
+                                            '</div>'
+                                    msg = `<img src="`+
+                                            res.photo +
+                                            `" alt="no image"` +
+                                            `style="width: 30px;border-radius: 50%;padding: 1px;border: 1px solid #2ecc71;height: auto;"`+
+                                            `onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'" />`+
+                                            res.nickname +
+                                            '请求添加您为好友'
+                                    createNotify("", '好友添加', msg, template)
+                                } else if(msg_content == "Refuse"){
+                                    template =  '<div data-notify="container" class="col-xs-11 col-sm-3 alert alert-{0}" role="alert">' +
+                                                        '<button type="button" aria-hidden="true" class="close" data-notify="dismiss">×</button>' +
+                                                        '<span data-notify="icon"></span> ' +
+                                                        '<span data-notify="title">{1}</span> ' +
+                                                        '<span data-notify="message">{2}</span>' +
+                                                    '</div>'
+                                    msg = `<img src="`+
+                                            res.photo +
+                                            `" alt="no image"` +
+                                            `style="width: 30px;border-radius: 50%;padding: 1px;border: 1px solid #2ecc71;height: auto;"`+
+                                            `onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'" />`+
+                                            res.nickname +
+                                            '拒绝了您的添加请求'
+                                    createNotify("", '好友添加',msg, template, true)
+                                } else if(msg_content == "Accept"){
+                                    template =  '<div data-notify="container" class="col-xs-11 col-sm-3 alert alert-{0}" role="alert">' +
+                                                        '<button type="button" aria-hidden="true" class="close" data-notify="dismiss">×</button>' +
+                                                        '<span data-notify="icon"></span> ' +
+                                                        '<span data-notify="title">{1}</span> ' +
+                                                        '<span data-notify="message">{2}</span>' +
+                                                    '</div>'
+                                    msg = `<img src="`+
+                                            res.photo +
+                                            `" alt="no image"` +
+                                            `style="width: 30px;border-radius: 50%;padding: 1px;border: 1px solid #2ecc71;height: auto;"`+
+                                            `onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'" />`+
+                                            res.nickname +
+                                            '接受了您的添加请求，你们已经是好友啦'
+                                    createNotify("", '好友添加', msg, template, true)
+                                    $("#currentChanel").val(res.channel)
+                                    goeasy.subscribe({
+                                        channel: res.channel,
+                                        onMessage: function (message) {
+                                            handleGoeasyMsgBrief("", message)
+                                            // 先取channel_id
+                                            let index = message.content.lastIndexOf("|");
+                                            var channel = message.content.substring(index + 1, message.content.length);
+                                            var currentChannel = $("#currentChanel").val()
+                                            if( channel == currentChannel ){
+                                                // console.log("handleGoeasyMsg")
+                                                handleGoeasyMsg(message)
+                                            }
+                                        },
+                                        onSuccess: function () {
+                                            // TODO 跳转到chat preview 添加到队列
+                                            // 追加好友列表
+                                            frame.loadTableDataAddressBook()
+                                            frame.loadTableDataSelfInfo()
+                                        },
+                                        onFailed: function (error) {
+                                            alert("Channel订阅失败, 错误编码：" + error.code + " 错误信息：" + error.content)
+                                        }
+                                    });
+                                }
+                            },
+                        })
+                    } else if (msg_type == "BeInvitedGroupChat"){
+                        $("#currentChanel").val(user_id)
+                        // 追加监听
+                        goeasy.subscribe({
+                            channel: user_id,
+                            onMessage: function (message) {
+                                handleGoeasyMsgBrief("", message)
+                                // 先取channel_id
+                                let index = message.content.lastIndexOf("|");
+                                var channel = message.content.substring(index + 1, message.content.length);
+                                var currentChannel = $("#currentChanel").val()
+                                if( channel == currentChannel ){
+                                    handleGoeasyMsg(message)
+                                }
+                            },
+                            onSuccess: function () {
+                                // TODO 跳转到chat preview 添加到队列
+                                findGroupMember(user_id)
+                                frame.loadTableDataSelfInfo(user_id)
+                            },
+                            onFailed: function (error) {
+                                alert("Channel订阅失败, 错误编码：" + error.code + " 错误信息：" + error.content)
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        // 创建通知对象
+        function createNotify(icon, title, message, template, allow_dismiss=false){
+            notify = $.notify({
+                // options
+                icon: icon,
+                title: title,
+                message: message,
+            },{
+                // settings
+                type: 'pastel-info',
+                placement: {
+                    from: "bottom",
+                    align: "right"
+                },
+                delay: 0,
+                icon_type: 'image',
+                newest_on_top: true,
+                allow_dismiss: allow_dismiss,
+                template: template,
+            });
+        }
+
+        // 根据 group_id （channel）查找该群聊下的人员信息
+        function findGroupMember(channel, flag=false){
+            $.ajax({
+                url: '/chat/find_group_member',
+                type: 'post',
+                data: {
+                    channel: channel,
+                    except_self: flag,
+                },
+                success: function (res) {
+                    if(flag) {
+                        frame.selectedTargets = []
+                        frame.selectedTargets = res
+                        for(var i = 0; i < frame.tableDataPeople.length; i++){
+                            for(var j = 0; j < frame.tableDataPeople[i]["personList"].length; j++){
+                                for(var k = 0; k < frame.selectedTargets.length; k++) {
+                                    if(frame.tableDataPeople[i]["personList"][j]["uid"] == frame.selectedTargets[k]["user_id"]) {
+                                        frame.tableDataPeople[i]["personList"][j]["ischeck"] = true
+                                        frame.tableDataPeople[i]["personList"][j]["isDisabled"] = true
+                                    }
                                 }
                             }
                         }
+                    } else{
+                        frame.groupList = []
+                        frame.groupList = res
                     }
-                } else{
-                    frame.groupList = []
-                    frame.groupList = res
-                }
-            },
-        })
-    }
-
-    // 忽略添加好友
-    $(document).on("click", ".add-friend-ignore", function () {
-        var user_id = $(this).val()
-        $.ajax({
-            url: '/chat/add_friend_ignore',
-            type: 'post',
-            data: {
-                user_id: user_id,
-            },
-            success: function (res) {
-                notify.close();
-                // 告诉server拒绝了
-            },
-        })
-    });
-
-    // 接受添加好友
-    $(document).on("click", ".add-friend-accept", function () {
-        var user_id = $(this).val()
-        $.ajax({
-            url: '/chat/add_friend_accept',
-            type: 'post',
-            data: {
-                user_id: user_id,
-            },
-            success: function (res) {
-                notify.close();
-            },
-        })
-    });
-
-    //点击聊天记录框上方群名或个人名字右边的箭头，展开塌陷板，获取数据
-    $(document).on("click", ".target-profile-link", function () {
-        frame.memberInfoClickFlag == !frame.memberInfoClickFlag
-        if(!frame.memberInfoClickFlag){
-            var channel = $("#currentChanel").val()
-            if(channel.substring(0,3) == "USR") {
-                frame.groupList = []
-                frame.groupList.push({"user_id":frame.currentChatUid, "photo":frame.targetPhoto, "name":frame.targetNotedName})
-            } else if(channel.substring(0,3) == "GRP") {
-                findGroupMember(channel)
-            }
-        }
-    });
-
-    // 个人huo群聊天点击添加弹出发起群聊modal
-    $(document).on("click", ".member-info-item-add", function () {
-        console.log("startchat: "+frame.currentChatUid)
-        $("#modalStartChat").modal()
-        frame.selectedTargets = []
-        var channel = $("#currentChanel").val()
-        var arr_member_user_id
-        var arr_member_name
-        var arr_member_photo
-        if(channel.substring(0,3) == "USR"){
-            frame.selectedTargets.push({"user_id":frame.currentChatUid, "photo":frame.targetPhoto, "name":frame.targetNotedName})
-            for(var i = 0; i < frame.tableDataPeople.length; i++){
-                for(var j = 0; j < frame.tableDataPeople[i]["personList"].length; j++){
-                    if(frame.tableDataPeople[i]["personList"][j]["uid"] == frame.currentChatUid) {
-                        frame.tableDataPeople[i]["personList"][j]["ischeck"] = true
-                        frame.tableDataPeople[i]["personList"][j]["isDisabled"] = true
-                    }
-                }
-            }
-        } else if(channel.substring(0,3) == "GRP") {
-            console.log("GRP")
-            console.log(frame.selectedTargets)
-            findGroupMember(channel, true)
-        }
-
-    });
-
-    // 点击 开始群聊modal的取消按钮，将原来的checkbox状态清空
-    $(document).on("click", ".start-chat-close", function () {
-        frame.selectedTargets = []
-        for(var i = 0; i < frame.tableDataPeople.length; i++){
-            for(var j = 0; j < frame.tableDataPeople[i]["personList"].length; j++){
-                frame.tableDataPeople[i]["personList"][j]["ischeck"] = false
-                frame.tableDataPeople[i]["personList"][j]["isDisabled"] = false
-            }
-        }
-    });
-
-    // 点击 开始群聊modal的确认按钮，创建群聊
-    $(document).on("click", ".start-chat-confirm", function () {
-        if(frame.groupChatName == "") {
-            // alert("11")
-            $("#must_fill_alert").html("※ 群聊名称为必填项")
-        } else {
-            var before_channel = "" + frame.currentChatUid
-            console.log("before_channel--"+before_channel)
-            var str_member_list = ""
-            var str_member_photo = ""
-            var str_member_name = ""
-            var chat_group_name = ""
-            var str_member_list_include_self
-            frame.groupList = []
-            for(var i = 0; i < frame.selectedTargets.length; i++){
-                str_member_list = str_member_list + frame.selectedTargets[i]["user_id"] +","
-                // 维护当前组的信息
-                frame.groupList.push({"user_id":frame.selectedTargets[i]["user_id"],
-                                "photo":frame.selectedTargets[i]["photo"],
-                                "name":frame.selectedTargets[i]["name"]})
-            }
-            // 添加自己
-            // selectedTargets 不包括自己，但groupList 和 selfInfo 中包括自己
-            // groupList只有在点击箭头的时候才会把自己加进去，平常维护该数组时不包括自己
-            str_member_list = str_member_list.substring(0,str_member_list.length-1)
-            frame.targetNotedName = frame.groupChatName;
-            frame.targetPhoto = frame.defaultGroupAvater;
-            if (before_channel.substring(0,3) == "GRP") {
-                str_member_list_include_self = str_member_list
-            } else {
-                str_member_list_include_self = str_member_list + "," + frame.selfId
-            }
-
-            $.ajax({
-                url: '/chat/start_group_chat',
-                type: 'post',
-                data: {
-                    group_chat_name: frame.groupChatName,
-                    member_list: str_member_list_include_self,
-                },
-                success: function (res) {
-                    $("#modalStartChat").modal("hide")
-                    // 将该channelid 保存为当前channel
-                    $("#currentChanel").val(res.channel)
-                    frame.currentChatUid = res.channel
-                    frame.tableDataSelfInfo[0].channel.push({"channel_id":res.channel,
-                                                            "target_user_id": str_member_list,
-                                                            "name": frame.groupChatName,
-                                                            "photo": frame.targetPhoto })
-                    chatPreviewCurrentUpdate()
-                    historyChatRecord(res.channel)
-                    leftSelectMoveTop(res.channel)
-                    $("#collapseOne").removeClass("show")
-                    // 清空相关临时数据
-                    frame.selectedTargets = []
-                    frame.groupChatName =  ""
-
                 },
             })
         }
-    });
-     //# sourceURL=pen.js
 
-    // 模拟点击附件
-    $(document).on("click", ".attachment", function () {
-        console.log("attachment")
-        $("#attach_btn").click()
-    });
+        // 忽略添加好友
+        $(document).on("click", ".add-friend-ignore", function () {
+            var user_id = $(this).val()
+            $.ajax({
+                url: '/chat/add_friend_ignore',
+                type: 'post',
+                data: {
+                    user_id: user_id,
+                },
+                success: function (res) {
+                    notify.close();
+                    // 告诉server拒绝了
+                },
+            })
+        });
 
-    // 点击退出按钮，保存最近的聊天对象（chat_preview_table_data）
-    function chatPreviewSaveDB() {
-        // chat preview的channel_id做成字符串存db
-        var chat_preview_list = "";
-        for (var i = 0; i < frame.chatPreviewTableData.length; i++) {
-            chat_preview_list = chat_preview_list + frame.chatPreviewTableData[i].channel_id + ","
+        // 接受添加好友
+        $(document).on("click", ".add-friend-accept", function () {
+            var user_id = $(this).val()
+            $.ajax({
+                url: '/chat/add_friend_accept',
+                type: 'post',
+                data: {
+                    user_id: user_id,
+                },
+                success: function (res) {
+                    notify.close();
+                },
+            })
+        });
+
+        //点击聊天记录框上方群名或个人名字右边的箭头，展开塌陷板，获取数据
+        $(document).on("click", ".target-profile-link", function () {
+            frame.memberInfoClickFlag == !frame.memberInfoClickFlag
+            if(!frame.memberInfoClickFlag){
+                var channel = $("#currentChanel").val()
+                if(channel.substring(0,3) == "USR") {
+                    frame.groupList = []
+                    frame.groupList.push({"user_id":frame.currentChatUid, "photo":frame.targetPhoto, "name":frame.targetNotedName})
+                } else if(channel.substring(0,3) == "GRP") {
+                    findGroupMember(channel)
+                }
+            }
+        });
+
+        // 个人huo群聊天点击添加弹出发起群聊modal
+        $(document).on("click", ".member-info-item-add", function () {
+            console.log("startchat: "+frame.currentChatUid)
+            $("#modalStartChat").modal()
+            frame.selectedTargets = []
+            var channel = $("#currentChanel").val()
+            var arr_member_user_id
+            var arr_member_name
+            var arr_member_photo
+            if(channel.substring(0,3) == "USR"){
+                frame.selectedTargets.push({"user_id":frame.currentChatUid, "photo":frame.targetPhoto, "name":frame.targetNotedName})
+                for(var i = 0; i < frame.tableDataPeople.length; i++){
+                    for(var j = 0; j < frame.tableDataPeople[i]["personList"].length; j++){
+                        if(frame.tableDataPeople[i]["personList"][j]["uid"] == frame.currentChatUid) {
+                            frame.tableDataPeople[i]["personList"][j]["ischeck"] = true
+                            frame.tableDataPeople[i]["personList"][j]["isDisabled"] = true
+                        }
+                    }
+                }
+            } else if(channel.substring(0,3) == "GRP") {
+                console.log("GRP")
+                console.log(frame.selectedTargets)
+                findGroupMember(channel, true)
+            }
+
+        });
+
+        // 点击 开始群聊modal的取消按钮，将原来的checkbox状态清空
+        $(document).on("click", ".start-chat-close", function () {
+            frame.selectedTargets = []
+            for(var i = 0; i < frame.tableDataPeople.length; i++){
+                for(var j = 0; j < frame.tableDataPeople[i]["personList"].length; j++){
+                    frame.tableDataPeople[i]["personList"][j]["ischeck"] = false
+                    frame.tableDataPeople[i]["personList"][j]["isDisabled"] = false
+                }
+            }
+        });
+
+        // 点击 开始群聊modal的确认按钮，创建群聊
+        $(document).on("click", ".start-chat-confirm", function () {
+            if(frame.groupChatName == "") {
+                // alert("11")
+                $("#must_fill_alert").html("※ 群聊名称为必填项")
+            } else {
+                var before_channel = "" + frame.currentChatUid
+                console.log("before_channel--"+before_channel)
+                var str_member_list = ""
+                var str_member_photo = ""
+                var str_member_name = ""
+                var chat_group_name = ""
+                var str_member_list_include_self
+                frame.groupList = []
+                for(var i = 0; i < frame.selectedTargets.length; i++){
+                    str_member_list = str_member_list + frame.selectedTargets[i]["user_id"] +","
+                    // 维护当前组的信息
+                    frame.groupList.push({"user_id":frame.selectedTargets[i]["user_id"],
+                                    "photo":frame.selectedTargets[i]["photo"],
+                                    "name":frame.selectedTargets[i]["name"]})
+                }
+                // 添加自己
+                // selectedTargets 不包括自己，但groupList 和 selfInfo 中包括自己
+                // groupList只有在点击箭头的时候才会把自己加进去，平常维护该数组时不包括自己
+                str_member_list = str_member_list.substring(0,str_member_list.length-1)
+                frame.targetNotedName = frame.groupChatName;
+                frame.targetPhoto = frame.defaultGroupAvater;
+                if (before_channel.substring(0,3) == "GRP") {
+                    str_member_list_include_self = str_member_list
+                } else {
+                    str_member_list_include_self = str_member_list + "," + frame.selfId
+                }
+
+                $.ajax({
+                    url: '/chat/start_group_chat',
+                    type: 'post',
+                    data: {
+                        group_chat_name: frame.groupChatName,
+                        member_list: str_member_list_include_self,
+                    },
+                    success: function (res) {
+                        $("#modalStartChat").modal("hide")
+                        // 将该channelid 保存为当前channel
+                        $("#currentChanel").val(res.channel)
+                        frame.currentChatUid = res.channel
+                        frame.tableDataSelfInfo[0].channel.push({"channel_id":res.channel,
+                                                                "target_user_id": str_member_list,
+                                                                "name": frame.groupChatName,
+                                                                "photo": frame.targetPhoto })
+                        chatPreviewCurrentUpdate()
+                        historyChatRecord(res.channel)
+                        leftSelectMoveTop(res.channel)
+                        $("#collapseOne").removeClass("show")
+                        // 清空相关临时数据
+                        frame.selectedTargets = []
+                        frame.groupChatName =  ""
+
+                    },
+                })
+            }
+        });
+        //# sourceURL=pen.js
+
+        // 模拟点击附件
+        $(document).on("click", ".attachment", function () {
+            console.log("attachment")
+            $("#attach_btn").click()
+        });
+
+        // 点击退出按钮，保存最近的聊天对象（chat_preview_table_data）
+        function chatPreviewSaveDB() {
+            // chat preview的channel_id做成字符串存db
+            var chat_preview_list = "";
+            for (var i = 0; i < frame.chatPreviewTableData.length; i++) {
+                chat_preview_list = chat_preview_list + frame.chatPreviewTableData[i].channel_id + ","
+            }
+
+            $.ajax({
+                url: '/chat/chat_preview',
+                type: 'post',
+                // asyn: false,
+                data: {
+                    chat_preview_list: chat_preview_list,
+                },
+                success: function (res) {
+                },
+                error: function (err) {
+                }
+            })
         }
 
-        $.ajax({
-            url: '/chat/chat_preview',
-            type: 'post',
-            // asyn: false,
-            data: {
-                chat_preview_list: chat_preview_list,
-            },
-            success: function (res) {
-            },
-            error: function (err) {
-            }
-        })
-    }
+        // $(function () {
+        //     $(".selectpicker").selectpicker({
+        //         noneSelectedText: '请选择'
+        //     });
+        //     $(window).on('load', function () {
+        //         $('.selectpicker').selectpicker('val', '');
+        //         $('.selectpicker').selectpicker('refresh');
+        //     });
+        //     //下拉数据加载
+        //     $.ajax({
+        //         type: 'post',
+        //         url: basePath + "/lictran/tranStation/loadRoadForTranStationDetail",
+        //         dataType: 'json',
+        //         success: function (datas) {//返回list数据并循环获取
+
+        //         }
+        //     });
+        // });
     </script>
 </body>
 
