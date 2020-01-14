@@ -86,7 +86,7 @@
             <div id="search">
                 <div id="dropdown-wrapper">
                     <label for=""><i class="fa fa-search" aria-hidden="true"></i></label>
-                    <input v-model="searchAll" @input="inputFn" @click="hideSearchDropdown" type="text" class="dropdown-search" aria-expanded="true" placeholder="Search contacts..."/>
+                    <input v-model="searchAll" @input="inputFn" type="text" class="dropdown-search" aria-expanded="true" placeholder="Search contacts..."/>
                     <div class="dropdown-menu dropdown-menu-search" x-placement="bottom-start" style="width: 261px;position: absolute; transform: translate3d(0px, 151px, 0px); top: 0px; left: 0px; will-change: transform;">
                         <div v-if="searchList.user_list.length>0" class="dropdown-header" style="font-size:12px; float:left">联系人</div>
                         <a class="dropdown-item" href="#" v-for="item in searchList.user_list">
@@ -312,19 +312,19 @@
                     </li>
                 </ul>
             </div>
-            <div class="message-input" v-if="targetNotedName!='未选择聊天'">
+            <div class="message-input" style="visibility:hidden">
                 <div class="wrap">
-                    <input type="text" placeholder="Write your message..." />
-                     <el-upload hidden=true
-                            action="chat/attachment_upload"
-                            :on-success="attachSuccess"
-                            :limit="1"
-                            :file-list="fileList"
-                            :before-upload="beforeUpload">
-                            <el-button id="attach_btn" size="small" type="primary">点击上传</el-button>
-                            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
-                        </el-upload>
+                    <input type="text" class="pick-emoji" placeholder="Write your message..." />
                     <i class="fa fa-paperclip attachment" aria-hidden="true"></i>
+                    <el-upload hidden=true
+                        action="chat/attachment_upload"
+                        :on-success="attachSuccess"
+                        :limit="1"
+                        :file-list="fileList"
+                        :before-upload="beforeUpload">
+                        <el-button id="attach_btn" size="small" type="primary">点击上传</el-button>
+                        <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+                    </el-upload>
                     <button class="submit"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
                 </div>
             </div>
@@ -587,16 +587,26 @@
             appkey: 'BC-242425a937724e418b4f51105a138e3b'
         });
 
+        $(document).ready(function(){
+
+        });
+
         $(document).ready(function() {
             // 登录就创建临时websocket,用于接收广播和服务器发送的消息
             var channel_tmp = "|SERVER|" + selfId
             addSelfAndServerChannel(channel_tmp)
+            // emoji初始化
+            $('.pick-emoji').emojiPicker({
+                height: '100px',
+                width:  '450px'
+            });
         });
 
         //点击发送
         $(document).on("click", ".submit", function () {
             // newMessage();
             publishMessage();
+            //  $('.pick-emoji').emojiPicker("toggle")
         });
 
         // 下拉菜单
@@ -717,16 +727,15 @@
             created: function () {
                 this.loadTableDataSelfInfo()
             },
-            // watch: {
-            //     "searchList": function(newVal) {
-            //         console.log("watch")
-            //         if(this.searchList.user_list == "" && this.searchList.user_list == "" ) {
-            //             $('#dropdown-wrapper').removeClass("show")
-            //             $('.dropdown-menu-search').removeClass("show")
-            //             $('.dropdown-menu-search').attr("aria-expanded",false)
-            //         }
-            //     }
-            // },
+            watch: {
+                "targetNotedName": function(newVal) {
+                    if(newVal!='未选择聊天' ) {
+                        // console.log("not pick")
+                        // $(".message-input").removeAttr("hidden");
+                        $(".message-input").attr("style", "visibility:visible");
+                    }
+                }
+            },
             // mounted
             methods: {
                 inputFn(){
@@ -755,24 +764,12 @@
                                 },
                                 error: function (err) {
                                 },
-                                complete: function (res, textStatus) {
-
-                                },
                             })
                         // });
                         // $("body").dequeue();
                     }
                 },
-                hideSearchDropdown(){
-                    console.log("click")
-                    // $('.dropdown.show .dropdown-search').dropdown('toggle');
-                    // $('#dropdown-wapper').removeClass("show")
-                    // if($('#dropdown-wapper').hasClass("show") == true) {
-                    // setTimeout("$('#dropdown-wapper').removeClass('show')", 100 )
 
-                    // }
-
-                },
                 // 附件
                 attachSuccess(response, file, fileList){
                     console.log("attachSuccess response");
@@ -858,7 +855,6 @@
                     this.targetNotedName = _name
                     this.chatRecordTableData = []
                     var _this = this
-
                     // 将顺序存入db 防止直接刷新页面导致新开的群聊丢失
                     chatPreviewSaveDB()
 

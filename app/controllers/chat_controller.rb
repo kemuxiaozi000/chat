@@ -8,9 +8,12 @@ class ChatController < ApplicationController
   end
 
   def show
-    user_new = UserManagement.new
-    user_new.user_id = current_user.id
-    user_new.save!
+    user_tmp = UserManagement.find_by_user_id(current_user.id)
+    if user_tmp.blank?
+      user_new = UserManagement.new
+      user_new.user_id = current_user.id
+      user_new.save!
+    end
   end
 
   # 加载个人数据（左上角）头像，昵称 add channel_id
