@@ -87,31 +87,32 @@
                 <div id="dropdown-wrapper">
                     <label for=""><i class="fa fa-search" aria-hidden="true"></i></label>
                     <input v-model="searchAll" @input="inputFn" @click="hideSearchDropdown" type="text" class="dropdown-search" aria-expanded="true" placeholder="Search contacts..."/>
-                    <div class="dropdown-menu dropdown-menu-search" x-placement="bottom-start" style="width: 280px;position: absolute; transform: translate3d(0px, 151px, 0px); top: 0px; left: 0px; will-change: transform;">
-                        <h5 class="dropdown-header" style="font-size:8px; float:left">联系人</h5>
+                    <div class="dropdown-menu dropdown-menu-search" x-placement="bottom-start" style="width: 261px;position: absolute; transform: translate3d(0px, 151px, 0px); top: 0px; left: 0px; will-change: transform;">
+                        <div v-if="searchList.user_list.length>0" class="dropdown-header" style="font-size:12px; float:left">联系人</div>
                         <a class="dropdown-item" href="#" v-for="item in searchList.user_list">
                             <div class="wrap">
                                 <span class="contact-status online"></span>
                                 <img v-if="item.photo == ''" src="/assets/group_default-8115c58d5ced7497e66b68b53f9b21b1b9a512966f267aa8e729ab16023c7591.jpg" />
                                 <img v-else v-bind:src="item.photo" alt="" />
                                 <div class="meta ml-2">
-                                    <p class="name text-ellipsis">{{item.user_note_name}}</p>
-                                    <p class="name text-ellipsis">{{item.include}}</p>
+                                    <div class="name text-ellipsis mb-2" style="font-size:16px;" v-html="item.user_note_name"></div>
+                                    <div class="name text-ellipsis" style="font-size:12px;" v-html="item.include"></div>
                                 </div>
                             </div>
                         </a>
-                        <h5 class="dropdown-header" style="font-size:8px; float:left">群聊</h5>
+                        <div v-if="searchList.group_list.length>0" class="dropdown-header" style="font-size:12px; float:left">群聊</div>
                         <a class="dropdown-item" href="#" v-for="item in searchList.group_list">
                             <div class="wrap">
                                 <span class="contact-status online"></span>
                                 <img v-if="item.photo == ''" src="/assets/group_default-8115c58d5ced7497e66b68b53f9b21b1b9a512966f267aa8e729ab16023c7591.jpg" />
                                 <img v-else v-bind:src="item.photo" alt="" />
                                 <div class="meta">
-                                    <div class="name text-ellipsis" style="font-size:12px;">{{item.group_name}}</p>
-                                    <div class="name text-ellipsis" style="font-size:6px;">{{item.include}}</p>
+                                    <div class="name text-ellipsis mb-2" style="font-size:16px;" v-html="item.group_name"></div>
+                                    <div class="name text-ellipsis" style="font-size:12px;" v-html="item.include"></div>
                                 </div>
                             </div>
                         </a>
+                        <div v-if="searchList.user_list.length <= 0 && searchList.group_list.length <= 0" class="dropdown-header" style="font-size:12px;">无匹配结果</div>
                     </div>
                 </div>
             </div>
@@ -666,9 +667,6 @@
         //         return false;
         //     }
         // });
-        // $('#dropdown-wrapper').on('shown.bs.dropdown', function showDropdown() {
-        //     console.log('Dropdown is showed!');
-        // });
 
         var frame = new Vue({
             el: "#frame",
@@ -706,7 +704,7 @@
                 fileList: [],
                 groupChatName: "",
                 searchAll: "",
-                searchList: {},
+                searchList: {"user_list":[], "group_list":[], "keyword":""},
             },
 
             computed: {
@@ -719,32 +717,50 @@
             created: function () {
                 this.loadTableDataSelfInfo()
             },
-
+            // watch: {
+            //     "searchList": function(newVal) {
+            //         console.log("watch")
+            //         if(this.searchList.user_list == "" && this.searchList.user_list == "" ) {
+            //             $('#dropdown-wrapper').removeClass("show")
+            //             $('.dropdown-menu-search').removeClass("show")
+            //             $('.dropdown-menu-search').attr("aria-expanded",false)
+            //         }
+            //     }
+            // },
             // mounted
             methods: {
                 inputFn(){
                     var _this = this
-                    console.log("inputFn")
+                    console.log("inputFn: "+ this.searchAll)
                     if(this.searchAll == "") {
                         $('#dropdown-wrapper').removeClass("show")
                         $('.dropdown-menu-search').removeClass("show")
                         $('.dropdown-menu-search').attr("aria-expanded",false)
                     } else {
-                        $.ajax({
-                            url: '/chat/search_user',
-                            type: 'post',
-                            data: {
-                                keyword: _this.searchAll,
-                            },
-                            success: function (res) {
-                                _this.searchList = res
-                                $('#dropdown-wrapper').addClass("show")
-                                $('.dropdown-menu-search').addClass("show")
-                                $('.dropdown-menu-search').attr("aria-expanded",true)
-                            },
-                            error: function (err) {
-                            }
-                        })
+                        // $("body").queue(function() {    //将ajax代码放入队列
+                            $.ajax({
+                                url: '/chat/search_user',
+                                type: 'post',
+                                // asyn: false,
+                                data: {
+                                    keyword: _this.searchAll,
+                                },
+                                success: function (res) {
+                                    if(res["keyword"] == _this.searchAll) {
+                                        _this.searchList = res
+                                        $('#dropdown-wrapper').addClass("show")
+                                        $('.dropdown-menu-search').addClass("show")
+                                        $('.dropdown-menu-search').attr("aria-expanded",true)
+                                    }
+                                },
+                                error: function (err) {
+                                },
+                                complete: function (res, textStatus) {
+
+                                },
+                            })
+                        // });
+                        // $("body").dequeue();
                     }
                 },
                 hideSearchDropdown(){

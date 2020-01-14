@@ -114,12 +114,11 @@ class ChatController < ApplicationController
     arr_group_list = []
     # 根据自己的user_id，查找自己好友备注有相似的
     user_note = NameNote.where("name_notes.user_id = ? and name_notes.note_name like ?", current_user.id, "%"+params[:keyword]+"%")
-    p user_note
     if user_note.present?
       for item in user_or_group_note
         tmp_user = {}
         tmp_user["user_id"] = item.noted_id
-        tmp_user["user_note_name"] = item.name_notes
+        tmp_user["user_note_name"] = mark_keyword_color_green(params[:keyword], item.name_notes)
         tmp_photo = UserManagement.find_by_user_id(item.noted_id)
         tmp_user["photo"] = tmp_photo.present? ? tmp_photo.photo : ""
         tmp_user["include"] = ""
@@ -132,7 +131,6 @@ class ChatController < ApplicationController
                         select('users.id, users.nickname, user_managements.photo').
                         where("user_relations.user_id_1 = ? and user_relations.relation = ? and users.nickname like ?",
                                         current_user.id, "1", "%"+params[:keyword]+"%")
-    p user_nickname
     if user_nickname.present?
       flag  = false
       for item in user_nickname
@@ -150,10 +148,11 @@ class ChatController < ApplicationController
           tmp_user = {}
           tmp_user["user_id"] = item.id
           item_tmp = NameNote.where('name_notes.user_id = ? and name_notes.noted_id = ?', current_user.id, item.id)
-          tmp_user["user_note_name"] = item_tmp.blank? ? item.nickname : item_tmp[0].note_name
+          tmp_user_note_name = item_tmp.blank? ? item.nickname : item_tmp[0].note_name
+          tmp_user["user_note_name"] = mark_keyword_color_green(params[:keyword], tmp_user_note_name)
           tmp_photo = UserManagement.find_by_user_id(item.id)
           tmp_user["photo"] = tmp_photo.present? ? tmp_photo.photo : ""
-          tmp_user["include"] = "昵称："+ item.nickname
+          tmp_user["include"] = "昵称："+ mark_keyword_color_green(params[:keyword], item.nickname)
           arr_user_list.push(tmp_user)
         end
       end
@@ -164,16 +163,24 @@ class ChatController < ApplicationController
       for item in group
         tmp_group = {}
         tmp_group["group_id"] = item.group_id
-        tmp_group["group_name"] = item.group_name
+        tmp_group["group_name"] = mark_keyword_color_green(params[:keyword], item.group_name)
         tmp_group["photo"] = ""
         tmp_group["include"] = ""
         arr_group_list.push(tmp_group)
       end
     end
-    # TODO 查找群成员是否包含
+    # TODO 查找群成员是否包含(优先备注，然后全nickname)
+    # group_include_member = GroupInfo.where('member = ?',current_user.id)
+    # if group_include_member.present?
+    #   for item in group_include_member
+    #     tmp_group = {}
+    #     arr_group_list.push(tmp_group)
+    #   end
+    # end
 
     res["user_list"] = arr_user_list
     res["group_list"] = arr_group_list
+    res["keyword"] = params[:keyword]
     render json: res
   end
 
@@ -528,6 +535,11 @@ end
 
 def common_search_uid_by_channel(channel)
   uid = UserRelation.where('user_id_1 = ? and channel_id = ?', current_user.id, channel)[0].user_id_2
+end
+
+def mark_keyword_color_green(keyword, target_word)
+  replaced_word = '<span style="color:rgb(46, 204, 113)">' + keyword + '</span>'
+  return target_word.gsub(keyword, replaced_word)
 end
 
 def partition(arr, left, right)
