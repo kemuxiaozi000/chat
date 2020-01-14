@@ -8,7 +8,9 @@ class ChatController < ApplicationController
   end
 
   def show
-
+    user_new = UserManagement.new
+    user_new.user_id = current_user.id
+    user_new.save!
   end
 
   # 加载个人数据（左上角）头像，昵称 add channel_id
@@ -57,8 +59,8 @@ class ChatController < ApplicationController
     res_tmp["channel"] = channel_ids_and_notename
 
     # chat_preview_table data 作成
-    chat_preview_str = user.chat_preview
-    if chat_preview_str.present?
+    if user.chat_preview.present?
+      chat_preview_str = user.chat_preview
       chat_preview_arr = chat_preview_str.split(",")
       for item in chat_preview_arr
         tmp = {}
@@ -398,15 +400,15 @@ class ChatController < ApplicationController
       user_tmp.date_of_birth = params[:birthday]
       user_tmp.photo = params[:imageUrl]
       user_tmp.save!
-    else
-      user_new = UserManagement.new
-      user_new.user_id = current_user.id
-      user_new.sex = params[:sex]
-      user_new.phone = params[:tel]
-      user_new.hobby = params[:hobby]
-      user_new.date_of_birth = params[:birthday]
-      user_new.photo = params[:imageUrl]
-      user_new.save!
+    # else
+    #   user_new = UserManagement.new
+    #   user_new.user_id = current_user.id
+    #   user_new.sex = params[:sex]
+    #   user_new.phone = params[:tel]
+    #   user_new.hobby = params[:hobby]
+    #   user_new.date_of_birth = params[:birthday]
+    #   user_new.photo = params[:imageUrl]
+    #   user_new.save!
     end
     user = User.find_by_id(current_user.id)
     user.nickname = params[:nickname]
