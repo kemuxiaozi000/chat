@@ -97,7 +97,8 @@ img.emoji {
     height: 30px;
     max-height: 284px;
     overflow: auto;
-    line-height: 17px;
+    /* line-height: 17px; */
+    line-height: 22px;
     border: 1px solid #d2dbe3;
     border-radius: 2px;
     -webkit-box-shadow: none;

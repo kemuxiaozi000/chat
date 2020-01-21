@@ -239,7 +239,7 @@
                     <div class="social-media">
                         <i class="fa fa-facebook" aria-hidden="true"></i>
                         <i class="fa fa-twitter" aria-hidden="true"></i>
-                        <i class="fa fa-instagram" aria-hidden="true"></i>
+                        <i class="fa fa-instagram" aria-hidden="true" @click="screenShot"></i>
                     </div>
                 </div>
                 <div id="collapseOne" class="collapse" aria-labelledby="headingOne">
@@ -315,7 +315,7 @@
             <div class="message-input" style="visibility:hidden">
                 <div class="wrap">
                     <p class="lead emoji-picker-container">
-                        <input class="form-control textarea-control" rows="3" placeholder="Textarea with emoji Unicode input" data-emojiable="true" data-emoji-input="unicode"/>
+                        <input class="form-control textarea-control" rows="3" placeholder="" data-emojiable="true" data-emoji-input="unicode"/>
                     </p>
                     <!--<input type="text" class="pick-emoji" placeholder="Write your message..." />-->
                     <i class="fa fa-paperclip attachment" aria-hidden="true"></i>
@@ -669,10 +669,8 @@
         // };
 
         // $(window).on('keydown', function(e) {
-        //     if (e.which == 13) {
-        //         // newMessage();
-        //         publishMessage();
-        //         return false;
+        //     if (e.which == 91) {
+        //         console.log(91)
         //     }
         // });
 
@@ -766,6 +764,13 @@
                         // });
                         // $("body").dequeue();
                     }
+                },
+
+                screenShot(){
+                    console.log("screenShot")
+                    var e = jQuery.Event("mousedown");
+                    e.which=83,e.shiftKey=true,e.winKey=true;
+                    $(window).trigger(e);
                 },
 
                 // 附件
