@@ -140,7 +140,7 @@
                                     <div class="meta">
                                         <p class="name text-ellipsis">{{chatPreview.name}}</p>
                                         <p class="preview">
-                                            <span style="float:left;width:130px;font-size:13px;overflow: hidden;text-overflow:ellipsis;white-space: nowrap;font-color: #32465a;opacity: .8;">{{chatPreview.latest_msg_brief}}</span>
+                                            <span style="float:left;width:130px;height:16px;font-size:13px;overflow: hidden;text-overflow:ellipsis;white-space: nowrap;font-color: #32465a;opacity: .8;">{{chatPreview.latest_msg_brief}}</span>
                                             <span style="float:right;width:38px;font-size:13px">{{chatPreview.latest_msg_time}}</span>
                                         </p>
                                         <!--<p class="preview">{{chatPreview.latest_msg_time}}</p>-->
@@ -314,7 +314,10 @@
             </div>
             <div class="message-input" style="visibility:hidden">
                 <div class="wrap">
-                    <input type="text" class="pick-emoji" placeholder="Write your message..." />
+                    <p class="lead emoji-picker-container">
+                        <input class="form-control textarea-control" rows="3" placeholder="Textarea with emoji Unicode input" data-emojiable="true" data-emoji-input="unicode"/>
+                    </p>
+                    <!--<input type="text" class="pick-emoji" placeholder="Write your message..." />-->
                     <i class="fa fa-paperclip attachment" aria-hidden="true"></i>
                     <el-upload hidden=true
                         action="chat/attachment_upload"
@@ -596,17 +599,12 @@
             var channel_tmp = "|SERVER|" + selfId
             addSelfAndServerChannel(channel_tmp)
             // emoji初始化
-            $('.pick-emoji').emojiPicker({
-                height: '100px',
-                width:  '450px'
-            });
         });
 
         //点击发送
         $(document).on("click", ".submit", function () {
             // newMessage();
             publishMessage();
-            //  $('.pick-emoji').emojiPicker("toggle")
         });
 
         // 下拉菜单
@@ -1639,8 +1637,6 @@
                     }
                 }
             } else if(channel.substring(0,3) == "GRP") {
-                console.log("GRP")
-                console.log(frame.selectedTargets)
                 findGroupMember(channel, true)
             }
 
@@ -1664,7 +1660,6 @@
                 $("#must_fill_alert").html("※ 群聊名称为必填项")
             } else {
                 var before_channel = "" + frame.currentChatUid
-                console.log("before_channel--"+before_channel)
                 var str_member_list = ""
                 var str_member_photo = ""
                 var str_member_name = ""
@@ -1722,8 +1717,28 @@
 
         // 模拟点击附件
         $(document).on("click", ".attachment", function () {
-            console.log("attachment")
             $("#attach_btn").click()
+        });
+
+        // emoji
+       $(function() {
+        // Initializes and creates emoji set from sprite sheet
+        window.emojiPicker = new EmojiPicker({
+          emojiable_selector: '[data-emojiable=true]',
+          assetsPath: '/assets/emoji',
+          popupButtonClasses: 'fa fa-smile-o'
+        });
+
+        // Finds all elements with `emojiable_selector` and converts them to rich emoji input fields
+        // You may want to delay this step if you have dynamically created input fields that appear later in the loading process
+        // It can be called as many times as necessary; previously converted input fields will not be converted again
+        window.emojiPicker.discover();
+      });
+
+        $(".dropdown-search").blur(function(){
+            $('#dropdown-wrapper').removeClass("show")
+            $('.dropdown-menu-search').removeClass("show")
+            $('.dropdown-menu-search').attr("aria-expanded",false)
         });
 
         // 点击退出按钮，保存最近的聊天对象（chat_preview_table_data）
@@ -1747,25 +1762,6 @@
                 }
             })
         }
-
-        // $(function () {
-        //     $(".selectpicker").selectpicker({
-        //         noneSelectedText: '请选择'
-        //     });
-        //     $(window).on('load', function () {
-        //         $('.selectpicker').selectpicker('val', '');
-        //         $('.selectpicker').selectpicker('refresh');
-        //     });
-        //     //下拉数据加载
-        //     $.ajax({
-        //         type: 'post',
-        //         url: basePath + "/lictran/tranStation/loadRoadForTranStationDetail",
-        //         dataType: 'json',
-        //         success: function (datas) {//返回list数据并循环获取
-
-        //         }
-        //     });
-        // });
     </script>
 </body>
 

@@ -54,11 +54,11 @@ require 'csv'
 # end
 
 # group_info
-ActiveRecord::Base.connection.execute('TRUNCATE TABLE `group_infos`')
-if GroupInfo.count.zero?
-  CSV.foreach('db/group_info.csv', col_sep: "\t", headers: false) do |row|
-    GroupInfo.create(id: row[0], group_id: row[1], member_list: row[2], group_creator: row[3], create_date: row[4])
-  end
-end
+# ActiveRecord::Base.connection.execute('TRUNCATE TABLE `group_infos`')
+# if GroupInfo.count.zero?
+#   CSV.foreach('db/group_info.csv', col_sep: "\t", headers: false) do |row|
+#     GroupInfo.create(id: row[0], group_id: row[1], member_list: row[2], group_creator: row[3], create_date: row[4])
+#   end
+# end
 
 
