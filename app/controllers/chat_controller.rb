@@ -515,16 +515,34 @@ class ChatController < ApplicationController
 
   def attachment_download
     p "attachment_download"
-    # downloadFile(params[:filename])
+    p params[:filename]
     path = File.join Rails.root, 'public', 'tmpfile'
     filename = params[:filename][0..(params[:filename].length-24)]
     send_file(File.join(path, params[:filename]), :filename => filename)
+  end
+
+  def attachment_pic_show
+    p "attachment_pic_show"
+    path = File.join Rails.root, 'public', 'tmpfile'
+    # filename = params[:filename][0..(params[:filename].length-24)]
+    res = image_to_base64(File.join(path, params[:filename]), params[:type])
+
+    render json: {"preview_src": res, "fileuid": params[:fileuid]}
   end
 
   def search_uid_by_channel
     p "search_uid_by_channel"
     uid = UserRelation.where('user_id_1 = ? and channel_id = ?', current_user.id, params[:channel])[0].user_id_2
     render json: uid
+  end
+
+  def image_to_base64(filepath, type)
+    require 'open-uri'
+    tempfile = open(filepath)
+    image_base64 = Base64.strict_encode64(File.read(tempfile))
+    image_base64 = "data:image/"+ type+ ";base64,"+ image_base64
+    tempfile.close
+    return image_base64
   end
 end
 

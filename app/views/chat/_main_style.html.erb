@@ -427,6 +427,12 @@
         cursor: pointer;
     }
 
+    #frame #sidepanel #contacts ul li.contact-name-prefix {
+        font-size: 0.9em;
+        margin-left: 7px;
+        background: #354554;
+    }
+
     @media screen and (max-width: 735px) {
         #frame #sidepanel #contacts ul li.contact {
             padding: 6px 0 46px 8px;
@@ -501,6 +507,18 @@
     @media screen and (max-width: 735px) {
         #frame #sidepanel #contacts ul li.contact .wrap img {
             margin-right: 0px;
+        }
+    }
+
+    @media screen and (max-width: 735px) {
+        #frame #sidepanel #contacts ul.addr-ul-contact {
+            display: none;
+        }
+    }
+
+    @media screen and (max-width: 735px) {
+        #frame #sidepanel #contacts ul.game-ul {
+            display: none;
         }
     }
 
@@ -797,7 +815,7 @@
         font-size: 10px;
     }
 
-    #frame .content .messages ul li img {
+    #frame .content .messages ul li .chat-avater {
         width: 22px;
         border-radius: 50%;
         float: left;
@@ -816,11 +834,14 @@
         padding: 10px 15px;
         border-radius: 20px;
         max-width: 205px;
+    }
+
+    #frame .content .messages ul li div.image-msg{
+        /* display: inline-block; */
+        padding: 10px 15px;
+        border-radius: 20px;
+        max-width: 205px;
         line-height: 130%;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: flex-start;
     }
 
     #frame .content .messages ul li.msg-sent div.download-msg{

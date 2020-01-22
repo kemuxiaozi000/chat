@@ -1,0 +1,16 @@
+★小程序
+https://developers.weixin.qq.com/miniprogram/dev/framework/quickstart/
+step1、申请账号
+step2、小程序发布流程，进入小程序后台web页
+       小程序信息设置
+       #PC new project（小程序），会要求输入app id。
+       设定开发者（指定开发者微信号）
+step3、PC 开发IDE（微信开发者工具），点击工具栏“Preview”，
+       会出来二维码，
+       手机扫码，即可看到小程序。
+       
+
+-----------------------------------------------------------------------------
+※小程序介绍与开发环境
+https://developers.weixin.qq.com/ebook?action=get_post_info&docid=000e8842960070ab0086d162c5b80a
+

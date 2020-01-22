@@ -32,6 +32,7 @@ Rails.application.routes.draw do
     get 'attachment_download', action: "attachment_download"
     post 'search_uid_by_channel', action: "search_uid_by_channel"
     post 'chat_preview', action: "chat_preview"
+    get 'attachment_pic_show', action: "attachment_pic_show"
   end
 
   namespace :game do

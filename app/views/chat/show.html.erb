@@ -172,8 +172,8 @@
                         </ul>
                     </div>
                     <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
-                        <ul v-if="tableDataPeople.length>0" v-loading="loadingPeople" element-loading-text="loading..." v-for="item in tableDataPeople">
-                            <li>{{item.index}}</li>
+                        <ul v-if="tableDataPeople.length>0" class="addr-ul-contact" v-loading="loadingPeople" element-loading-text="loading..." v-for="item in tableDataPeople">
+                            <li class="contact-name-prefix">&nbsp;&nbsp;&nbsp;{{item.index}}</li>
                             <li class="contact">
                                 <div class="wrap" v-for="person in item.personList" @click="selectChatTarget(person.uid,person.name, person.photo)">
                                     <span class="contact-status online"></span>
@@ -202,7 +202,7 @@
                         </ul>
                     </div>
                     <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">
-                        <ul v-if="tableDataGame.length>0" v-loading="loadingGame" element-loading-text="loading...">
+                        <ul v-if="tableDataGame.length>0" class="game-ul" v-loading="loadingGame" element-loading-text="loading...">
                             <li class="contact" v-for="item in tableDataGame" @click="selectGame(item.game_id, item.href)">
                                 <div class="wrap">
                                     <img v-bind:src="item.cover" alt="" />
@@ -261,13 +261,26 @@
             <div class="messages">
                 <ul v-if="chatRecordTableData.length>0" v-for="chatRec in chatRecordTableData">
                     <li class="msg-reply" v-if="chatRec.dir == 'left'">
-                        <img v-if="chatRec.photo == 'personal'" v-bind:src="targetPhoto" alt="" />
-                        <img v-else :src="chatRec.photo" alt="no image"
+                        <img class="chat-avater" v-if="chatRec.photo == 'personal'" v-bind:src="targetPhoto" alt="" />
+                        <img class="chat-avater" v-else :src="chatRec.photo" alt="no image"
                         onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'" />
                         <div class="msg-flex-end">
                             <span v-if="chatRec.photo == 'personal'" style="margin-bottom:4px">{{chatRec.time}}</span>
                             <span v-else style="margin-bottom:4px">{{chatRec.notedName}}&nbsp;&nbsp;{{chatRec.time}}</span>
-                            <div v-if="chatRec.type!='msg'" class="download-msg">
+                            <div v-if="chatRec.type =='file-image'" class="image-msg">
+                                <el-image
+                                    style="width: 100px;"
+                                    :src="chatRec.tmpPicUrl"
+                                    :preview-src-list="[chatRec.tmpPicUrl]"
+                                    >
+                                </el-image>
+                                <p> {{chatRec.size}} &nbsp;|&nbsp;
+                                    <a :href="'chat/attachment_download?filename='+ chatRec.content + ':::fileuid:' + chatRec.fileuid">
+                                        下载
+                                    </a>
+                                </p>
+                            </div>
+                            <div v-else-if="chatRec.type!='msg'" class="download-msg">
                                 <div class="download-msg-icon">
                                     <i :class="'fas fa-3x fa-'+chatRec.type" style="margin: 5px;"></i>
                                 </div>
@@ -286,12 +299,25 @@
                         </div>
                     </li>
                     <li class="msg-sent" v-else-if="chatRec.dir == 'right'" v-for="item in tableDataSelfInfo">
-                        <img v-bind:src="item.photo" alt="no image"
+                        <img class="chat-avater" v-bind:src="item.photo" alt="no image"
                         onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'" />
                         <div class="msg-flex-end">
                             <span v-if="chatRec.photo == 'personal'" style="margin-bottom:4px">{{chatRec.time}}</span>
                             <span v-else style="margin-bottom:4px">{{chatRec.time}}&nbsp;&nbsp;我</span>
-                            <div v-if="chatRec.type!='msg'" class="download-msg">
+                            <div v-if="chatRec.type =='file-image'" class="image-msg">
+                                <el-image
+                                    style="width: 100px;"
+                                    :src="chatRec.tmpPicUrl"
+                                    :preview-src-list="[chatRec.tmpPicUrl]"
+                                    >
+                                </el-image>
+                                <p> {{chatRec.size}} &nbsp;|&nbsp;
+                                    <a :href="'chat/attachment_download?filename='+ chatRec.content + ':::fileuid:' + chatRec.fileuid">
+                                        下载
+                                    </a>
+                                </p>
+                            </div>
+                            <div v-else-if="chatRec.type!='msg'" class="download-msg">
                                 <div class="download-msg-icon"><i :class="'fas fa-3x fa-'+chatRec.type" style="margin: 5px;"></i></div>
                                 <div class="download-msg-right">
                                     <p>{{chatRec.content}}</p>
@@ -1254,6 +1280,7 @@
             var fileuid = "";
             let chatRecord = {};
             var side;
+            var tmp_pic_url = "";
             var type = "msg";
             var size = "0";
             var photo = "personal"
@@ -1271,10 +1298,41 @@
             if( msgContent.length>5 && msgContent.substring(0,5) == "/:fn=") {
                 msgContent = msgContent.substring(5,msgContent.length)
                 var msg_obj = JSON.parse(msgContent)
-                type = judgeFileType(getExt(msg_obj.filename))
+
+                var file_type = getExt(msg_obj.filename)
+                type = judgeFileType(file_type)
                 size = filesizeCalc(msg_obj.filesize)
                 msgContent = msg_obj.filename
                 fileuid = msg_obj.fileuid
+                var tmp_filename = msgContent + ":::fileuid:" + fileuid
+                console.log("attachment_pic_show_0")
+                if(type == "file-image") {
+                    console.log("attachment_pic_show_1")
+                    $.ajax({
+                        url: '/chat/attachment_pic_show',
+                        type: 'get',
+                        asyn: false,
+                        data: {
+                            filename: tmp_filename,
+                            fileuid: fileuid,
+                            type: file_type,
+                        },
+                        success: function (res) {
+                            for( var i = 0; i < frame.chatRecordTableData.length; i++) {
+                                if(frame.chatRecordTableData[i]["fileuid"] == res["fileuid"] ) {
+                                    frame.chatRecordTableData[i]["tmpPicUrl"] = res["preview_src"]
+                                }
+                            }
+                            $(".messages").animate({
+                                scrollTop: 9999
+                            }, "fast");
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            console.log(XMLHttpRequest, textStatus, errorThrown)
+                        },
+                    })
+                }
             }
             if(channel.substring(0,3) == "USR") {
 
@@ -1300,7 +1358,8 @@
                         "photo" : photo,
                         "type" : type,
                         "size": size,
-                        "fileuid": fileuid}
+                        "fileuid": fileuid,
+                        "tmpPicUrl": tmp_pic_url}
             frame.chatRecordTableData.push(chatRecord);
         }
 

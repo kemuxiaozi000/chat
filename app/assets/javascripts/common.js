@@ -93,7 +93,7 @@ function clone(obj) {
 // 根据后缀名判断文件类型
 function judgeFileType(ext) {
     var type = "file";
-    if (['png', 'jpg', 'jpeg', 'bmp', 'gif', 'webp', 'psd', 'svg', 'tiff'].indexOf(ext.toLowerCase()) != -1) {
+    if (['png', 'jpg', 'jpeg', 'bmp', 'gif', 'tiff'].indexOf(ext.toLowerCase()) != -1) {
         type = "file-image"
     }
     if (['doc', 'docx'].indexOf(ext.toLowerCase()) != -1) {
