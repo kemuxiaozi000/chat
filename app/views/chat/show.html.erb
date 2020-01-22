@@ -1386,7 +1386,9 @@
                     alert(error.code + " : " + error.content);
                 },
                 onSuccess: function () {
-                    $(".message-input input").val("")
+                    // $(".message-input input").val("")
+                    $(".emoji-wysiwyg-editor").html("")
+                    handleGoeasyMsgBrief("", publishMessage)
                     //滚动到底部
                     $(".messages").animate({
                         scrollTop: 9999
