@@ -52,7 +52,7 @@ class ChatController < ApplicationController
         arr_member_list.delete(current_user.id.to_s)
         member_list_except_self = arr_member_list.join(",")
         tmp["target_user_id"] = member_list_except_self
-        tmp["photo"] = ""
+        tmp["photo"] = find_group_member_photo(item.group_id)
         tmp["name"] = item.group_name
         tmp["member_photo"] = ""
         tmp["member_name"] = ""
@@ -76,7 +76,7 @@ class ChatController < ApplicationController
           tmp["photo"] = tmp_photo.present? ? tmp_photo.photo : ""
         else
           tmp["name"] = GroupInfo.find_by_group_id(item).group_name
-          tmp["photo"] = ""
+          tmp["photo"] = find_group_member_photo(item)
         end
         tmp["msg_num"] = ""
         tmp["latest_msg_brief"] = ""
@@ -560,9 +560,31 @@ def common_search_uid_by_channel(channel)
   uid = UserRelation.where('user_id_1 = ? and channel_id = ?', current_user.id, channel)[0].user_id_2
 end
 
+# 搜索结果把关键词标绿
 def mark_keyword_color_green(keyword, target_word)
   replaced_word = '<span style="color:rgb(46, 204, 113)">' + keyword + '</span>'
   return target_word.gsub(keyword, replaced_word)
+end
+
+def find_group_member_photo(group_id)
+  res = []
+  group_info = GroupInfo.find_by_group_id(group_id)
+  if group_info.present?
+    arr_group = group_info.member_list.split(",")
+    for member in arr_group
+      user_tmp = User.joins('left join user_managements on users.id = user_managements.user_id').
+                      select('users.id, user_managements.photo').
+                      where('users.id = ? ', member)
+      res_ele = user_tmp[0].photo.present? ? user_tmp[0].photo : "alt"
+      # res_ele = "no-repeat url(" + res_ele + ")"
+      if member == current_user.id
+        res_ele.insert(0,res_ele)
+      else
+        res.push(res_ele)
+      end
+    end
+  end
+  return res
 end
 
 def partition(arr, left, right)

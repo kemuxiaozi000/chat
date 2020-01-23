@@ -135,8 +135,13 @@
                             <li class="contact recent-contact" @click="chatPreviewclick(chatPreview.channel_id,chatPreview.photo,chatPreview.name)">
                                 <div class="wrap">
                                     <span class="contact-status online"></span>
-                                    <img v-if="chatPreview.photo == '' && chatPreview.channel_id.substring(0,3)=='GRP'" src="/assets/group_default-8115c58d5ced7497e66b68b53f9b21b1b9a512966f267aa8e729ab16023c7591.jpg" />
-                                    <img v-else v-bind:src="chatPreview.photo" alt="" />
+                                    <ul class="group-avater" v-if="chatPreview.channel_id.substring(0,3)=='GRP'" >
+                                        <!--<li v-for="groupPhoto in chatPreview.photo" class="group-avater-element" v-bind:style="{ background: groupPhoto }"></li>-->
+                                        <li v-for="groupPhoto in chatPreview.photo" class="group-avater-element">
+                                            <img :src="groupPhoto" style=""/>
+                                        </li>
+                                    </ul>
+                                    <img class="person-avater" v-else :src="chatPreview.photo" alt="" />
                                     <div class="meta">
                                         <p class="name text-ellipsis">{{chatPreview.name}}</p>
                                         <p class="preview">
@@ -177,7 +182,7 @@
                             <li class="contact">
                                 <div class="wrap" v-for="person in item.personList" @click="selectChatTarget(person.uid,person.name, person.photo)">
                                     <span class="contact-status online"></span>
-                                    <img v-bind:src="person.photo" alt="no image" onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'"  />
+                                    <img class="person-avater" :src="person.photo" alt="no image" onerror="this.src='/assets/new/headimg-5cbe32c69a642e897b49f052aa231458ee6bf3b511c76698be74ce67776e87fe.png'"  />
                                     <div class="meta mt-1 mb-1 addrbook-contact">
                                         <div class="nameplus">
                                             <div class="personal-name">{{person.name}}</div>
@@ -205,7 +210,7 @@
                         <ul v-if="tableDataGame.length>0" class="game-ul" v-loading="loadingGame" element-loading-text="loading...">
                             <li class="contact" v-for="item in tableDataGame" @click="selectGame(item.game_id, item.href)">
                                 <div class="wrap">
-                                    <img v-bind:src="item.cover" alt="" />
+                                    <img class="person-avater" :src="item.cover" alt="" />
                                     <div class="meta">
                                         <p class="name">{{item.name}}</p>
                                     </div>
@@ -231,7 +236,12 @@
         <div class="content">
             <div class="card">
                 <div class="card-header target-contact-profile" id="headingOne">
-                    <img v-bind:src="targetPhoto" alt="" />
+                    <ul class="group-avater" v-if="currentChannel.length > 3 && currentChannel.substring(0,3)=='GRP'" style="margin: 9px 12px 0 9px;" >
+                        <li v-for="groupPhoto in targetPhoto" class="group-avater-element">
+                            <img :src="groupPhoto"/>
+                        </li>
+                    </ul>
+                    <img v-else class="target-person-photo" :src="targetPhoto" alt="" />
                     <p>{{targetNotedName}}</p>
                     <button v-if="targetNotedName!='未选择聊天'" class="btn btn-link target-profile-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
                         <i class="fas fa-chevron-down"></i>
@@ -865,6 +875,10 @@
 
                 // chat preview 点击某个聊天
                 chatPreviewclick:function (_channel_id, _photo, _name) {
+                    if (_channel_id == this.currentChannel) {
+                        // 如果点击的就是当前的channel，则不执行
+                        return
+                    }
                     var index
                     if(this.chatPreviewTableData.length > 0) {
                         for (var i = 0; i < this.chatPreviewTableData.length; i++) {
@@ -882,6 +896,8 @@
                     $("#collapseOne").removeClass("show")
                     $("#currentChanel").val(_channel_id)
                     this.targetNotedName = _name
+                    this.currentChannel = _channel_id
+                    $("#currentChanel").val(_channel_id)
                     this.chatRecordTableData = []
                     var _this = this
                     // 将顺序存入db 防止直接刷新页面导致新开的群聊丢失
@@ -905,11 +921,7 @@
                         this.targetPhoto = _photo
                     } else {
                         this.currentChatUid = _channel_id
-                        if(_photo == "") {
-                            this.targetPhoto = this.defaultGroupAvater
-                        } else {
-                            this.targetPhoto = _photo
-                        }
+                        this.targetPhoto = _photo
                         //如果是群，先维护GroupList
                         $.ajax({
                             url: '/chat/find_group_member',
@@ -920,7 +932,7 @@
                                 except_self: false,
                             },
                             success: function (res) {
-                                console.log(res)
+                                // console.log(res)
                                 _this.groupList = []
                                 _this.groupList = res
                                 historyChatRecord(_channel_id)
@@ -993,13 +1005,14 @@
                             }
                             // 上次退出保存的最近聊天（chatpreview）
                             _this.chatPreviewTableData = _this.tableDataSelfInfo[0].chat_preview
+                            // console.log(_this.chatPreviewTableData)
                             _this.loadTableDataAddressBook()
                             //所有有关的channelid取得
                             chatPreviewCurrentUpdate()
                             if(_channel != "") {
                                 for(var i = 0; i < frame.tableDataSelfInfo[0].channel.length; i++) {
                                     if (frame.tableDataSelfInfo[0].channel[i]["channel_id"] == _channel) {
-                                        frame.targetPhoto = "/assets/group_default-8115c58d5ced7497e66b68b53f9b21b1b9a512966f267aa8e729ab16023c7591.jpg";
+                                        frame.targetPhoto = "";
                                         frame.targetNotedName = frame.tableDataSelfInfo[0].channel[i]["name"]
                                     }
                                 }
@@ -1170,7 +1183,6 @@
 
         // 维护chat preview 队列 --
         function handleGoeasyMsgBrief(channel_id, message = "") {
-            console.log("handleGoeasyMsgBrief")
             let _channel_id = channel_id
             let chat_brief = {}
             let msg_num = 1
@@ -1195,11 +1207,12 @@
                 if(frame.tableDataSelfInfo[0].channel.length > 0) {
                     for(var i = 0; i <frame.tableDataSelfInfo[0].channel.length; i++) {
                         if(_channel_id == frame.tableDataSelfInfo[0].channel[i].channel_id) {
-                            if (_channel_id.substring(0,3) == "GRP") {
-                                photo = frame.defaultGroupAvater
-                            } else if(_channel_id.substring(0,3) == "USR"){
-                                photo = frame.tableDataSelfInfo[0].channel[i].photo
-                            }
+                            // if (_channel_id.substring(0,3) == "GRP") {
+                            //     photo = ""
+                            // } else if(_channel_id.substring(0,3) == "USR"){
+                            photo = frame.tableDataSelfInfo[0].channel[i].photo
+                            console.log(JSON.stringify(photo))
+                            // }
                             name = frame.tableDataSelfInfo[0].channel[i].name
                         }
                     }
@@ -1249,6 +1262,9 @@
                             // 如果是点击或者会话中的channel, 则右边的chat record 需要更新
                             if( channel == currentChannel ){
                                 handleGoeasyMsg(message)
+                                $(".messages").animate({
+                                    scrollTop: 9999
+                                }, "fast");
                             }
                         }
                     });
@@ -1305,9 +1321,7 @@
                 msgContent = msg_obj.filename
                 fileuid = msg_obj.fileuid
                 var tmp_filename = msgContent + ":::fileuid:" + fileuid
-                console.log("attachment_pic_show_0")
                 if(type == "file-image") {
-                    console.log("attachment_pic_show_1")
                     $.ajax({
                         url: '/chat/attachment_pic_show',
                         type: 'get',
@@ -1388,11 +1402,6 @@
                 onSuccess: function () {
                     // $(".message-input input").val("")
                     $(".emoji-wysiwyg-editor").html("")
-                    handleGoeasyMsgBrief("", publishMessage)
-                    //滚动到底部
-                    $(".messages").animate({
-                        scrollTop: 9999
-                    }, "fast");
                 }
             });
         }
@@ -1744,7 +1753,7 @@
                 // groupList只有在点击箭头的时候才会把自己加进去，平常维护该数组时不包括自己
                 str_member_list = str_member_list.substring(0,str_member_list.length-1)
                 frame.targetNotedName = frame.groupChatName;
-                frame.targetPhoto = frame.defaultGroupAvater;
+                frame.targetPhoto = "";
                 if (before_channel.substring(0,3) == "GRP") {
                     str_member_list_include_self = str_member_list
                 } else {
