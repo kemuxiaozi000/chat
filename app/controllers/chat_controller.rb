@@ -120,10 +120,10 @@ class ChatController < ApplicationController
     # 根据自己的user_id，查找自己好友备注有相似的
     user_note = NameNote.where("name_notes.user_id = ? and name_notes.note_name like ?", current_user.id, "%"+params[:keyword]+"%")
     if user_note.present?
-      for item in user_or_group_note
+      for item in user_note
         tmp_user = {}
         tmp_user["user_id"] = item.noted_id
-        tmp_user["user_note_name"] = mark_keyword_color_green(params[:keyword], item.name_notes)
+        tmp_user["user_note_name"] = mark_keyword_color_green(params[:keyword], item.note_name)
         tmp_photo = UserManagement.find_by_user_id(item.noted_id)
         tmp_user["photo"] = tmp_photo.present? ? tmp_photo.photo : ""
         tmp_user["include"] = ""
